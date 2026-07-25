@@ -2,20 +2,20 @@
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
-const direct = `const status = await connect.checkDirectAccess();
+const direct = `const status = await connection.checkDirectAccess();
 
 if (status === "permission_required") {
   directAccessButton.onclick = async () => {
-    await connect.requestDirectAccess();
+    await connection.requestDirectAccess();
   };
 }
 
-connect.onConnectionChange((connection) => {
+connection.onConnectionChange((info) => {
   // "direct", "relay", or "hosted"
-  renderRoute(connection?.route);
+  renderRoute(info?.route);
 });`;
 
-const options = `const connect = new MdbaseConnect({
+const options = `const mdbase = new MdbaseConnect({
   serverUrl: "https://connect.mdbase.dev",
   manifest,
   redirectUri,
@@ -43,6 +43,11 @@ const options = `const connect = new MdbaseConnect({
     prefers the fixed same-computer endpoint and falls back to the encrypted
     relay. The user chooses the collection authority. The SDK selects the
     network route for each request.
+  </p>
+  <p>
+    Routing state belongs to a collection-bound <code>MdbaseConnection</code>.
+    Different saved collections can be hosted, direct, or relayed at the same
+    time.
   </p>
   <CodeBlock code={options} language="ts" label="connect-options.ts" />
 

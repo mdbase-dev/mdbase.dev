@@ -46,7 +46,12 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
     <tbody>
       <tr>
         <td><code>MdbaseConnect</code></td>
-        <td>Application entry points, authorization, routing, renewal, notifications, and operations</td>
+        <td>Application-level manager for saved connections and authorization</td>
+        <td>Browser APIs or adapters supplied by a native shell</td>
+      </tr>
+      <tr>
+        <td><code>MdbaseConnection</code></td>
+        <td>One collection's operations, renewal, routing, notifications, and hosted sync</td>
         <td>Browser APIs or adapters supplied by a native shell</td>
       </tr>
       <tr>
@@ -69,10 +74,13 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
 
   <h2 id="application-shape">Application structure</h2>
   <p>
-    Create one <code>MdbaseConnect</code> instance at the application boundary.
-    Pass its collection-client behavior into feature code and keep OAuth state
-    at that boundary. The same feature code can then run against Connect, the
-    developer sandbox, or a future conforming transport.
+    Create one <code>MdbaseConnect</code> manager at the application boundary.
+    Resolve the ID in the URL with <code>manager.connection(id)</code>, then
+    pass that <code>MdbaseConnection</code> into feature code while keeping
+    OAuth and saved-connection state at the boundary. A bound connection never
+    changes collections underneath a repository, and feature code written
+    against <code>MdbaseCollectionClient</code> can also run against the
+    developer sandbox or another conforming transport.
   </p>
   <CodeBlock code={seam} language="ts" label="tasks.ts" />
   <div class="callout">

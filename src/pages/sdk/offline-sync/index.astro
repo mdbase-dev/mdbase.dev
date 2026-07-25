@@ -8,7 +8,7 @@ const createReplica = `import {
   type ReplicaData
 } from "@mdbase/connect-sync";
 
-const hosted = connect.hostedSync();
+const hosted = connection.hostedSync();
 if (!hosted) {
   throw new Error("Authorize a hosted collection first.");
 }

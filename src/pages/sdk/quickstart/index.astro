@@ -29,31 +29,41 @@ export interface Workout extends JsonObject {
   completed?: boolean;
 }
 
-export const connect = new MdbaseConnect<Workout>({
+export const mdbase = new MdbaseConnect<Workout>({
   serverUrl: "https://connect.mdbase.dev",
   manifest: new URL("/.well-known/mdbase-app.json", location.origin).href,
   redirectUri: new URL("/auth/mdbase/callback", location.origin).href
 });`;
 
-const connectButton = `import { connect } from "./connect";
+const connectButton = `import { mdbase } from "./connect";
 
 export async function connectCollection() {
-  await connect.authorize(["describe", "read", "query", "update"]);
-  // Authorization continues on the registered callback route.
+  await mdbase.authorize({
+    operations: ["describe", "read", "query", "update"],
+    returnTo: location.pathname + location.search
+  });
+  // authorize() navigates to Connect and does not return.
 }`;
 
-const callback = `import { connect } from "./connect";
+const callback = `import { mdbase } from "./connect";
 
 export async function completeMdbaseCallback() {
-  const connection = await connect.completeAuthorization(location.href);
-  history.replaceState({}, "", "/");
-  return connection;
+  const { connection, returnTo = "/" } =
+    await mdbase.completeAuthorization(location.href);
+  const destination = new URL(returnTo, location.origin);
+  destination.searchParams.set("collection", connection.collectionId);
+  history.replaceState({}, "", destination);
+  return connection; // Permanently bound to this collection.
 }`;
 
-const query = `import { connect } from "./connect";
+const query = `import { mdbase } from "./connect";
 import { unwrapOperation } from "@mdbase/connect";
 
-const page = unwrapOperation(await connect.query({
+const collectionId = new URL(location.href).searchParams.get("collection");
+const collection = collectionId ? mdbase.connection(collectionId) : null;
+if (!collection) throw new Error("Choose a collection.");
+
+const page = unwrapOperation(await collection.query({
   types: ["workout"],
   where: 'completed != true',
   order_by: [{ field: "title", direction: "asc" }],
@@ -62,7 +72,7 @@ const page = unwrapOperation(await connect.query({
 
 const first = page.results[0];
 if (first) {
-  unwrapOperation(await connect.update({
+  unwrapOperation(await collection.update({
     path: first.path,
     patch: { completed: true },
     if_revision: first.revision
@@ -121,9 +131,10 @@ const validate = `mdbase-connect-dev validate-manifest \\
   <h2 id="client">3. Create one Connect client</h2>
   <CodeBlock code={client} language="ts" label="src/connect.ts" />
   <p>
-    Keep this instance stable. It owns persisted authorization state, refresh
-    rotation, the non-extractable relay key, route selection, and connection
-    change notifications.
+    Keep this manager stable. It owns the set of saved connections and returns
+    a separate collection-bound client for each one. Feature and repository
+    code should receive that bound client, never ambient “current collection”
+    state.
   </p>
 
   <h2 id="authorize">4. Start authorization from a user action</h2>
@@ -138,7 +149,7 @@ const validate = `mdbase-connect-dev validate-manifest \\
   <p>
     Call this once on the exact callback route listed in the manifest. PKCE is
     mandatory. On success, the client stores the grant-bound authorization and
-    emits the active connection.
+    returns the newly approved collection-bound connection.
   </p>
 
   <h2 id="operate">6. Query and update with a revision</h2>
@@ -148,6 +159,16 @@ const validate = `mdbase-connect-dev validate-manifest \\
     {" "}<code>if_revision</code> when changing the record so a concurrent edit
     cannot be silently overwritten.
   </p>
+  <div class="callout">
+    <strong>Use a stable collection ID in app URLs.</strong>
+    <p>
+      A query parameter such as <code>?collection=&lt;id&gt;</code> works on
+      static hosts, survives refreshes, and makes a view bookmarkable. Treat an
+      explicit ID as authoritative: if it is not saved, show the chooser or
+      reconnect that ID instead of silently opening another collection. Names
+      are display text and can change.
+    </p>
+  </div>
   <div class="callout">
     <strong>Resolve domain fields from the contract descriptor.</strong>
     <p>

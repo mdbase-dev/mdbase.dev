@@ -2,11 +2,11 @@
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
-const readQuery = `const record = unwrapOperation(await connect.read({
+const readQuery = `const record = unwrapOperation(await connection.read({
   path: "tasks/release.md"
 }));
 
-const open = unwrapOperation(await connect.query({
+const open = unwrapOperation(await connection.query({
   types: ["task"],
   where: 'status == "open" && due != null',
   order_by: [
@@ -15,7 +15,7 @@ const open = unwrapOperation(await connect.query({
   limit: 100
 }));`;
 
-const pageQuery = `for await (const page of connect.queryPages(
+const pageQuery = `for await (const page of connection.queryPages(
   { types: ["task"], where: 'status != "done"' },
   {
     firstPageSize: 100,
@@ -27,7 +27,7 @@ const pageQuery = `for await (const page of connect.queryPages(
   appendRows(page.results);
 }`;
 
-const createUpdate = `const created = unwrapOperation(await connect.create({
+const createUpdate = `const created = unwrapOperation(await connection.create({
   path: "tasks/release.md",
   type: "task",
   frontmatter: {
@@ -38,7 +38,7 @@ const createUpdate = `const created = unwrapOperation(await connect.create({
   body: "Release checklist."
 }));
 
-unwrapOperation(await connect.update({
+unwrapOperation(await connection.update({
   path: created.path,
   patch: { status: "done" },
   if_revision: created.revision
@@ -46,14 +46,14 @@ unwrapOperation(await connect.update({
 
 const watch = `const controller = new AbortController();
 
-for await (const change of connect.watch({
+for await (const change of connection.watch({
   signal: controller.signal,
   onStatus: (status) => renderWatchStatus(status)
 })) {
   applyChange(change);
 }`;
 
-const preflight = `const preview = unwrapOperation(await connect.preflightRename({
+const preflight = `const preview = unwrapOperation(await connection.preflightRename({
   from: "tasks/release.md",
   to: "archive/release.md",
   update_refs: true,
@@ -62,7 +62,7 @@ const preflight = `const preview = unwrapOperation(await connect.preflightRename
 
 showImpact(preview.references_affected, preview.warnings);
 
-await connect.renameWithProgress({
+await connection.renameWithProgress({
   from: preview.from,
   to: preview.to,
   update_refs: true,
