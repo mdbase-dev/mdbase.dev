@@ -122,7 +122,7 @@ if (await deliveries.claim(event.delivery_id)) {
   </p>
   <CodeBlock code={webhook} language="ts" label="notification-webhook.ts" />
   <p>
-    Cache keys from
+    Cache keys from{" "}
     <code>/v1/notifications/webhook-signing-keys</code>, enforce the built-in
     five-minute replay window, and store <code>delivery_id</code> before doing
     work because Connect retries until the endpoint succeeds.
@@ -156,4 +156,3 @@ if (await deliveries.claim(event.delivery_id)) {
     </tbody>
   </table>
 </DocsLayout>
-

@@ -89,14 +89,14 @@ await connect.renameWithProgress({
 >
   <h2 id="envelopes">Operation envelopes</h2>
   <p>
-    Record-facing operations return
+    Record-facing operations return{" "}
     <code>{`MdbaseOperationEnvelope<Result>`}</code>. A successful envelope
     contains <code>valid: true</code>, the typed result, and any non-fatal
     diagnostics. A validation failure can return diagnostics without turning a
     transport request into an exception.
   </p>
   <p>
-    <code>unwrapOperation(envelope)</code> returns the result or throws
+    <code>unwrapOperation(envelope)</code> returns the result or throws{" "}
     <code>MdbaseOperationValidationError</code>. Use it when the calling layer
     uses exceptions. Keep the raw envelope when diagnostics are part of the
     interface.
@@ -123,7 +123,7 @@ await connect.renameWithProgress({
   <CodeBlock code={createUpdate} language="ts" label="write.ts" />
   <p>
     <code>patch</code> is the canonical v0.3 partial-frontmatter update. A
-    mismatched <code>if_revision</code> produces
+    mismatched <code>if_revision</code> produces{" "}
     <code>concurrent_modification</code>. Refresh the record and ask the user or
     domain logic to resolve the conflict instead of automatically overwriting
     it.
@@ -134,7 +134,7 @@ await connect.renameWithProgress({
   <p>
     <code>watch()</code> uses the collection authority's resumable change
     cursor. The Connect control plane does not store the local change feed. The
-    iterator reconnects transient routes by default and reports
+    iterator reconnects transient routes by default and reports{" "}
     <code>reset_required</code> when the consumer must refresh a complete view.
   </p>
 
@@ -142,18 +142,17 @@ await connect.renameWithProgress({
   <CodeBlock code={preflight} language="ts" label="rename.ts" />
   <p>
     Preflight runs the canonical operation without changing records or
-    advancing the change cursor. Reuse its result in
+    advancing the change cursor. Reuse its result in{" "}
     <code>renameWithProgress()</code> or <code>deleteWithProgress()</code> so
     the confirmation shown to the user matches the operation that will run.
   </p>
   <div class="callout">
     <strong>Encrypted local mutations have durable outcomes.</strong>
     <p>
-      If the caller stops waiting after dispatch, inspect
+      If the caller stops waiting after dispatch, inspect{" "}
       <code>pendingMutation()</code> and recover the exact connector receipt
       with <code>resumePendingMutation()</code>. Do not submit a different
       mutation until that outcome is known.
     </p>
   </div>
 </DocsLayout>
-

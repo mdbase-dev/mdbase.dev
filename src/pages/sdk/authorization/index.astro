@@ -122,7 +122,7 @@ const recover = `try {
   <CodeBlock code={listen} language="ts" label="connection-state.ts" />
   <p>
     The route is <code>direct</code>, <code>relay</code>, or
-    <code>hosted</code>. Treat that as status information, not a mode the user
+    {" "}<code>hosted</code>. Treat that as status information, not a mode the user
     must configure. A <code>null</code> connection means the SDK no longer has
     a usable authorization.
   </p>
@@ -132,7 +132,7 @@ const recover = `try {
     <code>MdbaseConnectError</code> includes a machine-readable code, current
     grant information where relevant, and a recovery action:
     <code>retry</code>, <code>reauthorize</code>, <code>refresh</code>,
-    <code>resolve_outcome</code>, <code>fix_request</code>, or
+    <code>resolve_outcome</code>, <code>fix_request</code>, or{" "}
     <code>none</code>.
   </p>
   <CodeBlock code={recover} language="ts" label="recovery.ts" />

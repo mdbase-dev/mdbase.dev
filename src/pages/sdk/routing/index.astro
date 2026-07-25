@@ -50,7 +50,7 @@ const options = `const connect = new MdbaseConnect({
   <CodeBlock code={direct} language="ts" label="direct-access.ts" />
   <p>
     Browser local-network permission must be requested from a user action. Once
-    available, grantable operations prefer
+    available, grantable operations prefer{" "}
     <code>http://127.0.0.1:28485/v1/operations</code>. The connector checks the
     exact origin, Host header, protocol version, grant, and application-key
     proof.
@@ -69,7 +69,7 @@ const options = `const connect = new MdbaseConnect({
   </p>
   <p>
     New authorizations require encrypted relay by default. An encrypted grant
-    never falls back to plaintext. Use
+    never falls back to plaintext. Use{" "}
     <code>relayEncryption: "disabled"</code> only against a development stack
     that intentionally lacks end-to-end relay encryption.
   </p>
@@ -97,4 +97,3 @@ const options = `const connect = new MdbaseConnect({
     stores.
   </p>
 </DocsLayout>
-

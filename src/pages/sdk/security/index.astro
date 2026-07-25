@@ -18,7 +18,7 @@ import DocsLayout from "../../../components/DocsLayout.astro";
   <p>
     Declare the domain contracts the application understands and request only
     the operations needed for the current feature. Contract scope confines
-    records to types that provide those contracts. Use
+    records to types that provide those contracts. Use{" "}
     <code>full_collection</code> only for genuine collection tools.
   </p>
 
@@ -26,7 +26,7 @@ import DocsLayout from "../../../components/DocsLayout.astro";
   <p>
     Browser defaults retain authorization in <code>localStorage</code> and
     relay keys as non-extractable IndexedDB keys. Applications with a stronger
-    isolation boundary can supply a custom <code>Storage</code> and
+    isolation boundary can supply a custom <code>Storage</code> and{" "}
     <code>GrantKeyStore</code>. Native shells should use platform-protected
     application storage where possible.
   </p>
@@ -84,4 +84,3 @@ import DocsLayout from "../../../components/DocsLayout.astro";
     <li>Document the hosted provider as a trusted data processor.</li>
   </ul>
 </DocsLayout>
-

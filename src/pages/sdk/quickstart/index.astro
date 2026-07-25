@@ -115,7 +115,7 @@ const validate = `mdbase-connect-dev validate-manifest \\
   <CodeBlock code={validate} language="sh" label="Terminal" />
   <p>
     For a loopback development homepage and callback, add
-    <code>--allow-local</code>. Production manifests require HTTPS.
+    {" "}<code>--allow-local</code>. Production manifests require HTTPS.
   </p>
 
   <h2 id="client">3. Create one Connect client</h2>
@@ -146,14 +146,14 @@ const validate = `mdbase-connect-dev validate-manifest \\
   <CodeBlock code={query} language="ts" label="src/workouts.ts" />
   <p>
     Query results include a revision token. Pass it as
-    <code>if_revision</code> when changing the record so a concurrent edit
+    {" "}<code>if_revision</code> when changing the record so a concurrent edit
     cannot be silently overwritten.
   </p>
   <div class="callout">
     <strong>Do not assume frontmatter field names across contracts.</strong>
     <p>
       Generic apps can use declared mdbase types directly. Domain applications
-      should read the contract descriptors returned by <code>describe()</code>
+      should read the contract descriptors returned by <code>describe()</code>{" "}
       or use a contract adapter such as <code>@mdbase/tasknotes</code>.
     </p>
   </div>

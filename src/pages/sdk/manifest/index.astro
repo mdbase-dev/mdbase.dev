@@ -139,12 +139,12 @@ const nativeManifest = `{
     A manifest may carry complete portable type documents. During approval, the
     authority installs only the missing definitions, reopens the collection,
     and verifies the declared contract before it creates the grant.
-    Provisioning does not give the application general
+    Provisioning does not give the application general{" "}
     <code>create_type</code> access.
   </p>
   <CodeBlock code={contractManifest} language="json" label="Task contract example" />
   <p>
-    A provision may only claim contracts listed in
+    A provision may only claim contracts listed in{" "}
     <code>requirements.contracts</code>. Auxiliary types installed with the
     same approved set use an empty <code>provides</code> array.
   </p>
@@ -170,9 +170,8 @@ const nativeManifest = `{
   </p>
   <p>
     This is especially important for new contracts, notification criteria, and
-    changed callback routes. Handle
+    changed callback routes. Handle{" "}
     <code>notification_reauthorization_required</code> by starting
     authorization again.
   </p>
 </DocsLayout>
-
