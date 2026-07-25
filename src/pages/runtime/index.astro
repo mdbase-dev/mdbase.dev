@@ -16,8 +16,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <div class="page-hero__aside">
         <p>
           mdbase separates passive collection semantics from declared provider
-          contracts and durable workflow execution. A host can implement one
-          layer without implementing all of them.
+          contracts and durable workflow execution. Hosts declare support for
+          each layer independently.
         </p>
         <div class="button-row">
           <a class="button button--primary" href="/spec/#section-13">Runtime specification</a>
@@ -36,8 +36,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
           <p>
             Loading, typing, validation, CEL queries, links, saved views,
             revision-safe mutations, lifecycle policy, and watching. These
-            behaviors operate on the collection whether or not a runtime host
-            exists.
+            behaviors operate directly on the collection.
           </p>
         </div>
       </div>
@@ -46,8 +45,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
           <h3>Runtime Contracts 0.1</h3>
           <p>
             Portable event and action declarations, provider registration,
-            compatibility checks, and preflight. The TypeScript package is a
-            browser-safe provider host. It is not a workflow engine or watcher.
+            compatibility checks, and preflight. The TypeScript package
+            implements this browser-safe provider-host layer.
           </p>
         </div>
       </div>
@@ -68,8 +67,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
           <p>
             Connect compiles exact application grants into runtime behavior,
             supplies local or hosted collection authorities, and routes
-            notification signals. Connect is a host of these contracts, not the
-            definition of the runtime profile.
+            notification signals. The runtime profile defines the contracts
+            that Connect hosts.
           </p>
         </div>
       </div>
@@ -79,17 +78,16 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   <section class="content-section">
     <h2>Conformance profiles</h2>
     <p>
-      Conformance uses atomic profiles. A provider host can claim Runtime
-      Contracts without durable workflow execution. A workflow engine should
-      claim <code>workflow/0.1</code> only when its shared fixture evidence is
-      published.
+      Conformance uses atomic profiles. Provider hosts claim{" "}
+      <code>runtime_contracts/0.1</code>. Workflow engines add{" "}
+      <code>workflow/0.1</code> after publishing shared fixture evidence.
     </p>
     <table class="profile-table">
       <thead>
         <tr>
           <th>Profile</th>
-          <th>Proves</th>
-          <th>Does not prove</th>
+          <th>Covered behavior</th>
+          <th>Separate profiles</th>
         </tr>
       </thead>
       <tbody>

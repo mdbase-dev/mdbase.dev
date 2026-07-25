@@ -54,9 +54,9 @@ const nativeManifest = `{
   ]}
 >
   <p>
-    The manifest is a declaration, not a remote developer registration. Bundle
-    it with the application, load it through the SDK, and validate it as part of
-    the build. Connect identifies the exact canonical JSON by digest.
+    Bundle the manifest with the application, load it through the SDK, and
+    validate it as part of the build. Connect identifies its canonical JSON by
+    digest.
   </p>
   <p>
     Canonical schema:
@@ -97,8 +97,8 @@ const nativeManifest = `{
 
   <h2 id="requirements">Collection requirements</h2>
   <p>
-    Requirements tell the authority which collections can satisfy the
-    application. They do not grant access by themselves.
+    Requirements identify compatible collections. The user grants access in a
+    separate authorization step.
   </p>
   <table class="api-table">
     <thead>
@@ -129,8 +129,8 @@ const nativeManifest = `{
   <div class="callout">
     <strong>Leave collection_kind out when either authority is acceptable.</strong>
     <p>
-      Route choice within a local grant is automatic. Direct versus relay is
-      never a manifest requirement or a user storage choice.
+      The SDK selects direct or relay transport automatically within a local
+      grant.
     </p>
   </div>
 
@@ -139,8 +139,8 @@ const nativeManifest = `{
     A manifest may carry complete portable type documents. During approval, the
     authority installs only the missing definitions, reopens the collection,
     and verifies the declared contract before it creates the grant.
-    Provisioning does not give the application general{" "}
-    <code>create_type</code> access.
+    General type administration requires a separate{" "}
+    <code>create_type</code> grant.
   </p>
   <CodeBlock code={contractManifest} language="json" label="Task contract example" />
   <p>

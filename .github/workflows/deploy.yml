@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: mdbase-dev/mdbase-spec
-          ref: 1f45cd3d1b47ef7b336b75c0349ff83e49d83dbb
+          ref: b0f71aeee8ac77bf63a2b9ab11a23d15a2987f02
           path: .sources/mdbase-spec
 
       - name: Check out Connect

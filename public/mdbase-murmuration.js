@@ -33,6 +33,16 @@
         accent: "rgb(42 104 143)"
       };
 
+      function syncPalette() {
+        const styles = getComputedStyle(document.documentElement);
+        palette.paper = styles.getPropertyValue("--color-surface").trim() || palette.paper;
+        palette.ink = styles.getPropertyValue("--color-text").trim() || palette.ink;
+        palette.muted = styles.getPropertyValue("--color-text-muted").trim() || palette.muted;
+        palette.line = styles.getPropertyValue("--color-border-strong").trim() || palette.line;
+        palette.lineSoft = styles.getPropertyValue("--color-border").trim() || palette.lineSoft;
+        palette.accent = styles.getPropertyValue("--color-accent").trim() || palette.accent;
+      }
+
       class Particle {
         constructor(index) {
           const angle = Math.random() * Math.PI * 2;
@@ -1067,6 +1077,7 @@
         particles.push(new Particle(index));
       }
 
+      syncPalette();
       resize();
       updateScrollState();
       startAnimation();
@@ -1086,6 +1097,11 @@
       document.addEventListener("visibilitychange", () => {
         if (document.hidden) stopAnimation();
         else startAnimation();
+      });
+      addEventListener("mdbase:themechange", () => {
+        syncPalette();
+        buildScene(activeScene);
+        if (reduceMotion) draw(0);
       });
       addEventListener("pagehide", stopAnimation);
     })();

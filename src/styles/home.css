@@ -1,6 +1,48 @@
+:root {
+  color-scheme: light;
+  --paper: var(--color-canvas);
+  --paper-soft: var(--color-surface-subtle);
+  --ink: var(--color-text);
+  --ink-soft: var(--color-text-soft);
+  --muted: var(--color-text-muted);
+  --line: var(--color-border);
+  --line-strong: var(--color-border-strong);
+  --accent: var(--color-accent);
+  --accent-soft: color-mix(in oklch, var(--color-surface) 86%, var(--color-accent));
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+  }
+}
+
+.home-body::before {
+  background: linear-gradient(
+    90deg,
+    var(--paper) 0%,
+    var(--paper) 36%,
+    color-mix(in oklch, var(--paper) 92%, transparent) 45%,
+    transparent 64%
+  );
+}
+
+.home-body > main {
+  min-height: 100vh;
+  padding-top: 0;
+}
+
+.home-body > .site-footer {
+  margin-top: 0;
+}
+
 .home-skip-link {
   position: fixed;
-  z-index: 20;
+  z-index: 100;
   top: 10px;
   left: 10px;
   padding: 8px 10px;
@@ -17,39 +59,27 @@
   transform: translateY(0);
 }
 
-.site-nav__docs {
-  color: var(--accent) !important;
+.home-body .scroll-progress {
+  top: calc(var(--header) - 1px);
 }
 
-.site-footer__links {
-  display: inline-flex;
-  align-items: center;
-  gap: 18px;
+.home-body .button {
+  border-color: color-mix(in oklch, var(--accent) 45%, var(--line));
 }
 
-.site-footer__links a {
-  color: var(--muted);
-  text-decoration: none;
-}
-
-.site-footer__links a:hover {
-  color: var(--ink);
-  text-decoration: underline;
-  text-underline-offset: 4px;
+.home-body .button:hover {
+  background: color-mix(in oklch, var(--paper) 91%, var(--accent));
+  border-color: var(--accent);
 }
 
 @media (max-width: 820px) {
-  .site-nav a {
-    display: none;
-  }
-
-  .site-nav .site-nav__docs {
-    display: inline;
-  }
-}
-
-@media (max-width: 480px) {
-  .site-footer__links a:not(:first-child) {
-    display: none;
+  .home-body::before {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      transparent 40vh,
+      color-mix(in oklch, var(--paper) 88%, transparent) 50vh,
+      var(--paper) 65vh
+    );
   }
 }

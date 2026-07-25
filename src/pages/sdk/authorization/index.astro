@@ -48,7 +48,7 @@ const recover = `try {
 
 <DocsLayout
   title="Authorization"
-  description="Request exact operations, add permissions only when a feature needs them, and respond correctly to narrowing or revocation."
+  description="Request operation grants at the point of use and handle narrowing, pause, or revocation."
   active="authorization"
   headings={[
     { href: "#operations", label: "Operation grants" },
@@ -115,8 +115,8 @@ const recover = `try {
 
   <h2 id="step-up">Request additional operations at the point of use</h2>
   <p>
-    Do not front-load every possible permission. Inspect the current gap when a
-    user opens an editing or administration feature.
+    Begin with the operations used by the current feature. Inspect the current
+    gap when a user opens an editing or administration feature.
   </p>
   <CodeBlock code={stepUp} language="ts" label="feature-entry.ts" />
   <p>
@@ -129,9 +129,9 @@ const recover = `try {
   <CodeBlock code={listen} language="ts" label="connection-state.ts" />
   <p>
     The route is <code>direct</code>, <code>relay</code>, or
-    {" "}<code>hosted</code>. Treat that as status information, not a mode the user
-    must configure. A <code>null</code> connection means the SDK no longer has
-    a usable authorization.
+    {" "}<code>hosted</code>. Display it as status information. The SDK selects
+    the route. A <code>null</code> connection means the SDK has no usable
+    authorization.
   </p>
 
   <h2 id="recovery">Use structured recovery actions</h2>
@@ -147,8 +147,8 @@ const recover = `try {
     <strong>A local rejection is authoritative.</strong>
     <p>
       When the connector definitively rejects an encrypted grant, the SDK
-      removes only that stale credential. It does not bypass the local decision
-      through the relay.
+      removes the stale credential. The local decision governs direct and relay
+      routes.
     </p>
   </div>
 

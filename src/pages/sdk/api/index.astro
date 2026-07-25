@@ -170,10 +170,10 @@ const error = `try {
       <tr><td><code>queryAll(input?, options?)</code></td><td><code>query</code></td><td>Load every page into one result</td></tr>
       <tr><td><code>create(input)</code></td><td><code>create</code></td><td>Typed frontmatter and optional body</td></tr>
       <tr><td><code>update(input)</code></td><td><code>update</code></td><td>Canonical <code>patch</code> and optional revision</td></tr>
-      <tr><td><code>preflightRename(input)</code></td><td><code>rename</code></td><td>Reference impact without mutation</td></tr>
+      <tr><td><code>preflightRename(input)</code></td><td><code>rename</code></td><td>Read-only reference impact</td></tr>
       <tr><td><code>rename(input)</code></td><td><code>rename</code></td><td>Move with optional reference updates</td></tr>
       <tr><td><code>renameWithProgress(input, options)</code></td><td><code>rename</code></td><td>Preflight reuse, cancellation, and outcome recovery</td></tr>
-      <tr><td><code>preflightDelete(input)</code></td><td><code>delete</code></td><td>Backlink impact without mutation</td></tr>
+      <tr><td><code>preflightDelete(input)</code></td><td><code>delete</code></td><td>Read-only backlink impact</td></tr>
       <tr><td><code>delete(input)</code></td><td><code>delete</code></td><td>Delete with optional backlink check</td></tr>
       <tr><td><code>deleteWithProgress(input, options)</code></td><td><code>delete</code></td><td>Preflight reuse, cancellation, and outcome recovery</td></tr>
       <tr><td><code>validate(input?)</code></td><td><code>validate</code></td><td>Canonical collection validation envelope</td></tr>
@@ -219,7 +219,7 @@ const error = `try {
       <tr><td><code>requestOperations(required, options?)</code></td><td>Request the least-privilege union for this same collection</td></tr>
       <tr><td><code>forget()</code></td><td>Forget only this locally retained connection</td></tr>
       <tr><td><code>onConnectionChange(listener)</code></td><td>Subscribe and receive an unsubscribe function</td></tr>
-      <tr><td><code>checkDirectAccess()</code></td><td>Inspect same-computer availability without prompting</td></tr>
+      <tr><td><code>checkDirectAccess()</code></td><td>Read same-computer availability silently</td></tr>
       <tr><td><code>requestDirectAccess()</code></td><td>Prompt from a user gesture where required</td></tr>
       <tr><td><code>disableDirectAccess()</code></td><td>Persist a relay-only preference for this app</td></tr>
       <tr><td><code>hostedSync()</code></td><td>Return a refresh-aware sync transport for a hosted grant, or null</td></tr>
@@ -231,9 +231,9 @@ const error = `try {
   <h2 id="client">MdbaseCollectionClient</h2>
   <p>
     Construct with any <code>MdbaseCollectionTransport</code>. It exposes the
-    record, query, view, type, validation, and timer methods above without
-    registration, authorization, routing, or notification-channel methods.
-    Domain packages should prefer this dependency when they do not need OAuth.
+    record, query, view, type, validation, and timer methods above. Its surface
+    is limited to collection behavior. Domain packages should prefer this
+    dependency when they use collection operations alone.
   </p>
 
   <h2 id="errors">Errors and helpers</h2>

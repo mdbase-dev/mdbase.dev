@@ -7,8 +7,8 @@ const steps = [
     copy: "Its bundled manifest names callback URLs, required domain contracts, collection kind, and any type definitions that can be installed safely."
   },
   {
-    title: "Connect checks compatibility without exposing a collection",
-    copy: "The local or hosted authority decides whether each collection is ready, provisionable, or incompatible. The application does not inspect collections before authorization."
+    title: "Connect checks collection compatibility",
+    copy: "The local or hosted authority returns a readiness status for each collection: ready, provisionable, or incompatible. Collection contents remain private during authorization."
   },
   {
     title: "The user approves exact operations",
@@ -23,7 +23,7 @@ const steps = [
 
 <BaseLayout
   title="mdbase Connect"
-  description="Authorize independent applications to use local or hosted mdbase collections without giving an app ownership of the data."
+  description="Authorize independent applications to use local or hosted mdbase collections under a grant you control."
   current="connect"
 >
   <section class="page-hero">
@@ -35,8 +35,8 @@ const steps = [
       <div class="page-hero__aside">
         <p>
           mdbase Connect handles authorization, routing, and collection
-          hosting. It gives an application one grant without exposing a
-          local folder or turning the collection into the app's database.
+          hosting. A grant binds one application to one collection and an
+          approved set of operations. Local folder paths stay at the connector.
         </p>
         <div class="button-row">
           <a class="button button--primary" href="/sdk/quickstart/">SDK quickstart</a>
@@ -80,8 +80,8 @@ const steps = [
       <strong>Hosted collections use a standard hosted trust model.</strong>
       <p>
         The provider must decrypt collection data to execute canonical mdbase
-        operations. Hosted storage is encrypted at rest, but it is not
-        zero-knowledge storage.
+        operations. The provider acts as a trusted data processor for hosted
+        collections.
       </p>
     </div>
   </section>

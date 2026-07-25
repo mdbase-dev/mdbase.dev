@@ -1,0 +1,49 @@
+<script is:inline>
+  (() => {
+    const root = document.documentElement;
+    const media = matchMedia("(prefers-color-scheme: dark)");
+    const selects = document.querySelectorAll("[data-theme-select]");
+
+    const currentPreference = () => {
+      try {
+        const stored = localStorage.getItem("mdbase:theme");
+        return stored === "light" || stored === "dark" ? stored : "system";
+      } catch {
+        return "system";
+      }
+    };
+
+    const apply = (preference, persist = false) => {
+      if (preference === "system") delete root.dataset.theme;
+      else root.dataset.theme = preference;
+
+      if (persist) {
+        try {
+          if (preference === "system") localStorage.removeItem("mdbase:theme");
+          else localStorage.setItem("mdbase:theme", preference);
+        } catch {
+          // The selected theme still applies for this page.
+        }
+      }
+
+      const dark = preference === "dark"
+        || (preference === "system" && media.matches);
+      document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute("content", dark ? "#1c1e24" : "#fcfcfd");
+      selects.forEach((select) => {
+        select.value = preference;
+      });
+      dispatchEvent(new CustomEvent("mdbase:themechange"));
+    };
+
+    const preference = currentPreference();
+    apply(preference);
+    selects.forEach((select) => {
+      select.addEventListener("change", () => apply(select.value, true));
+    });
+    media.addEventListener("change", () => {
+      if (currentPreference() === "system") apply("system");
+    });
+  })();
+</script>

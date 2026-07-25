@@ -31,8 +31,8 @@ import DocsLayout from "../../../components/DocsLayout.astro";
     application storage where possible.
   </p>
   <p>
-    Never put Connect refresh credentials, hosted provider capabilities, or
-    mirror replica tokens in the mdbase collection itself.
+    Store Connect refresh credentials, hosted provider capabilities, and mirror
+    replica tokens in application-protected storage outside the collection.
   </p>
 
   <h2 id="origins">Keep origins and callbacks exact</h2>
@@ -63,7 +63,7 @@ import DocsLayout from "../../../components/DocsLayout.astro";
       </tr>
       <tr>
         <td>Hosted</td>
-        <td>Application and hosted provider; control plane does not proxy record bodies</td>
+        <td>Application and hosted provider receive record bodies directly</td>
       </tr>
       <tr>
         <td>Notification</td>
@@ -74,9 +74,9 @@ import DocsLayout from "../../../components/DocsLayout.astro";
 
   <h2 id="checklist">Application release checklist</h2>
   <ul>
-    <li>Validate the production manifest without <code>--allow-local</code>.</li>
+    <li>Validate the production manifest with default settings and omit <code>--allow-local</code>.</li>
     <li>Test narrowing, pause, revocation, token rotation, and reauthorization.</li>
-    <li>Test direct-to-relay failover without duplicating a mutation.</li>
+    <li>Test direct-to-relay failover and verify one durable mutation outcome.</li>
     <li>Pass revisions on every destructive or overwriting operation.</li>
     <li>Present preflight reference impact before rename and delete.</li>
     <li>Keep notification presentation free of private interpolated content.</li>

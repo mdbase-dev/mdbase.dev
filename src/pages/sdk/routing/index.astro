@@ -26,7 +26,7 @@ const options = `const mdbase = new MdbaseConnect({
 
 <DocsLayout
   title="Local and hosted routes"
-  description="Let the SDK select direct, encrypted relay, or hosted-provider transport while your feature code stays on one operation interface."
+  description="The SDK selects direct, encrypted relay, or hosted-provider transport behind one operation interface."
   active="routing"
   headings={[
     { href: "#automatic", label: "Automatic routing" },
@@ -36,13 +36,13 @@ const options = `const mdbase = new MdbaseConnect({
     { href: "#native", label: "Native shells" }
   ]}
 >
-  <h2 id="automatic">Route selection is not a storage mode</h2>
+  <h2 id="automatic">Automatic route selection</h2>
   <p>
     A collection has one write authority: either a local connector for a
     filesystem folder or a hosted provider. For a local authority, the SDK
     prefers the fixed same-computer endpoint and falls back to the encrypted
-    relay. The user chooses where the collection lives, not which network route
-    an individual request takes.
+    relay. The user chooses the collection authority. The SDK selects the
+    network route for each request.
   </p>
   <p>
     Routing state belongs to a collection-bound <code>MdbaseConnection</code>.
@@ -61,22 +61,22 @@ const options = `const mdbase = new MdbaseConnect({
     proof.
   </p>
   <p>
-    Set <code>directAccess: "disabled"</code> only when the embedding
-    environment cannot make loopback requests.
+    Set <code>directAccess: "disabled"</code> for embedding environments that
+    cannot make loopback requests.
   </p>
 
   <h2 id="relay">Encrypted relay fallback</h2>
   <p>
     Protocol 1 uses a non-extractable P-256 key and atomic message counter in
     IndexedDB. The SDK encrypts operation inputs for the local connector and
-    decrypts results in the application. The control plane routes opaque bodies
-    while retaining operation and delivery metadata.
+    decrypts results in the application. The control plane receives opaque
+    bodies plus operation and delivery metadata.
   </p>
   <p>
-    New authorizations require encrypted relay by default. An encrypted grant
-    never falls back to plaintext. Use{" "}
-    <code>relayEncryption: "disabled"</code> only against a development stack
-    that intentionally lacks end-to-end relay encryption.
+    New authorizations require encrypted relay by default. Encrypted grants use
+    encrypted relay exclusively. The{" "}
+    <code>relayEncryption: "disabled"</code> option supports development stacks
+    that intentionally lack end-to-end relay encryption.
   </p>
 
   <h2 id="hosted">Hosted-provider route</h2>
@@ -87,10 +87,9 @@ const options = `const mdbase = new MdbaseConnect({
     refreshes that capability as needed.
   </p>
   <p>
-    Record payloads do not pass through the Connect control plane. The hosted
-    provider can decrypt records because it must execute canonical mdbase
-    operations. Treat it as a trusted data processor, not as zero-knowledge
-    storage.
+    Hosted operations go directly from the application to the provider. The
+    provider decrypts records to execute canonical mdbase operations and acts as
+    a trusted data processor.
   </p>
 
   <h2 id="native">Native shells</h2>

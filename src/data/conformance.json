@@ -24,7 +24,7 @@
         "runtime_contract_materialization"
       ],
       "workflow_execution": false,
-      "note": "The Rust workflow engine exists, but workflow/0.1 is not advertised until shared fixture evidence is published."
+      "note": "The current Rust claim records runtime_execution: false. workflow/0.1 will follow shared fixture evidence."
     },
     {
       "name": "mdbase",
@@ -45,7 +45,7 @@
         "view_records"
       ],
       "workflow_execution": false,
-      "note": "Claims reflect the machine-readable implementation evidence, not legacy conformance levels."
+      "note": "The claim uses the machine-readable v0.3 atomic profiles."
     }
   ],
   "coverage": {

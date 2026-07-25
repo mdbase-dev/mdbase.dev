@@ -92,8 +92,8 @@ await connection.renameWithProgress({
     Record-facing operations return{" "}
     <code>{`MdbaseOperationEnvelope<Result>`}</code>. A successful envelope
     contains <code>valid: true</code>, the typed result, and any non-fatal
-    diagnostics. A validation failure can return diagnostics without turning a
-    transport request into an exception.
+    diagnostics. Validation failures return diagnostics in the same envelope.
+    Transport failures use exceptions.
   </p>
   <p>
     <code>unwrapOperation(envelope)</code> returns the result or throws{" "}
@@ -107,8 +107,8 @@ await connection.renameWithProgress({
   <p>
     Results contain effective frontmatter, raw frontmatter where applicable,
     matched types, file metadata, and a revision. CEL evaluates against
-    effective values, so defaults and computed fields participate without being
-    written back to the file.
+    effective values. Defaults and computed fields participate in evaluation;
+    the source file remains unchanged.
   </p>
 
   <h2 id="pagination">Page large result sets against one snapshot</h2>
@@ -125,15 +125,14 @@ await connection.renameWithProgress({
     <code>patch</code> is the canonical v0.3 partial-frontmatter update. A
     mismatched <code>if_revision</code> produces{" "}
     <code>concurrent_modification</code>. Refresh the record and ask the user or
-    domain logic to resolve the conflict instead of automatically overwriting
-    it.
+    domain logic to resolve the conflict before submitting another write.
   </p>
 
   <h2 id="watch">Resume changes by cursor</h2>
   <CodeBlock code={watch} language="ts" label="watch.ts" />
   <p>
     <code>watch()</code> uses the collection authority's resumable change
-    cursor. The Connect control plane does not store the local change feed. The
+    cursor. The local change feed remains at the collection authority. The
     iterator reconnects transient routes by default and reports{" "}
     <code>reset_required</code> when the consumer must refresh a complete view.
   </p>
@@ -141,8 +140,8 @@ await connection.renameWithProgress({
   <h2 id="preflight">Show authoritative impact before destructive work</h2>
   <CodeBlock code={preflight} language="ts" label="rename.ts" />
   <p>
-    Preflight runs the canonical operation without changing records or
-    advancing the change cursor. Reuse its result in{" "}
+    Preflight calculates the canonical operation's impact and preserves both
+    records and the change cursor. Reuse its result in{" "}
     <code>renameWithProgress()</code> or <code>deleteWithProgress()</code> so
     the confirmation shown to the user matches the operation that will run.
   </p>
@@ -151,8 +150,8 @@ await connection.renameWithProgress({
     <p>
       If the caller stops waiting after dispatch, inspect{" "}
       <code>pendingMutation()</code> and recover the exact connector receipt
-      with <code>resumePendingMutation()</code>. Do not submit a different
-      mutation until that outcome is known.
+      with <code>resumePendingMutation()</code>. Wait for that outcome before
+      submitting a different mutation.
     </p>
   </div>
 </DocsLayout>

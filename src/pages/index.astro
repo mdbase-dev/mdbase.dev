@@ -6,20 +6,6 @@ import HomeLayout from "../layouts/HomeLayout.astro";
   title="mdbase"
   description="A first introduction to mdbase collections, app permissions, and local or hosted storage."
 >
-  <header class="site-header">
-    <a class="wordmark" href="/" aria-label="mdbase home">
-      <span class="wordmark__dot" aria-hidden="true"></span>
-      mdbase
-    </a>
-    <nav class="site-nav" aria-label="Introduction sections">
-      <a href="#intro">What it is</a>
-      <a href="#example">Example</a>
-      <a href="#storage">Where it lives</a>
-      <a href="#permission">App access</a>
-      <a class="site-nav__docs" href="/sdk/">SDK</a>
-      <span id="scene-count" class="scene-count" aria-live="polite">01 / 06</span>
-    </nav>
-  </header>
   <div class="scroll-progress" aria-hidden="true"></div>
 
   <canvas id="diagram" aria-hidden="true"></canvas>
@@ -35,9 +21,8 @@ import HomeLayout from "../layouts/HomeLayout.astro";
           with them.
         </p>
         <p class="chapter__body">
-          mdbase is not another notes app or a proprietary file format. It is a
-          way for independent apps to share the same durable collection without
-          taking ownership of it.
+          mdbase gives independent apps a shared, durable collection of
+          ordinary files. The collection remains under your control.
         </p>
         <ul class="facts" aria-label="The three ideas behind mdbase">
           <li><span>Readable</span><strong>Markdown you can open with ordinary tools</strong></li>
@@ -45,7 +30,6 @@ import HomeLayout from "../layouts/HomeLayout.astro";
           <li><span>Controlled</span><strong>Each app gets only the access you approve</strong></li>
         </ul>
       </div>
-      <div class="scroll-cue" aria-hidden="true">Scroll to open a small mdbase</div>
     </section>
 
     <section id="example" class="chapter" data-scene="collection">
@@ -133,7 +117,7 @@ easier to understand.</code></pre>
         <ol class="steps" aria-label="How an app receives access">
           <li><span>1</span><strong>Review the app and the collection it understands</strong></li>
           <li><span>2</span><strong>Choose a collection and its allowed actions</strong></li>
-          <li><span>3</span><strong>Approve the connection, or decline without sharing anything</strong></li>
+          <li><span>3</span><strong>Approve the connection or keep the collection private</strong></li>
         </ol>
         <ul class="facts" aria-label="Actions an app may request">
           <li><span>Read</span><strong>Open records and see their contents</strong></li>
@@ -148,8 +132,8 @@ easier to understand.</code></pre>
         <h2>The main copy stays in control.</h2>
         <p class="chapter__lead">
           For a local collection, the mdbase connector on your computer checks
-          every request before opening or changing a file. Your folder path is
-          never shared with the online service.
+          every request before opening or changing a file. Local folder paths
+          stay on your computer.
         </p>
         <p class="chapter__body">
           For a hosted collection, mdbase checks the same permission beside the
@@ -160,7 +144,7 @@ easier to understand.</code></pre>
         <ul class="facts" aria-label="What remains true after approval">
           <li><span>Main copy</span><strong>One authoritative history keeps changes in order</strong></li>
           <li><span>Working copies</span><strong>Useful for offline and local work</strong></li>
-          <li><span>Your control</span><strong>Pause or revoke access without moving the collection</strong></li>
+          <li><span>Your control</span><strong>Pause or revoke an app's access at any time</strong></li>
         </ul>
         <div class="chapter__actions">
           <a class="button" href="/sdk/">SDK documentation</a>
@@ -170,12 +154,4 @@ easier to understand.</code></pre>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <span>Readable files · shared meaning · explicit permissions</span>
-    <span class="site-footer__links">
-      <a href="/sdk/">SDK</a>
-      <a href="/spec/">Specification</a>
-      <a href="https://github.com/mdbase-dev">GitHub</a>
-    </span>
-  </footer>
 </HomeLayout>
