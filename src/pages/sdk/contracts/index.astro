@@ -2,7 +2,7 @@
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
-const generic = `const description = await connect.describe();
+const generic = `const description = await connection.describe();
 
 const taskContract = description.contracts.find(
   (contract) =>
@@ -23,8 +23,10 @@ const adapter = `import {
 } from "@mdbase/tasknotes";
 import { MdbaseConnect } from "@mdbase/connect";
 
-const connect = new MdbaseConnect<TaskFrontmatter>(options);
-const tasks = new TasknotesCollection(connect);
+const mdbase = new MdbaseConnect<TaskFrontmatter>(options);
+const connection = mdbase.connection(collectionId);
+if (!connection) throw new Error("Choose a collection.");
+const tasks = new TasknotesCollection(connection);
 
 await tasks.describe();
 const open = await tasks.list();

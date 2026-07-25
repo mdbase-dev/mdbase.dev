@@ -28,7 +28,7 @@ const browser = `const worker = await navigator.serviceWorker.register(
   "/service-worker.js"
 );
 
-await connect.registerNotifications({
+await connection.registerNotifications({
   serviceWorker: worker,
   criteria: ["task.changed"]
 });`;
@@ -44,7 +44,7 @@ self.addEventListener("push", (event) => {
   );
 });`;
 
-const timers = `await connect.reconcileTimers({
+const timers = `await connection.reconcileTimers({
   namespace: "task-reminders",
   criterion_id: "task.reminder",
   timers: [{

@@ -15,7 +15,7 @@ const constructor = `new MdbaseConnect<Frontmatter>({
 })`;
 
 const error = `try {
-  const result = unwrapOperation(await connect.update(input));
+  const result = unwrapOperation(await connection.update(input));
 } catch (error) {
   if (error instanceof MdbaseOperationValidationError) {
     renderDiagnostics(error.diagnostics);
@@ -114,39 +114,44 @@ const error = `try {
         <td>Load, canonicalize, and register the bundled manifest</td>
       </tr>
       <tr>
-        <td><code>authorize(operations?)</code></td>
+        <td><code>authorize(options?)</code></td>
         <td>Does not return</td>
-        <td>Start PKCE and navigate to collection approval</td>
+        <td>Start PKCE; options include operations, collectionId hint, and returnTo</td>
       </tr>
       <tr>
         <td><code>completeAuthorization(callbackUrl?)</code></td>
-        <td>Connection metadata</td>
-        <td>Verify state, exchange the code, and retain the grant</td>
+        <td><code>MdbaseAuthorizationResult</code></td>
+        <td>Return the bound connection and app-local returnTo value</td>
       </tr>
       <tr>
-        <td><code>authorizationCapabilities(required)</code></td>
-        <td><code>MdbaseAuthorizationCapabilities</code></td>
-        <td>Compare exact required and granted operations</td>
+        <td><code>connections()</code></td>
+        <td><code>MdbaseConnectionInfo[]</code></td>
+        <td>List every saved collection authorization for this application</td>
       </tr>
       <tr>
-        <td><code>hasOperations(required)</code></td>
-        <td><code>boolean</code></td>
-        <td>Check an operation subset</td>
+        <td><code>connection(collectionId)</code></td>
+        <td><code>MdbaseConnection | null</code></td>
+        <td>Resolve one permanently collection-bound client</td>
       </tr>
       <tr>
-        <td><code>requestOperations(required)</code></td>
-        <td><code>Promise&lt;void&gt;</code></td>
-        <td>Request the least-privilege union when the current grant is insufficient</td>
+        <td><code>onConnectionsChange(listener)</code></td>
+        <td>Unsubscribe function</td>
+        <td>Observe additions, removal, refresh, and cross-tab storage changes</td>
       </tr>
       <tr>
-        <td><code>disconnect()</code></td>
+        <td><code>forgetAll()</code></td>
         <td><code>void</code></td>
-        <td>Clear this installation's retained authorization</td>
+        <td>Forget every locally retained connection for this application</td>
       </tr>
     </tbody>
   </table>
 
   <h2 id="operations">Collection operations</h2>
+  <p>
+    The methods below belong to <code>MdbaseConnection</code>, not the manager.
+    A repository that holds one connection cannot accidentally read or write a
+    different collection when the user changes another part of the UI.
+  </p>
   <table class="api-table">
     <thead>
       <tr>
@@ -208,7 +213,11 @@ const error = `try {
       <tr><th>Method</th><th>Purpose</th></tr>
     </thead>
     <tbody>
-      <tr><td><code>connection()</code></td><td>Read collection ID, operations, scope, route, and direct status</td></tr>
+      <tr><td><code>info()</code></td><td>Read collection ID, display name, operations, scope, route, and direct status</td></tr>
+      <tr><td><code>authorizationCapabilities(required)</code></td><td>Compare required and granted operations for this collection</td></tr>
+      <tr><td><code>hasOperations(required)</code></td><td>Check an operation subset</td></tr>
+      <tr><td><code>requestOperations(required, options?)</code></td><td>Request the least-privilege union for this same collection</td></tr>
+      <tr><td><code>forget()</code></td><td>Forget only this locally retained connection</td></tr>
       <tr><td><code>onConnectionChange(listener)</code></td><td>Subscribe and receive an unsubscribe function</td></tr>
       <tr><td><code>checkDirectAccess()</code></td><td>Inspect same-computer availability without prompting</td></tr>
       <tr><td><code>requestDirectAccess()</code></td><td>Prompt from a user gesture where required</td></tr>

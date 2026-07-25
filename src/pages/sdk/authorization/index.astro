@@ -3,40 +3,42 @@ import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
 const stepUp = `const required = ["read", "query", "update"] as const;
-const capability = connect.authorizationCapabilities([...required]);
+const capability = connection.authorizationCapabilities([...required]);
 
 if (!capability.sufficient) {
-  await connect.requestOperations([...required]);
+  await connection.requestOperations([...required], {
+    returnTo: location.pathname + location.search
+  });
 }`;
 
-const listen = `const stop = connect.onConnectionChange((connection) => {
-  if (!connection) {
+const listen = `const stop = connection.onConnectionChange((info) => {
+  if (!info) {
     renderDisconnected();
     return;
   }
 
   renderConnection({
-    collectionId: connection.collectionId,
-    route: connection.route,
-    operations: connection.operations
+    collectionId: info.collectionId,
+    route: info.route,
+    operations: info.operations
   });
 });
 
 // Call stop() when the owning UI is destroyed.`;
 
 const recover = `try {
-  await connect.update(input);
+  await connection.update(input);
 } catch (error) {
   if (error instanceof MdbaseConnectError) {
     switch (error.recovery) {
       case "reauthorize":
-        await connect.requestOperations(["update"]);
+        await connection.requestOperations(["update"]);
         break;
       case "refresh":
         await refreshVisibleState();
         break;
       case "resolve_outcome":
-        await connect.resumePendingMutation(input);
+        await connection.resumePendingMutation(input);
         break;
     }
   }
@@ -60,6 +62,11 @@ const recover = `try {
     A Connect grant binds one application installation, one canonical manifest,
     one collection, one scope, and an exact operation set. The collection
     authority checks the grant again for every request.
+  </p>
+  <p>
+    One application installation may retain several independent grants. The
+    manager lists them with <code>connections()</code>; every operation is made
+    through a <code>MdbaseConnection</code> bound to one collection ID.
   </p>
 
   <h2 id="operations">Choose operations by feature</h2>
@@ -147,8 +154,9 @@ const recover = `try {
 
   <h2 id="disconnect">Disconnecting an application</h2>
   <p>
-    <code>connect.disconnect()</code> clears this application's local
-    authorization state. It does not replace user-controlled revocation at the
+    <code>connection.forget()</code> clears only that collection's local
+    authorization state. <code>manager.forgetAll()</code> clears the saved set.
+    Neither replaces user-controlled revocation at the
     collection authority. Provide a clear path to the Connect controller when a
     user needs to review, narrow, pause, or revoke a grant.
   </p>
