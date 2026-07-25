@@ -30,16 +30,16 @@ const steps = [
     <div class="page-hero__inner">
       <div>
         <p class="eyebrow"><i></i> Private beta · protocol 1</p>
-        <h1>Connect apps to data you control.</h1>
+        <h1>App access for local and hosted collections.</h1>
       </div>
       <div class="page-hero__aside">
         <p>
-          mdbase Connect is an authorization, routing, and collection-hosting
-          layer. It gives an application one exact grant without exposing a
+          mdbase Connect handles authorization, routing, and collection
+          hosting. It gives an application one grant without exposing a
           local folder or turning the collection into the app's database.
         </p>
         <div class="button-row">
-          <a class="button button--primary" href="/sdk/quickstart/">Build an integration</a>
+          <a class="button button--primary" href="/sdk/quickstart/">SDK quickstart</a>
           <a class="button" href="https://github.com/mdbase-dev/mdbase-connect">View source</a>
         </div>
       </div>
@@ -47,9 +47,9 @@ const steps = [
   </section>
 
   <section class="content-section">
-    <h2>One approval flow, two collection authorities.</h2>
+    <h2>Local and hosted collections</h2>
     <p>
-      Applications use the same SDK and operation envelopes. The route changes
+      Applications use the same SDK and operation envelopes. Routing changes
       according to where the authoritative collection lives.
     </p>
     <table class="trust-table">
@@ -103,10 +103,10 @@ const steps = [
   </section>
 
   <section class="content-section">
-    <h2>Security boundaries are explicit.</h2>
+    <h2>Who can read records</h2>
     <p>
-      Connect minimizes the places that can read records, but it does not hide
-      ordinary infrastructure facts behind vague privacy language.
+      Connect limits the components that can read records. Local and hosted
+      collections have different trust boundaries.
     </p>
     <table class="trust-table">
       <thead>
@@ -147,13 +147,13 @@ const steps = [
 
   <section class="content-section">
     <p class="eyebrow"><i></i> Release status</p>
-    <h2 style="margin-top: 1rem">The implementation is functional; public release gates remain.</h2>
+    <h2 style="margin-top: 1rem">Release status</h2>
     <p>
       The private-beta stack includes local and hosted authorities, encrypted
       relay operations, grant narrowing and revocation, sync, notifications,
       and the browser SDK. Public registration, a production restore drill,
-      signed desktop releases, and abuse-response operations remain launch
-      gates.
+      signed desktop releases, and abuse-response operations are still required
+      before public registration.
     </p>
     <div class="button-row" style="margin-top: 2rem">
       <a class="button button--primary" href="/sdk/">Read the SDK documentation</a>
@@ -163,4 +163,3 @@ const steps = [
     </div>
   </section>
 </BaseLayout>
-

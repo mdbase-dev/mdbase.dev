@@ -15,8 +15,8 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
 ---
 
 <DocsLayout
-  title="Build on mdbase Connect"
-  description="Authorize a collection once, then use typed mdbase operations without owning its storage or deployment topology."
+  title="Connect SDK"
+  description="Use the Connect SDK to authorize a collection and call typed mdbase operations."
   active="overview"
   headings={[
     { href: "#choose-a-surface", label: "Choose a surface" },
@@ -34,7 +34,7 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
 
   <CodeBlock code={install} language="sh" label="Install" />
 
-  <h2 id="choose-a-surface">Choose the narrowest SDK surface</h2>
+  <h2 id="choose-a-surface">SDK surfaces</h2>
   <table class="api-table">
     <thead>
       <tr>
@@ -67,7 +67,7 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
     </tbody>
   </table>
 
-  <h2 id="application-shape">Keep authorization at the edge</h2>
+  <h2 id="application-shape">Application structure</h2>
   <p>
     Create one <code>MdbaseConnect</code> instance at the application boundary.
     Pass its collection-client behavior into feature code rather than importing
@@ -126,4 +126,3 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
     <a class="button" href="/sdk/api/">Browse the API</a>
   </div>
 </DocsLayout>
-

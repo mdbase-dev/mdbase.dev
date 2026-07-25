@@ -22,6 +22,24 @@ mkdirSync(schemaDestination, { recursive: true });
 cpSync(schemaSource, schemaDestination, { recursive: true, force: true });
 copyAlias("mdbase-app.schema.json", "mdbase-app.v1.json");
 
+const introductionSource = join(connectDir, "docs", "mdbase-configurations-v2.html");
+required(introductionSource, "Connect introduction prototype");
+const introduction = readFileSync(introductionSource, "utf8");
+const introductionStyles = extract(introduction, /<style>([\s\S]*?)<\/style>/, "prototype styles");
+const introductionScript = extract(
+  introduction,
+  /<script>([\s\S]*?)<\/script>\s*<\/body>/,
+  "prototype murmuration"
+);
+writeFileSync(
+  join(root, "public", "mdbase-introduction.css"),
+  `${introductionStyles.trim()}\n`
+);
+writeFileSync(
+  join(root, "public", "mdbase-murmuration.js"),
+  `// @ts-nocheck\n${introductionScript.trim()}\n`
+);
+
 const manifest = yaml(join(specDir, "tests", "v0.3", "manifest.yaml"));
 const claims = [
   yaml(join(rustDir, "conformance", "v0.3.0-rc.1.yml")),
@@ -68,6 +86,7 @@ writeFileSync(
 );
 
 console.log(`Copied Connect schemas from ${schemaSource}`);
+console.log(`Copied the homepage design and murmuration from ${introductionSource}`);
 console.log(`Generated conformance data from ${claims.length} implementation claims`);
 
 function yaml(path) {
@@ -79,6 +98,14 @@ function required(path, label) {
   if (!existsSync(path)) {
     throw new Error(`${label} is missing: ${path}`);
   }
+}
+
+function extract(source, pattern, label) {
+  const match = source.match(pattern);
+  if (!match?.[1]) {
+    throw new Error(`Could not extract ${label}`);
+  }
+  return match[1];
 }
 
 function copyAlias(source, destination) {

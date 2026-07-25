@@ -1,157 +1,181 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import ConnectionDiagram from "../components/ConnectionDiagram.astro";
-import CodeBlock from "../components/CodeBlock.astro";
-
-const installCode = `pnpm add @mdbase/connect`;
-const connectCode = `import { MdbaseConnect } from "@mdbase/connect";
-
-const connect = new MdbaseConnect({
-  serverUrl: "https://connect.mdbase.dev",
-  manifest: "/.well-known/mdbase-app.json",
-  redirectUri: new URL("/auth/mdbase/callback", location.origin).href
-});
-
-await connect.authorize(["describe", "read", "query", "update"]);`;
+import HomeLayout from "../layouts/HomeLayout.astro";
 ---
 
-<BaseLayout
+<HomeLayout
   title="mdbase"
-  description="One typed Markdown collection for every application you choose, with exact access through mdbase Connect."
+  description="A first introduction to mdbase collections, app permissions, and local or hosted storage."
 >
-  <section class="hero-home">
-    <div class="hero-home__inner">
-      <div class="hero-home__copy">
-        <p class="eyebrow"><i></i> mdbase v0.3 · Connect private beta</p>
-        <h1>One collection. Every app you choose.</h1>
-        <p>
-          mdbase turns ordinary Markdown files into typed, queryable data.
-          Connect lets independent apps use them locally or online, with the
-          exact access you approve.
-        </p>
-        <div class="button-row">
-          <a class="button button--primary" href="/sdk/quickstart/">Build with Connect</a>
-          <a class="button" href="/spec/">Read the specification</a>
-        </div>
-      </div>
-      <ConnectionDiagram />
-    </div>
-  </section>
+  <header class="site-header">
+    <a class="wordmark" href="/" aria-label="mdbase home">
+      <span class="wordmark__dot" aria-hidden="true"></span>
+      mdbase
+    </a>
+    <nav class="site-nav" aria-label="Introduction sections">
+      <a href="#intro">What it is</a>
+      <a href="#example">Example</a>
+      <a href="#storage">Where it lives</a>
+      <a href="#permission">App access</a>
+      <a class="site-nav__docs" href="/sdk/">SDK</a>
+      <span id="scene-count" class="scene-count" aria-live="polite">01 / 06</span>
+    </nav>
+  </header>
+  <div class="scroll-progress" aria-hidden="true"></div>
 
-  <div class="narrative">
-    <section class="narrative-section">
-      <div class="narrative-section__label">The collection</div>
-      <div class="narrative-section__content">
-        <h2>Your data still looks like your data.</h2>
-        <p>
-          A collection is a folder with an <code>mdbase.yaml</code> marker.
-          Records are Markdown with YAML frontmatter. Types are Markdown files
-          wrapping JSON Schema. You can inspect, version, sync, and edit every
-          part without mdbase.
+  <canvas id="diagram" aria-hidden="true"></canvas>
+
+  <main>
+    <section id="intro" class="chapter is-active" data-scene="intro">
+      <div class="chapter__inner">
+        <h1>Different apps can use the same Markdown files, online or offline.</h1>
+        <p class="chapter__lead">
+          An mdbase is a folder of ordinary Markdown files, plus a small
+          description of how they fit together. You can read the files
+          yourself, keep them where you choose, and let more than one app work
+          with them.
         </p>
-        <div class="artifact-row">
-          <code>mdbase.yaml</code>
-          <span>Collection settings and lifecycle policy</span>
-          <small>portable</small>
-        </div>
-        <div class="artifact-row">
-          <code>_types/task.md</code>
-          <span>A complete, versioned task type</span>
-          <small>JSON Schema</small>
-        </div>
-        <div class="artifact-row">
-          <code>tasks/today.md</code>
-          <span>Readable frontmatter and ordinary Markdown body</span>
-          <small>yours</small>
-        </div>
+        <p class="chapter__body">
+          mdbase is not another notes app or a proprietary file format. It is a
+          way for independent apps to share the same durable collection without
+          taking ownership of it.
+        </p>
+        <ul class="facts" aria-label="The three ideas behind mdbase">
+          <li><span>Readable</span><strong>Markdown you can open with ordinary tools</strong></li>
+          <li><span>Understandable</span><strong>Shared definitions tell apps what records mean</strong></li>
+          <li><span>Controlled</span><strong>Each app gets only the access you approve</strong></li>
+        </ul>
+      </div>
+      <div class="scroll-cue" aria-hidden="true">Scroll to open a small mdbase</div>
+    </section>
+
+    <section id="example" class="chapter" data-scene="collection">
+      <div class="chapter__inner">
+        <h2>Here is one small mdbase.</h2>
+        <p class="chapter__lead">
+          This project collection has ordinary Markdown records, definitions
+          for the kinds of records it contains, and one configuration file.
+        </p>
+        <pre class="file-tree" aria-label="Example mdbase folder"><code><span>projects/</span>
+├── <strong>mdbase.yaml</strong>
+├── <span>_types/</span>
+│   ├── project.md
+│   └── person.md
+├── <span>projects/</span>
+│   └── website-redesign.md
+└── <span>people/</span>
+    └── sam.md</code></pre>
+        <p class="chapter__body">
+          Each record remains useful on its own. The extra files let an app
+          recognise a project, understand fields such as status and owner, and
+          check that a change is valid.
+        </p>
       </div>
     </section>
 
-    <section class="narrative-section">
-      <div class="narrative-section__label">The connection</div>
-      <div class="narrative-section__content">
-        <h2>Applications ask. You choose the collection and operations.</h2>
-        <p>
-          An app declares the contracts it understands. Connect checks
-          compatibility, offers only suitable collections, and creates a grant
-          after you approve concrete operations such as read, query, or update.
-          Pause, narrow, or revoke that grant at the collection authority.
+    <section id="meaning" class="chapter" data-scene="structure">
+      <div class="chapter__inner">
+        <h2>The files make sense to people and apps.</h2>
+        <p class="chapter__lead">
+          A project record is still a normal Markdown document. A short block
+          at the top gives apps the facts they need; the rest is writing you can
+          read and edit anywhere.
         </p>
-        <div class="split-proof">
-          <div>
-            <h3>Local authority</h3>
-            <p>
-              The desktop connector opens the folder. Browser requests prefer
-              same-computer access and use an encrypted relay when direct access
-              is unavailable. Local paths never leave the computer.
-            </p>
-          </div>
-          <div>
-            <h3>Hosted authority</h3>
-            <p>
-              The hosted provider keeps authoritative Markdown for applications
-              that need an always-online collection. An optional local mirror
-              can work offline and synchronize with revision safety.
-            </p>
-          </div>
-        </div>
-        <div class="button-row" style="margin-top: 1.5rem">
-          <a class="button" href="/connect/">How Connect works</a>
-          <a class="button" href="/security/">Read the trust model</a>
-        </div>
+        <pre class="record-example" aria-label="Example project record"><code><span>---</span>
+type: project
+title: Website redesign
+status: active
+owner: "[[people/sam.md]]"
+<span>---</span>
+
+The new site should make mdbase
+easier to understand.</code></pre>
+        <p class="chapter__body">
+          The type definition stored in the same collection explains these
+          fields. A new app can check that it understands them before asking
+          you for access.
+        </p>
       </div>
     </section>
 
-    <section class="narrative-section">
-      <div class="narrative-section__label">For developers</div>
-      <div class="narrative-section__content">
-        <h2>The browser SDK handles authorization, routing, and renewal.</h2>
-        <p>
-          Bundle one application manifest, request the operations your feature
-          needs, then write against typed collection operations. Application
-          logic can depend on the transport-neutral collection client for fast,
-          deterministic tests.
+    <section id="storage" class="chapter" data-scene="modes">
+      <div class="chapter__inner">
+        <h2>Keep it local or host it with mdbase.</h2>
+        <p class="chapter__lead">
+          Hosting is optional. In both cases the records remain Markdown, apps
+          use the same basic actions, and you decide which apps can connect.
         </p>
-        <CodeBlock code={installCode} language="sh" label="Install" />
-        <CodeBlock code={connectCode} language="ts" label="app.ts" />
-        <div class="button-row">
-          <a class="button button--primary" href="/sdk/quickstart/">Start the quickstart</a>
-          <a class="button" href="/sdk/api/">Open the API reference</a>
-        </div>
+        <p class="chapter__body">
+          The difference is which copy has the final say. For a local mdbase,
+          that is the folder on your computer. For a hosted mdbase, it is the
+          online copy kept by mdbase.
+        </p>
+        <ul class="facts" aria-label="Collection storage choices">
+          <li><span>Local</span><strong>Your folder is the main copy; your computer must be reachable</strong></li>
+          <li><span>Hosted</span><strong>mdbase keeps the main copy available online</strong></li>
+          <li><span>Either way</span><strong>You keep readable files and explicit app permissions</strong></li>
+        </ul>
       </div>
     </section>
 
-    <section class="narrative-section">
-      <div class="narrative-section__label">Proof in use</div>
-      <div class="narrative-section__content">
-        <h2>TaskNotes v5 is a flagship consumer, not a special storage mode.</h2>
-        <p>
-          TaskNotes maps its task behavior onto a declared{" "}
-          <code>tasknotes.task</code> contract. The Obsidian plugin can act as a
-          local provider, while Connect-compatible applications use the same
-          generic operations and field-role mapping. The collection remains
-          mdbase.
+    <section id="permission" class="chapter" data-scene="grant">
+      <div class="chapter__inner">
+        <h2>An app asks before it sees anything.</h2>
+        <p class="chapter__lead">
+          The request names the app, the kind of collection it understands, and
+          every action it wants to perform. Your records stay private while you
+          decide.
         </p>
-        <div class="split-proof">
-          <div>
-            <h3>Specification</h3>
-            <p>
-              Portable collection behavior: records, types, CEL queries, links,
-              mutations, lifecycle policy, runtime contracts, and workflows.
-            </p>
-            <p><a href="/spec/">Read mdbase v0.3</a></p>
-          </div>
-          <div>
-            <h3>Implementations</h3>
-            <p>
-              Exact profile claims are published per artifact. No legacy
-              “conformance level” shorthand and no feature claims without an
-              evidence file.
-            </p>
-            <p><a href="/implementations/">Compare implementations</a></p>
-          </div>
+        <p class="chapter__body">
+          You choose one compatible collection and approve only the actions
+          that make sense. Permission belongs to that app and that collection;
+          it can be narrowed, paused, or revoked later.
+        </p>
+        <ol class="steps" aria-label="How an app receives access">
+          <li><span>1</span><strong>Review the app and the collection it understands</strong></li>
+          <li><span>2</span><strong>Choose a collection and its allowed actions</strong></li>
+          <li><span>3</span><strong>Approve the connection, or decline without sharing anything</strong></li>
+        </ol>
+        <ul class="facts" aria-label="Actions an app may request">
+          <li><span>Read</span><strong>Open records and see their contents</strong></li>
+          <li><span>Search</span><strong>Find matching records</strong></li>
+          <li><span>Edit</span><strong>Create, update, rename, or delete records</strong></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="after-approval" class="chapter" data-scene="access">
+      <div class="chapter__inner">
+        <h2>The main copy stays in control.</h2>
+        <p class="chapter__lead">
+          For a local collection, the mdbase connector on your computer checks
+          every request before opening or changing a file. Your folder path is
+          never shared with the online service.
+        </p>
+        <p class="chapter__body">
+          For a hosted collection, mdbase checks the same permission beside the
+          online main copy. An approved app may keep an offline copy of records
+          it can use, and you may keep an optional synced Markdown copy for
+          local tools.
+        </p>
+        <ul class="facts" aria-label="What remains true after approval">
+          <li><span>Main copy</span><strong>One authoritative history keeps changes in order</strong></li>
+          <li><span>Working copies</span><strong>Useful for offline and local work</strong></li>
+          <li><span>Your control</span><strong>Pause or revoke access without moving the collection</strong></li>
+        </ul>
+        <div class="chapter__actions">
+          <a class="button" href="/sdk/">SDK documentation</a>
+          <a class="text-link" href="/spec/">Specification</a>
         </div>
       </div>
     </section>
-  </div>
-</BaseLayout>
+  </main>
+
+  <footer class="site-footer">
+    <span>Readable files · shared meaning · explicit permissions</span>
+    <span class="site-footer__links">
+      <a href="/sdk/">SDK</a>
+      <a href="/spec/">Specification</a>
+      <a href="https://github.com/mdbase-dev">GitHub</a>
+    </span>
+  </footer>
+</HomeLayout>

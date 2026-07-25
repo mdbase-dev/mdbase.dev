@@ -1,18 +1,18 @@
 :root {
   color-scheme: light;
-  --canvas: oklch(98.8% 0.004 250);
-  --surface: oklch(96.8% 0.008 250);
-  --surface-strong: oklch(93.8% 0.014 250);
+  --canvas: oklch(99.5% 0.002 255);
+  --surface: oklch(97.8% 0.003 255);
+  --surface-strong: oklch(95% 0.008 255);
   --code: oklch(23% 0.022 255);
   --code-ink: oklch(91% 0.012 245);
   --ink: oklch(21% 0.018 255);
   --ink-soft: oklch(39% 0.016 255);
   --ink-muted: oklch(54% 0.014 255);
-  --line: oklch(88% 0.012 250);
-  --line-strong: oklch(77% 0.018 250);
-  --blue: oklch(46% 0.12 238);
-  --blue-strong: oklch(37% 0.105 238);
-  --blue-field: oklch(91% 0.045 238);
+  --line: oklch(90% 0.006 255);
+  --line-strong: oklch(78% 0.008 255);
+  --blue: oklch(45% 0.105 238);
+  --blue-strong: oklch(38% 0.09 238);
+  --blue-field: oklch(95% 0.025 238);
   --signal: oklch(64% 0.15 142);
   --warning: oklch(62% 0.13 72);
   --danger: oklch(52% 0.15 28);
@@ -98,7 +98,7 @@ body {
   color: var(--ink);
   background: var(--canvas);
   font-family: var(--sans);
-  font-size: 1.0625rem;
+  font-size: 1rem;
   line-height: 1.62;
 }
 
@@ -153,11 +153,11 @@ h4 {
 }
 
 h1 {
-  font-size: clamp(2.65rem, 7vw, 6.8rem);
+  font-size: clamp(2.5rem, 5vw, 4.8rem);
 }
 
 h2 {
-  font-size: clamp(2rem, 4vw, 3.65rem);
+  font-size: clamp(1.85rem, 3.3vw, 3rem);
 }
 
 h3 {
@@ -224,8 +224,7 @@ code {
   top: 0;
   height: var(--header);
   border-bottom: 1px solid var(--line);
-  background: color-mix(in oklch, var(--canvas) 94%, transparent);
-  backdrop-filter: blur(14px);
+  background: var(--canvas);
 }
 
 .site-header__inner {
@@ -235,30 +234,27 @@ code {
   margin-inline: auto;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .wordmark {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 0.62rem;
+  gap: 0.56rem;
   color: var(--ink);
   font-family: var(--mono);
-  font-size: 0.92rem;
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 650;
   letter-spacing: -0.035em;
   text-decoration: none;
 }
 
-.brand-mark {
-  width: 2.5rem;
-  height: 2.5rem;
-}
-
-.brand-mark--compact {
-  width: 1.72rem;
-  height: 1.72rem;
+.wordmark__dot {
+  width: 7px;
+  height: 7px;
+  background: var(--blue);
+  border-radius: 50%;
 }
 
 .brand-mark__ink {
@@ -278,10 +274,11 @@ code {
 .desktop-nav a {
   display: flex;
   position: relative;
-  padding: 0 0.86rem;
+  padding: 0 0.78rem;
   align-items: center;
   color: var(--ink-soft);
-  font-size: 0.92rem;
+  font-size: 0.75rem;
+  font-weight: 560;
   text-decoration: none;
 }
 
@@ -290,7 +287,7 @@ code {
   right: 0.85rem;
   bottom: 0;
   left: 0.85rem;
-  height: 2px;
+  height: 1px;
   background: transparent;
   content: "";
 }
@@ -317,12 +314,12 @@ code {
   background: transparent;
   border: 0;
   font-family: var(--mono);
-  font-size: 0.7rem;
+  font-size: 0.625rem;
 }
 
 .header-github {
   color: var(--ink-soft);
-  font-size: 0.86rem;
+  font-size: 0.75rem;
   text-decoration: none;
 }
 
@@ -365,7 +362,7 @@ code {
 }
 
 .site-footer {
-  margin-top: clamp(5rem, 9vw, 9rem);
+  margin-top: clamp(4rem, 7vw, 7rem);
   border-top: 1px solid var(--line);
 }
 
@@ -418,11 +415,7 @@ code {
 }
 
 .eyebrow i {
-  width: 0.48rem;
-  height: 0.48rem;
-  background: var(--signal);
-  border-radius: 50%;
-  box-shadow: 0 0 0 0.25rem color-mix(in oklch, var(--signal) 14%, transparent);
+  display: none;
 }
 
 .button-row {
@@ -433,41 +426,39 @@ code {
 
 .button {
   display: inline-flex;
-  min-height: 2.75rem;
-  padding: 0.6rem 1rem;
+  min-height: 2.375rem;
+  padding: 0.45rem 0.875rem;
   align-items: center;
   justify-content: center;
   color: var(--ink);
   background: transparent;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);
-  font-size: 0.94rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 650;
   text-decoration: none;
   transition:
     color 160ms var(--ease),
     background 160ms var(--ease),
-    border-color 160ms var(--ease),
-    transform 160ms var(--ease);
+    border-color 160ms var(--ease);
 }
 
 .button:hover {
   color: var(--ink);
   background: var(--surface);
   border-color: var(--ink-muted);
-  transform: translateY(-1px);
 }
 
 .button--primary {
-  color: var(--on-blue);
-  background: var(--blue);
-  border-color: var(--blue);
+  color: var(--blue-strong);
+  background: var(--blue-field);
+  border-color: color-mix(in oklch, var(--blue) 52%, var(--line));
 }
 
 .button--primary:hover {
-  color: var(--on-blue);
-  background: var(--blue-strong);
-  border-color: var(--blue-strong);
+  color: var(--blue-strong);
+  background: color-mix(in oklch, var(--blue-field) 72%, var(--blue));
+  border-color: var(--blue);
 }
 
 .hero-home {
@@ -804,7 +795,7 @@ code {
 }
 
 .page-hero {
-  padding-block: clamp(5rem, 10vw, 9rem);
+  padding-block: clamp(4rem, 7vw, 6.5rem);
   border-bottom: 1px solid var(--line);
 }
 
@@ -819,7 +810,7 @@ code {
 
 .page-hero h1 {
   margin-top: 1.4rem;
-  font-size: clamp(3.3rem, 7vw, 6.6rem);
+  font-size: clamp(2.75rem, 5vw, 4.8rem);
 }
 
 .page-hero__aside {
@@ -829,7 +820,7 @@ code {
 
 .page-hero__aside p {
   color: var(--ink-soft);
-  font-size: 1.14rem;
+  font-size: 1rem;
 }
 
 .page-hero__aside .button-row {
@@ -839,14 +830,14 @@ code {
 .content-section {
   width: min(100% - 2rem, var(--page));
   margin-inline: auto;
-  padding-block: clamp(4.5rem, 9vw, 8rem);
+  padding-block: clamp(4rem, 7vw, 6.5rem);
   border-bottom: 1px solid var(--line);
 }
 
 .content-section > p {
   margin-top: 1.35rem;
   color: var(--ink-soft);
-  font-size: 1.15rem;
+  font-size: 1rem;
 }
 
 .steps {
@@ -1052,8 +1043,8 @@ code {
 
 .docs-nav nav a[aria-current="page"] {
   color: var(--blue-strong);
-  background: var(--blue-field);
-  font-weight: 700;
+  background: var(--surface);
+  font-weight: 600;
 }
 
 .docs-nav__meta {
@@ -1087,7 +1078,7 @@ code {
 .docs-title h1 {
   max-width: 17ch;
   margin-top: 0.7rem;
-  font-size: clamp(2.8rem, 6vw, 4.9rem);
+  font-size: clamp(2.35rem, 4.5vw, 3.8rem);
 }
 
 .docs-title > span {
@@ -1095,7 +1086,7 @@ code {
   max-width: 56ch;
   margin-top: 1.25rem;
   color: var(--ink-soft);
-  font-size: 1.15rem;
+  font-size: 1rem;
 }
 
 .docs-article h2 {

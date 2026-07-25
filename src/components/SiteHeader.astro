@@ -1,6 +1,4 @@
 ---
-import BrandMark from "./BrandMark.astro";
-
 interface Props {
   current?: "connect" | "sdk" | "runtime" | "implementations" | "spec";
 }
@@ -8,7 +6,7 @@ interface Props {
 const { current } = Astro.props;
 const links = [
   { href: "/connect/", label: "Connect", key: "connect" },
-  { href: "/sdk/", label: "Build", key: "sdk" },
+  { href: "/sdk/", label: "SDK", key: "sdk" },
   { href: "/runtime/", label: "Runtime", key: "runtime" },
   { href: "/implementations/", label: "Implementations", key: "implementations" },
   { href: "/spec/", label: "Spec", key: "spec" }
@@ -18,7 +16,7 @@ const links = [
 <header class="site-header">
   <div class="site-header__inner">
     <a class="wordmark" href="/" aria-label="mdbase home">
-      <BrandMark compact />
+      <span class="wordmark__dot" aria-hidden="true"></span>
       <span>mdbase</span>
     </a>
     <nav class="desktop-nav" aria-label="Primary navigation">
@@ -58,4 +56,3 @@ const links = [
     </div>
   </div>
 </header>
-

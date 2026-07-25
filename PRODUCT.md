@@ -14,10 +14,10 @@ implementing the specification, and verifying conformance.
 
 ## Product Purpose
 
-The site is the ecosystem gateway for mdbase, mdbase Connect, the specification,
-runtimes, SDKs, and conforming implementations. It should make the ownership
-model clear in one screen, then help a developer reach a working Connect
-integration without reconstructing the architecture from source repositories.
+The site introduces mdbase, mdbase Connect, the specification, runtimes, SDKs,
+and conforming implementations. It should explain the ownership model through
+one small collection, then help a developer reach a working Connect integration
+without reconstructing the architecture from source repositories.
 
 The normative specification remains independently versioned and is imported
 from a pinned mdbase-spec build. Conformance and implementation claims remain
@@ -52,4 +52,3 @@ collections are zero-knowledge.
 Target WCAG 2.2 AA for contrast, keyboard navigation, focus visibility,
 semantic structure, and reduced motion. Long-form SDK and specification reading
 must remain comfortable on narrow screens and under light or dark system themes.
-

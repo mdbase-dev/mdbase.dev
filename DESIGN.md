@@ -1,22 +1,13 @@
 ---
 name: mdbase.dev
-description: Product and developer-documentation system for the mdbase ecosystem.
+description: Product and developer documentation for the mdbase ecosystem.
 colors:
-  canvas: "oklch(98.8% 0.004 250)"
-  surface: "oklch(96.8% 0.008 250)"
+  paper: "oklch(99.5% 0.002 255)"
+  paper-soft: "oklch(97.8% 0.003 255)"
   ink: "oklch(21% 0.018 255)"
-  ink-soft: "oklch(39% 0.016 255)"
-  line: "oklch(88% 0.012 250)"
-  blue: "oklch(46% 0.12 238)"
-  signal: "oklch(69% 0.15 142)"
-dark-colors:
-  canvas: "oklch(17.5% 0.012 255)"
-  surface: "oklch(21% 0.016 255)"
-  ink: "oklch(93% 0.008 255)"
-  ink-soft: "oklch(76% 0.012 255)"
-  line: "oklch(31% 0.016 255)"
-  blue: "oklch(74% 0.11 238)"
-  signal: "oklch(76% 0.13 142)"
+  ink-soft: "oklch(39% 0.014 255)"
+  line: "oklch(90% 0.006 255)"
+  accent: "oklch(45% 0.105 238)"
 typography:
   display: "Atkinson Hyperlegible"
   body: "Atkinson Hyperlegible"
@@ -29,35 +20,39 @@ rounded:
 
 ## Direction
 
-The site feels like an annotated folder on a clear desk. Real Markdown,
-manifests, permissions, and route labels carry the visual identity. The
-signature element is a live-looking but deterministic routing field: one
-collection boundary connected to several applications through an explicit
-Connect authorization gate.
+mdbase is understated. The site uses a nearly white paper surface, fine rules,
+plain language, and small structural labels. It should feel closer to a clear
+technical explanation than a product launch page.
 
-The color strategy is restrained for documentation and committed in the
-landing hero. A cool blue field identifies Connect and a small green signal
-marks an active, authorized route. Surfaces use blue-tinted paper rather than
-pure white or black.
+The homepage is based directly on
+`mdbase-connect/docs/mdbase-configurations-v2.html`. Its signature is one field
+of 361 record particles. The field begins as a murmuration and becomes concrete
+collection, structure, authority, permission, and access diagrams as the reader
+scrolls. This is the only expressive visual element.
 
 ## Typography
 
 Atkinson Hyperlegible is the reading and display face. Azeret Mono is reserved
-for file paths, package names, versions, operation names, and structural labels.
-Display headings use compact line-height and visible weight contrast. Prose
-stays within 72 characters.
+for paths, package names, versions, operations, and structural labels. Headings
+are compact but should not overwhelm their explanatory text. Prose stays within
+72 characters.
 
 ## Layout
 
-The landing page uses an asymmetric two-column opening, then alternates full
-width ruled sections with narrow reading measures. SDK pages use a persistent
-left index, a 72-character article column, and an optional right table of
-contents on wide screens. Mobile collapses navigation into native disclosure
-controls without hiding primary actions.
+The homepage has six long chapters in a left reading column and a fixed canvas
+on the right. On narrow screens, the canvas moves above each chapter. Interior
+pages use low, ruled page openings and narrow documentation columns. Navigation,
+buttons, tables, callouts, and footer links remain visually quiet.
 
 ## Motion
 
-Only the routing field moves, using slow opacity and transform changes that
-communicate an authorized request travelling between an app and its collection.
-All motion stops under reduced-motion preferences. Layout never animates.
+Only the homepage particle field moves. Its transformations explain the current
+chapter. Reduced-motion preferences place the particles directly into each
+formation. Interior pages do not use decorative animation.
 
+## Language
+
+Use literal headings and ordinary sentences. State the current artifact,
+profile, security boundary, or release status directly. Avoid slogans,
+competitive framing, and language that comments on how candid or precise the
+site itself is.
