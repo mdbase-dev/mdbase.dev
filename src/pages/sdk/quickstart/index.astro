@@ -19,6 +19,7 @@ const install = `pnpm add @mdbase/connect
 pnpm add -D @mdbase/connect-dev`;
 
 const client = `import {
+  MdbaseBrowserLocation,
   MdbaseConnect,
   type JsonObject
 } from "@mdbase/connect";
@@ -33,34 +34,31 @@ export const mdbase = new MdbaseConnect<Workout>({
   serverUrl: "https://connect.mdbase.dev",
   manifest: new URL("/.well-known/mdbase-app.json", location.origin).href,
   redirectUri: new URL("/auth/mdbase/callback", location.origin).href
-});`;
+});
 
-const connectButton = `import { mdbase } from "./connect";
+export const collectionLocation = new MdbaseBrowserLocation(mdbase);`;
+
+const connectButton = `import { collectionLocation, mdbase } from "./connect";
 
 export async function connectCollection() {
   await mdbase.authorize({
     operations: ["describe", "read", "query", "update"],
-    returnTo: location.pathname + location.search
+    collectionId: collectionLocation.selectedCollectionId() ?? undefined,
+    returnTo: collectionLocation.authorizationReturnTo()
   });
   // authorize() navigates to Connect and does not return.
 }`;
 
-const callback = `import { mdbase } from "./connect";
+const callback = `import { collectionLocation } from "./connect";
 
 export async function completeMdbaseCallback() {
-  const { connection, returnTo = "/" } =
-    await mdbase.completeAuthorization(location.href);
-  const destination = new URL(returnTo, location.origin);
-  destination.searchParams.set("collection", connection.collectionId);
-  history.replaceState({}, "", destination);
-  return connection; // Permanently bound to this collection.
+  return collectionLocation.completeAuthorization();
 }`;
 
-const query = `import { mdbase } from "./connect";
+const query = `import { collectionLocation } from "./connect";
 import { unwrapOperation } from "@mdbase/connect";
 
-const collectionId = new URL(location.href).searchParams.get("collection");
-const collection = collectionId ? mdbase.connection(collectionId) : null;
+const collection = collectionLocation.activeConnection();
 if (!collection) throw new Error("Choose a collection.");
 
 const page = unwrapOperation(await collection.query({
@@ -149,7 +147,9 @@ const validate = `mdbase-connect-dev validate-manifest \\
   <p>
     Call this once on the exact callback route listed in the manifest. PKCE is
     mandatory. On success, the client stores the grant-bound authorization and
-    returns the newly approved collection-bound connection.
+    returns the newly approved collection-bound connection. The location
+    helper restores the app-local return location, adds its collection ID, and
+    removes temporary OAuth parameters.
   </p>
 
   <h2 id="operate">6. Query and update with a revision</h2>
@@ -162,11 +162,13 @@ const validate = `mdbase-connect-dev validate-manifest \\
   <div class="callout">
     <strong>Use a stable collection ID in app URLs.</strong>
     <p>
-      A query parameter such as <code>?collection=&lt;id&gt;</code> works on
-      static hosts, survives refreshes, and makes a view bookmarkable. Treat an
-      explicit ID as authoritative: if it is not saved, show the chooser or
-      reconnect that ID instead of silently opening another collection. Names
-      are display text and can change.
+      <code>MdbaseBrowserLocation</code> writes
+      {" "}<code>?collection=&lt;id&gt;</code>, follows browser back and
+      forward navigation through <code>onChange()</code>, and auto-selects only
+      when exactly one connection is saved. An explicit unavailable ID stays
+      authoritative, so show the chooser or reconnect that ID. Collection IDs
+      can appear in browser history and logs. They are opaque locators, not
+      credentials. Names are display text and can change.
     </p>
   </div>
   <div class="callout">

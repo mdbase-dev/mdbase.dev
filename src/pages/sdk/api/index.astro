@@ -14,6 +14,12 @@ const constructor = `new MdbaseConnect<Frontmatter>({
   navigate?: (url: string) => void | Promise<void>
 })`;
 
+const browserLocation = `const collectionLocation =
+  new MdbaseBrowserLocation(manager, {
+    collectionParameter: "collection",
+    fallbackPath: "/"
+  });`;
+
 const error = `try {
   const result = unwrapOperation(await connection.update(input));
 } catch (error) {
@@ -32,6 +38,7 @@ const error = `try {
   headings={[
     { href: "#constructor", label: "Constructor" },
     { href: "#authorization", label: "Authorization methods" },
+    { href: "#browser-location", label: "Browser location" },
     { href: "#operations", label: "Operation methods" },
     { href: "#notifications", label: "Notifications and timers" },
     { href: "#connection", label: "Connection and sync" },
@@ -145,6 +152,38 @@ const error = `try {
       </tr>
     </tbody>
   </table>
+
+  <h2 id="browser-location">MdbaseBrowserLocation</h2>
+  <CodeBlock code={browserLocation} language="ts" label="Browser application boundary" />
+  <p>
+    Keep one location helper beside the application's stable
+    {" "}<code>MdbaseConnect</code> manager. It treats the explicit URL
+    identity as authoritative and selects a saved fallback only when exactly
+    one connection exists.
+  </p>
+  <table class="api-table">
+    <thead>
+      <tr><th>Method</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>selectedCollectionId()</code></td><td>Read the explicit bookmark identity, including one that is not currently authorized</td></tr>
+      <tr><td><code>activeConnection()</code></td><td>Resolve the bookmarked connection or the sole saved fallback</td></tr>
+      <tr><td><code>selectConnection(id, options?)</code></td><td>Push or replace a cleaned bookmark URL</td></tr>
+      <tr><td><code>authorizationReturnTo()</code></td><td>Return the current app-local path after removing temporary OAuth parameters</td></tr>
+      <tr><td><code>completeAuthorization(callbackUrl?)</code></td><td>Complete PKCE and restore a safe same-origin URL for the approved collection</td></tr>
+      <tr><td><code>isAuthorizationCallback(url)</code></td><td>Recognize browser and native callback URLs with an authorization result</td></tr>
+      <tr><td><code>clearAuthorizationCallback(returnTo?)</code></td><td>Remove callback parameters after denial or failure</td></tr>
+      <tr><td><code>onChange(listener)</code></td><td>Observe saved-connection changes plus browser back and forward navigation</td></tr>
+    </tbody>
+  </table>
+  <div class="callout">
+    <strong>Collection IDs are bookmark-safe locators.</strong>
+    <p>
+      They may appear in history, logs, and shared URLs. They do not authorize
+      an operation. Connect still requires the application's stored grant and
+      enforces it at the collection authority.
+    </p>
+  </div>
 
   <h2 id="operations">Collection operations</h2>
   <p>

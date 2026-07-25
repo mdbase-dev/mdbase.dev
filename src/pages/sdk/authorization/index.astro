@@ -7,16 +7,17 @@ const capability = connection.authorizationCapabilities([...required]);
 
 if (!capability.sufficient) {
   await connection.requestOperations([...required], {
-    returnTo: location.pathname + location.search
+    returnTo: collectionLocation.authorizationReturnTo()
   });
 }`;
 
-const listen = `const stop = connection.onConnectionChange((info) => {
-  if (!info) {
+const listen = `const stop = collectionLocation.onChange(({ connection }) => {
+  if (!connection) {
     renderDisconnected();
     return;
   }
 
+  const info = connection.info();
   renderConnection({
     collectionId: info.collectionId,
     route: info.route,
@@ -130,8 +131,9 @@ const recover = `try {
   <p>
     The route is <code>direct</code>, <code>relay</code>, or
     {" "}<code>hosted</code>. Display it as status information. The SDK selects
-    the route. A <code>null</code> connection means the SDK has no usable
-    authorization.
+    the route. The browser location subscription also reports back and forward
+    selection changes. A <code>null</code> connection means the bookmarked
+    collection has no usable authorization.
   </p>
 
   <h2 id="recovery">Use structured recovery actions</h2>
