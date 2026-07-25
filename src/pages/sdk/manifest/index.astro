@@ -4,24 +4,24 @@ import CodeBlock from "../../../components/CodeBlock.astro";
 
 const contractManifest = `{
   "manifest_version": 1,
-  "id": "dev.mdbase.tasknotes",
-  "name": "TaskNotes",
-  "homepage": "https://tasks.example",
+  "id": "dev.example.worklog",
+  "name": "Worklog",
+  "homepage": "https://worklog.example",
   "redirect_uris": [
-    "https://tasks.example/auth/mdbase/callback"
+    "https://worklog.example/auth/mdbase/callback"
   ],
   "requirements": {
     "contracts": [
-      { "id": "tasknotes.task", "version": 1 }
+      { "id": "example.work-item", "version": 1 }
     ]
   },
   "provisions": {
     "types": [
       {
-        "name": "Task",
-        "document": "---\\nkind: mdbase.type\\nname: task\\nversion: 1\\nschema:\\n  dialect: json-schema-2020-12\\n  value:\\n    type: object\\nx-tasknotes:\\n  contract: tasknotes.task\\n  version: 1\\n---\\n",
+        "name": "Work item",
+        "document": "---\\nkind: mdbase.type\\nname: work-item\\nversion: 1\\nschema:\\n  dialect: json-schema-2020-12\\n  value:\\n    type: object\\nx-worklog:\\n  contract: example.work-item\\n  version: 1\\n---\\n",
         "provides": [
-          { "id": "tasknotes.task", "version": 1 }
+          { "id": "example.work-item", "version": 1 }
         ]
       }
     ]
@@ -39,6 +39,18 @@ const nativeManifest = `{
   ],
   "requirements": { "contracts": [] }
 }`;
+
+const portableManifest = `{
+  "manifest_version": 1,
+  "distribution": "portable",
+  "id": "dev.example.portable-worklog",
+  "name": "Portable worklog",
+  "project_url": "https://worklog.example/source",
+  "requirements": {
+    "access": "full_collection",
+    "contracts": []
+  }
+}`;
 ---
 
 <DocsLayout
@@ -46,7 +58,9 @@ const nativeManifest = `{
   description="Declare application identity, callback routes, collection compatibility, provisioning, and notification criteria in one bundled v1 file."
   active="manifest"
   headings={[
-    { href: "#identity", label: "Identity and callbacks" },
+    { href: "#identity", label: "Shared identity" },
+    { href: "#web", label: "Web manifests" },
+    { href: "#portable", label: "Portable manifests" },
     { href: "#requirements", label: "Requirements" },
     { href: "#provisioning", label: "Provisioning" },
     { href: "#native", label: "Native callbacks" },
@@ -63,7 +77,7 @@ const nativeManifest = `{
     <a href="/connect/schemas/mdbase-app.v1.json"><code>mdbase-app.v1.json</code></a>
   </p>
 
-  <h2 id="identity">Identity and callbacks</h2>
+  <h2 id="identity">Shared identity fields</h2>
   <table class="api-table">
     <thead>
       <tr>
@@ -73,6 +87,14 @@ const nativeManifest = `{
     </thead>
     <tbody>
       <tr>
+        <td><code>manifest_version</code></td>
+        <td><code>1</code> throughout the current Connect pre-release</td>
+      </tr>
+      <tr>
+        <td><code>distribution</code></td>
+        <td><code>web</code> when omitted, or explicit <code>portable</code></td>
+      </tr>
+      <tr>
         <td><code>id</code></td>
         <td>Stable lowercase reverse-domain identifier with at least three labels</td>
       </tr>
@@ -80,20 +102,31 @@ const nativeManifest = `{
         <td><code>name</code></td>
         <td>Human-readable name shown during authorization</td>
       </tr>
-      <tr>
-        <td><code>homepage</code></td>
-        <td>HTTPS application origin</td>
-      </tr>
-      <tr>
-        <td><code>redirect_uris</code></td>
-        <td>HTTPS URIs on the homepage origin, plus matching native schemes when needed</td>
-      </tr>
-      <tr>
-        <td><code>icon</code></td>
-        <td>Optional HTTPS icon on the homepage origin</td>
-      </tr>
     </tbody>
   </table>
+
+  <h2 id="web">Web and native-shell manifests</h2>
+  <p>
+    Existing v1 manifests may omit <code>distribution</code>; that means
+    {" "}<code>web</code>. They declare an HTTPS <code>homepage</code> and at least
+    one <code>redirect_uris</code> entry on the same origin. An optional icon stays on
+    the homepage origin.
+  </p>
+
+  <h2 id="portable">Downloaded HTML manifests</h2>
+  <p>
+    A downloaded file declares <code>distribution: "portable"</code> and omits
+    {" "}<code>homepage</code> and <code>redirect_uris</code>. Its optional
+    {" "}<code>project_url</code> is HTTPS presentation metadata, not publisher
+    verification. An optional icon must share that project URL's origin.
+  </p>
+  <CodeBlock code={portableManifest} language="json" label="Portable manifest example" />
+  <p>
+    Portable manifests use key-bound short-code authorization, accept local
+    collections only, and keep their credentials in memory when opened from
+    {" "}<code>file://</code>. See the
+    {" "}<a href="/sdk/portable-apps/">portable HTML application guide</a>.
+  </p>
 
   <h2 id="requirements">Collection requirements</h2>
   <p>
@@ -122,7 +155,7 @@ const nativeManifest = `{
       </tr>
       <tr>
         <td><code>collection_kind: "hosted"</code></td>
-        <td>Offer only provider-backed collections and enable the hosted sync handoff</td>
+        <td>Offer only provider-backed collections; unavailable to portable files</td>
       </tr>
     </tbody>
   </table>
@@ -142,7 +175,7 @@ const nativeManifest = `{
     General type administration requires a separate{" "}
     <code>create_type</code> grant.
   </p>
-  <CodeBlock code={contractManifest} language="json" label="Task contract example" />
+  <CodeBlock code={contractManifest} language="json" label="Work-item contract example" />
   <p>
     A provision may only claim contracts listed in{" "}
     <code>requirements.contracts</code>. Auxiliary types installed with the

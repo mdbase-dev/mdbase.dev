@@ -33,6 +33,15 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
   </p>
 
   <CodeBlock code={install} language="sh" label="Install" />
+  <div class="callout">
+    <strong>npm publication is pending.</strong>
+    <p>
+      This is the public-beta install command. During private development, build
+      the packages from the
+      {" "}<a href="https://github.com/mdbase-dev/mdbase-connect">Connect repository</a>.
+      The production service and v1 protocol are already deployed.
+    </p>
+  </div>
 
   <h2 id="choose-a-surface">SDK surfaces</h2>
   <table class="api-table">
@@ -46,7 +55,7 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
     <tbody>
       <tr>
         <td><code>MdbaseConnect</code></td>
-        <td>Application-level manager for saved connections and authorization</td>
+        <td>Application-level manager for web, native-shell, and portable-file authorization</td>
         <td>Browser APIs or adapters supplied by a native shell</td>
       </tr>
       <tr>
@@ -89,6 +98,12 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
     {" "}<code>MdbaseCollectionClient</code> can also run against the developer
     sandbox or another conforming transport.
   </p>
+  <p>
+    A downloaded HTML file supplies
+    {" "}<code>distribution: "portable"</code> in its inline manifest. The same
+    manager then uses short-code approval and session-only credentials. See the
+    {" "}<a href="/sdk/portable-apps/">portable HTML application guide</a>.
+  </p>
   <CodeBlock code={seam} language="ts" label="tasks.ts" />
   <div class="callout">
     <strong>The operation envelope is part of the contract.</strong>
@@ -129,15 +144,11 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
         <td><code>@mdbase/connect-webhooks</code></td>
         <td>Server-side verification for signed notification webhooks</td>
       </tr>
-      <tr>
-        <td><code>@mdbase/tasknotes</code></td>
-        <td>Contract-aware TaskNotes operations over generic collection clients</td>
-      </tr>
     </tbody>
   </table>
 
   <div class="button-row" style="margin-top: 2rem">
     <a class="button button--primary" href="/sdk/quickstart/">Continue to the quickstart</a>
-    <a class="button" href="/sdk/api/">Browse the API</a>
+    <a class="button" href="/sdk/portable-apps/">Build one HTML file</a>
   </div>
 </DocsLayout>

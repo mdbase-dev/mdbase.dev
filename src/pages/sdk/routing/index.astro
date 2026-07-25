@@ -33,6 +33,7 @@ const options = `const mdbase = new MdbaseConnect({
     { href: "#direct", label: "Direct access" },
     { href: "#relay", label: "Encrypted relay" },
     { href: "#hosted", label: "Hosted provider" },
+    { href: "#portable", label: "Portable files" },
     { href: "#native", label: "Native shells" }
   ]}
 >
@@ -57,8 +58,9 @@ const options = `const mdbase = new MdbaseConnect({
     Browser local-network permission must be requested from a user action. Once
     available, grantable operations prefer{" "}
     <code>http://127.0.0.1:28485/v1/operations</code>. The connector checks the
-    exact origin, Host header, protocol version, grant, and application-key
-    proof.
+    exact approved web origin, or the exact opaque
+    {" "}<code>null</code> origin for a portable grant. It also checks the Host
+    header, protocol version, grant, and application-key proof.
   </p>
   <p>
     Set <code>directAccess: "disabled"</code> for embedding environments that
@@ -68,8 +70,9 @@ const options = `const mdbase = new MdbaseConnect({
   <h2 id="relay">Encrypted relay fallback</h2>
   <p>
     Protocol 1 uses a non-extractable P-256 key and atomic message counter in
-    IndexedDB. The SDK encrypts operation inputs for the local connector and
-    decrypts results in the application. The control plane receives opaque
+    IndexedDB for a web application. An opaque portable file keeps both in
+    process memory. The SDK encrypts operation inputs for the local connector
+    and decrypts results in the application. The control plane receives opaque
     bodies plus operation and delivery metadata.
   </p>
   <p>
@@ -90,6 +93,14 @@ const options = `const mdbase = new MdbaseConnect({
     Hosted operations go directly from the application to the provider. The
     provider decrypts records to execute canonical mdbase operations and acts as
     a trusted data processor.
+  </p>
+
+  <h2 id="portable">Portable files use local authority only</h2>
+  <p>
+    A downloaded file uses the same direct and encrypted-relay routes after its
+    short-code approval. Portable manifests cannot request a hosted collection.
+    This restriction keeps hosted renewal capabilities out of an opaque browser
+    origin until they have an equivalent sender constraint.
   </p>
 
   <h2 id="native">Native shells</h2>

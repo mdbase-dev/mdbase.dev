@@ -45,6 +45,16 @@ const recover = `try {
   }
   throw error;
 }`;
+
+const portableAuthorize = `const controller = new AbortController();
+
+const { connection } = await connect.authorize({
+  operations: ["describe", "read", "query"],
+  onDeviceCode: ({ userCode, verificationUriComplete }) => {
+    renderApprovalCode(userCode, verificationUriComplete);
+  },
+  signal: controller.signal
+});`;
 ---
 
 <DocsLayout
@@ -52,6 +62,7 @@ const recover = `try {
   description="Request operation grants at the point of use and handle narrowing, pause, or revocation."
   active="authorization"
   headings={[
+    { href: "#flows", label: "Authorization flows" },
     { href: "#operations", label: "Operation grants" },
     { href: "#step-up", label: "Step-up authorization" },
     { href: "#connection", label: "Connection state" },
@@ -68,6 +79,26 @@ const recover = `try {
     One application installation may retain several independent grants. The
     manager lists them with <code>connections()</code>; every operation is made
     through a <code>MdbaseConnection</code> bound to one collection ID.
+  </p>
+
+  <h2 id="flows">Use the flow selected by the manifest</h2>
+  <p>
+    Web and native-shell manifests use an authorization-code redirect with
+    PKCE. <code>authorize()</code> navigates away, and the callback route calls
+    {" "}<code>completeAuthorization()</code>.
+  </p>
+  <p>
+    A <code>distribution: "portable"</code> manifest uses short-code device
+    authorization with PKCE and a P-256 application key.
+    <code>authorize()</code> opens the approval page, polls at the server
+    interval, and resolves with the collection-bound connection after approval.
+  </p>
+  <CodeBlock code={portableAuthorize} language="ts" label="portable-authorization.ts" />
+  <p>
+    The abort signal stops polling and discards the unapproved in-memory key.
+    Use <code>openVerification</code> when a shell owns the approval window.
+    See the <a href="/sdk/portable-apps/">portable HTML application guide</a>
+    for the complete downloaded-file boundary.
   </p>
 
   <h2 id="operations">Choose operations by feature</h2>

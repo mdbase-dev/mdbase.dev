@@ -4,7 +4,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 const steps = [
   {
     title: "The application declares what it understands",
-    copy: "Its bundled manifest names callback URLs, required domain contracts, collection kind, and any type definitions that can be installed safely."
+    copy: "Its bundled v1 manifest declares web callbacks or portable distribution, required domain contracts, collection kind, and any type definitions that can be installed safely."
   },
   {
     title: "Connect checks collection compatibility",
@@ -40,6 +40,7 @@ const steps = [
         </p>
         <div class="button-row">
           <a class="button button--primary" href="/sdk/quickstart/">SDK quickstart</a>
+          <a class="button" href="/sdk/portable-apps/">Portable HTML apps</a>
           <a class="button" href="https://github.com/mdbase-dev/mdbase-connect">View source</a>
         </div>
       </div>
@@ -151,9 +152,10 @@ const steps = [
     <p>
       The private-beta stack includes local and hosted authorities, encrypted
       relay operations, grant narrowing and revocation, sync, notifications,
-      and the browser SDK. Public registration, a production restore drill,
-      signed desktop releases, and abuse-response operations are still required
-      before public registration.
+      the browser SDK, and key-bound authorization for downloaded HTML files.
+      The npm packages have not yet received their first public release. Public
+      registration, a production restore drill, signed desktop releases, and
+      abuse-response operations are still required before public registration.
     </p>
     <div class="button-row" style="margin-top: 2rem">
       <a class="button button--primary" href="/sdk/">Read the SDK documentation</a>

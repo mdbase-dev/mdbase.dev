@@ -97,11 +97,18 @@ pnpm e2e`;
   <ul>
     <li>manifest registration and callback validation;</li>
     <li>OAuth with PKCE and refresh-token rotation;</li>
+    <li>portable short-code approval, expiry, polling limits, cancellation, and key binding;</li>
+    <li><code>file://</code> memory isolation, popup blocking, and exact <code>Origin: null</code> grants;</li>
     <li>grant narrowing, pausing, revocation, and operation gaps;</li>
     <li>CEL filters, ordering, links, saved views, and type behavior;</li>
     <li>direct-to-relay failover and durable mutation receipts;</li>
     <li>hosted capabilities, sync, notifications, and authority timers.</li>
   </ul>
+  <p>
+    Package tests should also build the dependency-free browser artifact,
+    recalculate its SHA-384 value, compare it with
+    {" "}<code>integrity.json</code>, and load the bundle from a real local file.
+  </p>
 
   <h2 id="ci">Recommended CI sequence</h2>
   <CodeBlock code={ci} language="sh" label="CI" />
