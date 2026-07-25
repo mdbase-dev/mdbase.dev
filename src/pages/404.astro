@@ -1,0 +1,28 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Page not found"
+  description="The requested mdbase page could not be found."
+  noIndex
+>
+  <section class="page-hero">
+    <div class="page-hero__inner">
+      <div>
+        <p class="eyebrow"><i></i> 404</p>
+        <h1>That path is not in this collection.</h1>
+      </div>
+      <div class="page-hero__aside">
+        <p>
+          The page may have moved during the mdbase.dev migration. Start from
+          the product overview or go directly to the Connect SDK guide.
+        </p>
+        <div class="button-row">
+          <a class="button button--primary" href="/">Open mdbase.dev</a>
+          <a class="button" href="/sdk/">Read the SDK docs</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -37,9 +37,17 @@ for (const support of ["IMPLEMENTING.md", "REFERENCE-RUNNER.md", "QUICK-REFERENC
   if (existsSync(path)) copyFileSync(path, join(destination, "v0.2", support));
 }
 
+addSitemapRoutes();
+
 console.log(`Imported specification pages from ${source}`);
 
 function rewrite(html, archive) {
+  const pageUrl = archive
+    ? "https://mdbase.dev/spec/v0.2/"
+    : "https://mdbase.dev/spec/";
+  const pageTitle = archive
+    ? "mdbase specification v0.2 archive"
+    : "mdbase specification v0.3";
   return html
     .replaceAll('src="theme.js', 'src="/spec/theme.js')
     .replaceAll('href="style.css', 'href="/spec/style.css')
@@ -65,8 +73,27 @@ function rewrite(html, archive) {
     .replace(/href="\.\/\d{2}-[^"#]+\.md#([^"]+)"/g, 'href="#$1"')
     .replace(
       "</head>",
-      `  <meta name="mdbase-spec-channel" content="${archive ? "v0.2-archive" : "v0.3-current"}">\n</head>`
+      `  <link rel="canonical" href="${pageUrl}">\n`
+      + `  <meta property="og:type" content="article">\n`
+      + `  <meta property="og:title" content="${pageTitle}">\n`
+      + `  <meta property="og:description" content="The full mdbase specification for typed Markdown collections.">\n`
+      + `  <meta property="og:url" content="${pageUrl}">\n`
+      + `  <meta name="mdbase-spec-channel" content="${archive ? "v0.2-archive" : "v0.3-current"}">\n`
+      + "</head>"
     );
+}
+
+function addSitemapRoutes() {
+  const path = join(root, "dist", "sitemap-0.xml");
+  required(path, "Build the Astro sitemap before importing the specification");
+  let sitemap = readFileSync(path, "utf8");
+  for (const route of ["/spec/", "/spec/v0.2/"]) {
+    const entry = `<url><loc>https://mdbase.dev${route}</loc></url>`;
+    if (!sitemap.includes(entry)) {
+      sitemap = sitemap.replace("</urlset>", `${entry}</urlset>`);
+    }
+  }
+  writeFileSync(path, sitemap);
 }
 
 function required(path, message) {
