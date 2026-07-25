@@ -145,24 +145,48 @@ function addThemeAwareCanvasPalette(source) {
         muted: "rgb(111 116 124)",
         line: "rgb(204 208 213)",
         lineSoft: "rgb(226 229 232)",
-        accent: "rgb(42 104 143)"
+        accent: "rgb(42 104 143)",
+        particle: "rgb(25 27 31 / 0.88)",
+        replica: "rgb(81 87 95 / 0.62)"
       };
 
       function syncPalette() {
         const styles = getComputedStyle(document.documentElement);
+        const dark = styles.colorScheme === "dark";
         palette.paper = styles.getPropertyValue("--color-surface").trim() || palette.paper;
         palette.ink = styles.getPropertyValue("--color-text").trim() || palette.ink;
         palette.muted = styles.getPropertyValue("--color-text-muted").trim() || palette.muted;
         palette.line = styles.getPropertyValue("--color-border-strong").trim() || palette.line;
         palette.lineSoft = styles.getPropertyValue("--color-border").trim() || palette.lineSoft;
         palette.accent = styles.getPropertyValue("--color-accent").trim() || palette.accent;
+        palette.particle = dark
+          ? styles.getPropertyValue("--color-text-soft").trim() || palette.ink
+          : "rgb(25 27 31 / 0.88)";
+        palette.replica = dark
+          ? styles.getPropertyValue("--color-text-muted").trim() || palette.muted
+          : "rgb(81 87 95 / 0.62)";
       }`
   );
+  const withParticles = withPalette
+    .replace(
+      '          context.strokeStyle = "rgb(81 87 95 / 0.62)";',
+      "          context.strokeStyle = palette.replica;"
+    )
+    .replace(
+      '              : "rgb(25 27 31 / 0.88)";',
+      "              : palette.particle;"
+    );
+  if (
+    !withParticles.includes("context.strokeStyle = palette.replica;")
+    || !withParticles.includes(": palette.particle;")
+  ) {
+    throw new Error("Could not apply the theme-aware particle colors");
+  }
   const initialization = "      resize();\n      updateScrollState();";
-  if (!withPalette.includes(initialization)) {
+  if (!withParticles.includes(initialization)) {
     throw new Error("Could not find the prototype initialization");
   }
-  const withInitialization = withPalette.replace(
+  const withInitialization = withParticles.replace(
     initialization,
     "      syncPalette();\n      resize();\n      updateScrollState();"
   );

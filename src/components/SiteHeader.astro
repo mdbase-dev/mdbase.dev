@@ -18,36 +18,41 @@ const links = [
 
 <header class="site-header">
   <div class="site-header__inner">
-    <a class="wordmark" href="/" aria-label="mdbase home">
-      <BrandMark compact />
-      <span>mdbase</span>
-    </a>
-    <nav class="desktop-nav" aria-label="Primary navigation">
-      {
-        links.map((link) => (
-          <a href={link.href} aria-current={current === link.key ? "page" : undefined}>
-            {link.label}
-          </a>
-        ))
-      }
-    </nav>
-    <div class="header-actions">
+    <div class="site-brand">
+      <a class="wordmark" href="/" aria-label="mdbase home">
+        <BrandMark compact />
+        <span>mdbase</span>
+      </a>
       {
         showSceneCount && (
           <span id="scene-count" class="scene-count" aria-live="polite">01 / 06</span>
         )
       }
-      <label class="theme-control">
-        <span class="sr-only">Color theme</span>
-        <select data-theme-select aria-label="Color theme">
-          <option value="system">System</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
-      </label>
-      <a class="header-github" href="https://github.com/mdbase-dev" aria-label="mdbase on GitHub">
-        GitHub
-      </a>
+    </div>
+    <div class="header-actions">
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        {
+          links.map((link) => (
+            <a href={link.href} aria-current={current === link.key ? "page" : undefined}>
+              {link.label}
+            </a>
+          ))
+        }
+        <a href="https://github.com/mdbase-dev">GitHub</a>
+      </nav>
+      <details class="theme-menu" data-theme-menu>
+        <summary aria-label="Color theme" title="Color theme">
+          <svg class="theme-menu__icon" viewBox="0 0 16 16" aria-hidden="true">
+            <circle cx="8" cy="8" r="5.5"></circle>
+            <path d="M8 2.5a5.5 5.5 0 0 0 0 11Z"></path>
+          </svg>
+        </summary>
+        <div class="theme-menu__options" role="group" aria-label="Color theme">
+          <button type="button" data-theme-option="system" aria-pressed="false">System</button>
+          <button type="button" data-theme-option="light" aria-pressed="false">Light</button>
+          <button type="button" data-theme-option="dark" aria-pressed="false">Dark</button>
+        </div>
+      </details>
       <details class="mobile-nav">
         <summary>Menu</summary>
         <nav aria-label="Mobile navigation">

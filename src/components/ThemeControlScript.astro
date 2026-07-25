@@ -2,7 +2,8 @@
   (() => {
     const root = document.documentElement;
     const media = matchMedia("(prefers-color-scheme: dark)");
-    const selects = document.querySelectorAll("[data-theme-select]");
+    const options = document.querySelectorAll("[data-theme-option]");
+    const menus = document.querySelectorAll("[data-theme-menu]");
 
     const currentPreference = () => {
       try {
@@ -31,19 +32,35 @@
       document
         .querySelector('meta[name="theme-color"]')
         ?.setAttribute("content", dark ? "#1c1e24" : "#fcfcfd");
-      selects.forEach((select) => {
-        select.value = preference;
+      options.forEach((option) => {
+        option.setAttribute(
+          "aria-pressed",
+          String(option.dataset.themeOption === preference)
+        );
       });
       dispatchEvent(new CustomEvent("mdbase:themechange"));
     };
 
     const preference = currentPreference();
     apply(preference);
-    selects.forEach((select) => {
-      select.addEventListener("change", () => apply(select.value, true));
+    options.forEach((option) => {
+      option.addEventListener("click", () => {
+        apply(option.dataset.themeOption, true);
+        option.closest("[data-theme-menu]")?.removeAttribute("open");
+      });
     });
     media.addEventListener("change", () => {
       if (currentPreference() === "system") apply("system");
+    });
+    document.addEventListener("click", (event) => {
+      menus.forEach((menu) => {
+        if (!menu.contains(event.target)) menu.removeAttribute("open");
+      });
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        menus.forEach((menu) => menu.removeAttribute("open"));
+      }
     });
   })();
 </script>
