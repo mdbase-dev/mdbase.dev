@@ -4,41 +4,25 @@ import CodeBlock from "../../../components/CodeBlock.astro";
 
 const generic = `const description = await connection.describe();
 
-const taskContract = description.contracts.find(
+const workItemContract = description.contracts.find(
   (contract) =>
-    contract.id === "tasknotes.task" &&
+    contract.id === "example.work-item" &&
     contract.version === 1
 );
 
-if (!taskContract) {
-  throw new Error("The approved collection lacks tasknotes.task@1");
+if (!workItemContract) {
+  throw new Error("The approved collection lacks example.work-item@1");
 }
 
-const taskType = taskContract.type_name;
-const fieldRoles = taskContract.configuration.field_roles;`;
-
-const adapter = `import {
-  TasknotesCollection,
-  type TaskFrontmatter
-} from "@mdbase/tasknotes";
-import { MdbaseConnect } from "@mdbase/connect";
-
-const mdbase = new MdbaseConnect<TaskFrontmatter>(options);
-const connection = mdbase.connection(collectionId);
-if (!connection) throw new Error("Choose a collection.");
-const tasks = new TasknotesCollection(connection);
-
-await tasks.describe();
-const open = await tasks.list();
-const created = await tasks.create({ title: "Prepare release" });
-await tasks.setCompleted(created.path, true);`;
+const workItemType = workItemContract.type_name;
+const fieldRoles = workItemContract.configuration.field_roles;`;
 
 const domainFunction = `import type { MdbaseCollectionClient } from "@mdbase/connect";
 
-export class WorkoutCollection {
+export class WorklogCollection {
   constructor(
-    private readonly client: MdbaseCollectionClient<Workout>,
-    private readonly contract: WorkoutContract
+    private readonly client: MdbaseCollectionClient<WorkItem>,
+    private readonly contract: WorkItemContract
   ) {}
 
   list() {
@@ -55,8 +39,8 @@ export class WorkoutCollection {
   active="contracts"
   headings={[
     { href: "#contract", label: "Read a contract" },
-    { href: "#tasknotes", label: "TaskNotes adapter" },
     { href: "#own-adapter", label: "Your own adapter" },
+    { href: "#ownership", label: "Adapter ownership" },
     { href: "#scope", label: "Contract scope" }
   ]}
 >
@@ -76,29 +60,22 @@ export class WorkoutCollection {
     Connect only offers a ready or safely provisionable collection.
   </p>
 
-  <h2 id="tasknotes">Use the TaskNotes adapter</h2>
-  <p>
-    <code>@mdbase/tasknotes</code> resolves{" "}
-    <code>tasknotes.task@1</code>, follows its field-role mapping, and performs
-    revision-safe generic operations. The field-role mapping supplies the title
-    property and completed-state representation for each collection.
-  </p>
-  <CodeBlock code={adapter} language="ts" label="tasks.ts" />
-  <div class="callout">
-    <strong>TaskNotes supplies the <code>tasknotes.task</code> application contract.</strong>
-    <p>
-      Hosted and local collections remain generic mdbase collections. TaskNotes
-      is one optional provider and consumer of a declared contract.
-    </p>
-  </div>
-
   <h2 id="own-adapter">Keep your adapter on the transport-neutral client</h2>
-  <CodeBlock code={domainFunction} language="ts" label="workout-collection.ts" />
+  <CodeBlock code={domainFunction} language="ts" label="worklog-collection.ts" />
   <p>
     Domain adapters that use collection operations should accept{" "}
     <code>MdbaseCollectionClient</code>. This makes the adapter usable with
     Connect, <code>createSandbox()</code>, offline transports, and conforming
     providers.
+  </p>
+
+  <h2 id="ownership">Keep domain behavior with its application</h2>
+  <p>
+    Connect publishes application-neutral authorization, transport, schemas,
+    and operation clients. A domain application owns its contract vocabulary,
+    model, and adapter package. This keeps application conventions out of the
+    Connect protocol and lets more than one app interpret the same generic
+    collection independently.
   </p>
 
   <h2 id="scope">Contract scope and full collection access</h2>

@@ -49,6 +49,8 @@ const conflict = `for (const { recordId, receipt } of await replica.conflictEntr
 }
 
 await replica.sync();`;
+
+const promote = `mdbase-mirror promote ./worklog-mirror`;
 ---
 
 <DocsLayout
@@ -60,7 +62,8 @@ await replica.sync();`;
     { href: "#replica", label: "Create a replica" },
     { href: "#mutations", label: "Queue mutations" },
     { href: "#conflicts", label: "Resolve conflicts" },
-    { href: "#mirrors", label: "Markdown mirrors" }
+    { href: "#mirrors", label: "Markdown mirrors" },
+    { href: "#promote", label: "Move authority to local" }
   ]}
 >
   <h2 id="requirements">Require a hosted collection</h2>
@@ -106,5 +109,21 @@ await replica.sync();`;
     either receive-only or writable. On first connection to an existing
     directory it compares the complete remote snapshot before writing or
     uploading. Differing paths stop for explicit review.
+  </p>
+
+  <h2 id="promote">Move hosted authority to a complete local mirror</h2>
+  <CodeBlock code={promote} language="sh" label="Hosted-to-local transfer" />
+  <p>
+    Promotion starts from a converged full writable mirror and opens a
+    short-lived approval in Connect. Approval freezes hosted writes at a final
+    sequence. The CLI pulls through that sequence, proves the exact record and
+    resource manifest, registers the folder with the local connector, and then
+    advances the collection authority epoch.
+  </p>
+  <p>
+    Old hosted grants, provider capabilities, and replicas are revoked at
+    cutover. Applications authorize the new local authority explicitly.
+    Cancellation or expiry before completion restores hosted writes. The
+    command is resumable after local materialization.
   </p>
 </DocsLayout>
