@@ -1,0 +1,184 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+const manifest = `{
+  "manifest_version": 1,
+  "distribution": "portable",
+  "id": "dev.example.portable-notes",
+  "name": "Portable notes",
+  "project_url": "https://example.dev/portable-notes",
+  "requirements": {
+    "access": "full_collection",
+    "contracts": []
+  }
+}`;
+
+const browserBundle = `<script
+  src="https://cdn.jsdelivr.net/npm/@mdbase/connect@0.1.0-beta.1/dist/browser/mdbase-connect.min.js"
+  integrity="sha384-6GTn5SRbBhjL6mSvjFUYGC+h7EV/Scj7NzxwbbmCFPWip8vc11F3EiZsOshUvLeP"
+  crossorigin="anonymous"></script>`;
+
+const application = `<button id="connect">Connect a collection</button>
+<output id="code" aria-live="polite"></output>
+
+<script>
+  const manifest = {
+    manifest_version: 1,
+    distribution: "portable",
+    id: "dev.example.portable-notes",
+    name: "Portable notes",
+    requirements: {
+      access: "full_collection",
+      contracts: []
+    }
+  };
+
+  const connect = new MdbaseConnect.MdbaseConnect({
+    serverUrl: "https://connect.mdbase.dev",
+    manifest
+  });
+
+  document.querySelector("#connect").onclick = async () => {
+    const { connection } = await connect.authorize({
+      operations: ["describe", "read", "query"],
+      onDeviceCode: ({ userCode }) => {
+        document.querySelector("#code").textContent =
+          "Confirm " + userCode + " in mdbase Connect";
+      }
+    });
+
+    console.log(await connection.describe());
+  };
+</script>`;
+---
+
+<DocsLayout
+  title="Portable HTML applications"
+  description="Connect one downloaded HTML file through a key-bound approval flow, with no web origin, redirect URI, build step, or application backend."
+  active="portable-apps"
+  headings={[
+    { href: "#status", label: "Release status" },
+    { href: "#manifest", label: "Portable manifest" },
+    { href: "#authorization", label: "Authorization" },
+    { href: "#storage", label: "Storage and file://" },
+    { href: "#bundle", label: "Browser bundle and SRI" },
+    { href: "#example", label: "Complete connection example" },
+    { href: "#security", label: "Security boundary" }
+  ]}
+>
+  <h2 id="status">Release status</h2>
+  <div class="callout">
+    <strong>Implemented in Connect v1; npm publication is pending.</strong>
+    <p>
+      The production service accepts the portable manifest and device flow.
+      The version-pinned CDN URL below becomes available when
+      {" "}<code>@mdbase/connect</code> and
+      {" "}<code>@mdbase/connect-protocol</code> are published. Until then, build
+      the browser artifact from the Connect repository for development.
+    </p>
+  </div>
+  <p>
+    Connect remains pre-release, so the manifest and encrypted wire protocol
+    stay labelled v1. A later public release can establish a new compatibility
+    boundary when one is needed.
+  </p>
+
+  <h2 id="manifest">Declare a portable application inline</h2>
+  <CodeBlock code={manifest} language="json" label="Portable manifest v1" />
+  <p>
+    <code>distribution: "portable"</code> replaces <code>homepage</code> and
+    {" "}<code>redirect_uris</code>. The optional <code>project_url</code> gives the
+    user somewhere to inspect the project or source. It must use HTTPS, but it
+    does not verify the publisher or prove where the downloaded file came from.
+  </p>
+  <p>
+    Connect identifies the normalized manifest by its SHA-256 digest. Changing
+    any declared field creates a different application identity and requires a
+    new approval. Portable applications currently authorize computer-owned
+    collections only. A manifest that requests
+    {" "}<code>collection_kind: "hosted"</code> is rejected.
+  </p>
+
+  <h2 id="authorization">Authorize with a short code and installation key</h2>
+  <ol>
+    <li>The file registers its inline manifest and generates a P-256 relay key.</li>
+    <li>Connect returns a short-lived device code and an eight-character user code.</li>
+    <li>The SDK opens the Connect approval page in a popup and reports the code through <code>onDeviceCode</code>.</li>
+    <li>The signed-in user confirms the code, reviews the downloaded-file warning, chooses a local collection, and narrows the operations.</li>
+    <li>The SDK polls at the server-provided interval and accepts only the grant bound to its application key.</li>
+  </ol>
+  <p>
+    Device codes expire after ten minutes, are stored as hashes by the control
+    plane, and can be consumed once. PKCE prevents another installation from
+    exchanging a copied code. Polling faster than the returned interval
+    produces <code>slow_down</code>.
+  </p>
+  <p>
+    Start <code>authorize()</code> from a user action so the browser permits
+    the popup. Supply <code>openVerification</code> when an embedding shell
+    owns the approval window. If the default popup is blocked, the SDK throws
+    {" "}<code>approval_window_blocked</code> with the verification URL and code.
+  </p>
+
+  <h2 id="storage">Treat file:// as an opaque, session-only origin</h2>
+  <p>
+    Browsers serialize local-file origins as <code>null</code>. For a portable
+    manifest opened from <code>file://</code>, the SDK stores the authorization
+    token and non-extractable private key in process memory. Another downloaded
+    file cannot inherit them through <code>localStorage</code> or IndexedDB.
+    Reloading or reopening the file requires authorization again.
+  </p>
+  <p>
+    An embedding shell can inject custom <code>storage</code> and
+    {" "}<code>keyStore</code> adapters as an explicit trust decision.
+    {" "}<code>connect.environment()</code> reports the active distribution,
+    application origin, and whether credential storage is
+    {" "}<code>memory</code>, <code>persistent</code>, or <code>custom</code>.
+  </p>
+
+  <h2 id="bundle">Pin the browser bundle and its integrity hash</h2>
+  <p>
+    The npm package contains one dependency-free IIFE bundle plus its generated
+    SHA-384 metadata:
+  </p>
+  <CodeBlock
+    code={`dist/browser/mdbase-connect.min.js
+dist/browser/integrity.json
+dist/browser/mdbase-connect.min.js.sha384`}
+    language="text"
+    label="@mdbase/connect package"
+  />
+  <p>
+    Use an exact package version and copy the integrity value from that same
+    version's <code>integrity.json</code>. The browser global is
+    {" "}<code>MdbaseConnect</code>.
+  </p>
+  <CodeBlock code={browserBundle} language="html" label="Version-pinned script" />
+  <p>
+    Do not use an unversioned CDN URL, a moving tag, or a script without
+    Subresource Integrity in a downloaded application.
+  </p>
+
+  <h2 id="example">Connect from one HTML file</h2>
+  <CodeBlock code={application} language="html" label="portable-notes.html" />
+
+  <h2 id="security">Keep the application page inside the grant boundary</h2>
+  <p>
+    The local connector is the final authorization boundary. It accepts
+    {" "}<code>Origin: null</code> only for an active portable grant with the exact
+    encrypted relay binding. Every operation authenticates the grant,
+    application, connector, collection, key ID, epoch, counter, request ID, and
+    ciphertext. CORS permission alone does not authorize an operation.
+  </p>
+  <p>
+    Code already running inside an approved page can use that page's
+    authorization. Keep untrusted scripts out of the file, pin every external
+    resource, and request only the operations used by the current feature.
+  </p>
+
+  <div class="button-row" style="margin-top: 2rem">
+    <a class="button button--primary" href="/sdk/manifest/">Review manifest fields</a>
+    <a class="button" href="/sdk/security/">Review the security model</a>
+  </div>
+</DocsLayout>

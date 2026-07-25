@@ -10,6 +10,7 @@ import DocsLayout from "../../../components/DocsLayout.astro";
     { href: "#least-privilege", label: "Least privilege" },
     { href: "#credentials", label: "Credentials" },
     { href: "#origins", label: "Origins and callbacks" },
+    { href: "#portable", label: "Downloaded files" },
     { href: "#payloads", label: "Payload boundaries" },
     { href: "#checklist", label: "Release checklist" }
   ]}
@@ -24,11 +25,12 @@ import DocsLayout from "../../../components/DocsLayout.astro";
 
   <h2 id="credentials">Choose a storage boundary deliberately</h2>
   <p>
-    Browser defaults retain authorization in <code>localStorage</code> and
-    relay keys as non-extractable IndexedDB keys. Applications with a stronger
-    isolation boundary can supply a custom <code>Storage</code> and{" "}
-    <code>GrantKeyStore</code>. Native shells should use platform-protected
-    application storage where possible.
+    Web-browser defaults retain authorization in <code>localStorage</code> and
+    relay keys as non-extractable IndexedDB keys. A portable manifest opened
+    from <code>file://</code> uses process-memory token and key storage instead.
+    Applications with another isolation boundary can supply a custom
+    {" "}<code>Storage</code> and <code>GrantKeyStore</code>. Native shells should
+    use platform-protected application storage where possible.
   </p>
   <p>
     Store Connect refresh credentials, hosted provider capabilities, and mirror
@@ -42,7 +44,21 @@ import DocsLayout from "../../../components/DocsLayout.astro";
     <li>Native callback schemes match or extend the reverse-domain application ID.</li>
     <li>PKCE remains mandatory for browser and native authorization.</li>
     <li>The loopback connector validates the exact approved browser origin.</li>
+    <li>Portable files declare no web origin and use a key-bound short-code flow.</li>
   </ul>
+
+  <h2 id="portable">Treat downloaded application code as authorized code</h2>
+  <p>
+    Every local file has the opaque browser origin <code>null</code>. Connect
+    does not trust that origin by itself. The connector accepts it only when
+    the request matches an active portable grant, the P-256 application key,
+    and the encrypted relay envelope.
+  </p>
+  <p>
+    Code already running in an approved page has that page's access. Keep
+    untrusted scripts out of the file, pin every CDN dependency to an exact
+    version with Subresource Integrity, and expect reauthorization after reload.
+  </p>
 
   <h2 id="payloads">Understand each payload boundary</h2>
   <table class="api-table">
@@ -75,6 +91,8 @@ import DocsLayout from "../../../components/DocsLayout.astro";
   <h2 id="checklist">Application release checklist</h2>
   <ul>
     <li>Validate the production manifest with default settings and omit <code>--allow-local</code>.</li>
+    <li>For portable files, test popup blocking, expiry, cancellation, reload, and a second unrelated local file.</li>
+    <li>Pin portable CDN assets to exact versions and verify their SRI values.</li>
     <li>Test narrowing, pause, revocation, token rotation, and reauthorization.</li>
     <li>Test direct-to-relay failover and verify one durable mutation outcome.</li>
     <li>Pass revisions on every destructive or overwriting operation.</li>
