@@ -13,9 +13,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     </header>
     <h2>Website</h2>
     <p>
-      mdbase.dev is a static documentation website. It does not require an
-      account and does not use advertising trackers. The hosting provider may
-      retain ordinary request logs for security and service operation.
+      mdbase.dev is a public static documentation website. It has no account
+      system or advertising trackers. The hosting provider may retain ordinary
+      request logs for security and service operation.
     </p>
     <h2>Connect</h2>
     <p>
@@ -25,15 +25,15 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       service.
     </p>
     <p>
-      Local collection paths and local record payloads are not stored in the
-      control plane. Encrypted relay traffic exposes routing metadata,
-      operation names, timing, and sizes while request and response bodies
-      remain encrypted between the application and local connector.
+      Local collection paths and record payloads stay at the connector.
+      Encrypted relay traffic exposes routing metadata, operation names, timing,
+      and sizes. Request and response bodies remain encrypted between the
+      application and local connector.
     </p>
     <p>
       Hosted collection records are encrypted at rest by the hosted provider.
-      The provider decrypts them to execute authorized mdbase operations. This
-      is not a zero-knowledge storage model.
+      The provider decrypts them to execute authorized mdbase operations and
+      acts as a trusted data processor.
     </p>
     <h2>Application providers</h2>
     <p>
@@ -48,4 +48,3 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     </p>
   </article>
 </BaseLayout>
-

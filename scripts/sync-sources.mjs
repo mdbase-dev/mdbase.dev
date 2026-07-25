@@ -31,13 +31,36 @@ const introductionScript = extract(
   /<script>([\s\S]*?)<\/script>\s*<\/body>/,
   "prototype murmuration"
 );
+const themedIntroductionScript = addThemeAwareCanvasPalette(introductionScript);
 writeFileSync(
   join(root, "public", "mdbase-introduction.css"),
   `${introductionStyles.trim()}\n`
 );
 writeFileSync(
   join(root, "public", "mdbase-murmuration.js"),
-  `// @ts-nocheck\n${introductionScript.trim()}\n`
+  `// @ts-nocheck\n${themedIntroductionScript.trim()}\n`
+);
+
+const connectThemeSource = join(connectDir, "packages", "ui", "styles.css");
+required(connectThemeSource, "Connect theme styles");
+const connectTheme = readFileSync(connectThemeSource, "utf8");
+const connectThemeBoundary = connectTheme.indexOf("\n*,\n*::before");
+if (connectThemeBoundary === -1) {
+  throw new Error("Could not extract Connect theme tokens");
+}
+writeFileSync(
+  join(root, "public", "mdbase-theme.css"),
+  `${connectTheme.slice(0, connectThemeBoundary).trim()}\n`
+);
+cpSync(
+  join(connectDir, "apps", "portal", "public", "theme-bootstrap.js"),
+  join(root, "public", "theme-bootstrap.js"),
+  { force: true }
+);
+cpSync(
+  join(root, "src", "styles", "shell.css"),
+  join(root, "public", "mdbase-shell.css"),
+  { force: true }
 );
 
 const manifest = yaml(join(specDir, "tests", "v0.3", "manifest.yaml"));
@@ -66,8 +89,8 @@ const conformance = {
       optional_features: claim.optional_features ?? [],
       workflow_execution: claim.limits?.runtime_execution === true,
       note: isRust
-        ? "The Rust workflow engine exists, but workflow/0.1 is not advertised until shared fixture evidence is published."
-        : "Claims reflect the machine-readable implementation evidence, not legacy conformance levels."
+        ? "The current Rust claim records runtime_execution: false. workflow/0.1 will follow shared fixture evidence."
+        : "The claim uses the machine-readable v0.3 atomic profiles."
     };
   }),
   coverage: {
@@ -87,6 +110,7 @@ writeFileSync(
 
 console.log(`Copied Connect schemas from ${schemaSource}`);
 console.log(`Copied the homepage design and murmuration from ${introductionSource}`);
+console.log(`Copied shared theme values from ${connectThemeSource}`);
 console.log(`Generated conformance data from ${claims.length} implementation claims`);
 
 function yaml(path) {
@@ -106,6 +130,55 @@ function extract(source, pattern, label) {
     throw new Error(`Could not extract ${label}`);
   }
   return match[1];
+}
+
+function addThemeAwareCanvasPalette(source) {
+  const palettePattern = /      const palette = \{[\s\S]*?      \};/;
+  if (!palettePattern.test(source)) {
+    throw new Error("Could not find the prototype canvas palette");
+  }
+  const withPalette = source.replace(
+    palettePattern,
+    `      const palette = {
+        paper: "rgb(252 252 251)",
+        ink: "rgb(25 27 31)",
+        muted: "rgb(111 116 124)",
+        line: "rgb(204 208 213)",
+        lineSoft: "rgb(226 229 232)",
+        accent: "rgb(42 104 143)"
+      };
+
+      function syncPalette() {
+        const styles = getComputedStyle(document.documentElement);
+        palette.paper = styles.getPropertyValue("--color-surface").trim() || palette.paper;
+        palette.ink = styles.getPropertyValue("--color-text").trim() || palette.ink;
+        palette.muted = styles.getPropertyValue("--color-text-muted").trim() || palette.muted;
+        palette.line = styles.getPropertyValue("--color-border-strong").trim() || palette.line;
+        palette.lineSoft = styles.getPropertyValue("--color-border").trim() || palette.lineSoft;
+        palette.accent = styles.getPropertyValue("--color-accent").trim() || palette.accent;
+      }`
+  );
+  const initialization = "      resize();\n      updateScrollState();";
+  if (!withPalette.includes(initialization)) {
+    throw new Error("Could not find the prototype initialization");
+  }
+  const withInitialization = withPalette.replace(
+    initialization,
+    "      syncPalette();\n      resize();\n      updateScrollState();"
+  );
+  const pagehide = '      addEventListener("pagehide", stopAnimation);';
+  if (!withInitialization.includes(pagehide)) {
+    throw new Error("Could not find the prototype event boundary");
+  }
+  return withInitialization.replace(
+    pagehide,
+    `      addEventListener("mdbase:themechange", () => {
+        syncPalette();
+        buildScene(activeScene);
+        if (reduceMotion) draw(0);
+      });
+      addEventListener("pagehide", stopAnimation);`
+  );
 }
 
 function copyAlias(source, destination) {

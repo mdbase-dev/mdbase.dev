@@ -49,7 +49,7 @@ export class WorkoutCollection {
 
 <DocsLayout
   title="Contracts and adapters"
-  description="Build domain behavior on declared collection contracts so applications do not depend on one set of frontmatter field names."
+  description="Build domain behavior on declared contracts across different frontmatter fields and path conventions."
   active="contracts"
   headings={[
     { href: "#contract", label: "Read a contract" },
@@ -78,13 +78,12 @@ export class WorkoutCollection {
   <p>
     <code>@mdbase/tasknotes</code> resolves{" "}
     <code>tasknotes.task@1</code>, follows its field-role mapping, and performs
-    revision-safe generic operations. It does not assume the task title lives in
-    a property named <code>title</code> or that completed always means the same
-    status string.
+    revision-safe generic operations. The field-role mapping supplies the title
+    property and completed-state representation for each collection.
   </p>
   <CodeBlock code={adapter} language="ts" label="tasks.ts" />
   <div class="callout">
-    <strong>TaskNotes is an application contract, not a collection kind.</strong>
+    <strong>TaskNotes supplies the <code>tasknotes.task</code> application contract.</strong>
     <p>
       Hosted and local collections remain generic mdbase collections. TaskNotes
       is one optional provider and consumer of a declared contract.
@@ -94,10 +93,10 @@ export class WorkoutCollection {
   <h2 id="own-adapter">Keep your adapter on the transport-neutral client</h2>
   <CodeBlock code={domainFunction} language="ts" label="workout-collection.ts" />
   <p>
-    Domain adapters should accept <code>MdbaseCollectionClient</code> when they
-    do not need authorization methods. This makes the adapter usable with
-    Connect, <code>createSandbox()</code>, offline transports, and other
-    conforming providers.
+    Domain adapters that use collection operations should accept{" "}
+    <code>MdbaseCollectionClient</code>. This makes the adapter usable with
+    Connect, <code>createSandbox()</code>, offline transports, and conforming
+    providers.
   </p>
 
   <h2 id="scope">Contract scope and full collection access</h2>

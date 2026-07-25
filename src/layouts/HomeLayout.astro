@@ -1,7 +1,13 @@
 ---
 import "@fontsource/atkinson-hyperlegible/400.css";
 import "@fontsource/atkinson-hyperlegible/700.css";
+import "@fontsource/azeret-mono/400.css";
+import "@fontsource/azeret-mono/500.css";
+import "../styles/shell.css";
 import "../styles/home.css";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import ThemeControlScript from "../components/ThemeControlScript.astro";
 
 interface Props {
   title: string;
@@ -22,18 +28,23 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="manifest" href="/site.webmanifest" />
+    <link rel="stylesheet" href="/mdbase-theme.css" />
     <link rel="stylesheet" href="/mdbase-introduction.css" />
-    <meta name="theme-color" content="#fcfcfb" />
+    <meta name="theme-color" content="#fcfcfd" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content="mdbase" />
     <meta name="twitter:card" content="summary" />
+    <script is:inline src="/theme-bootstrap.js"></script>
   </head>
-  <body>
+  <body class="home-body">
     <a class="home-skip-link" href="#intro">Skip to introduction</a>
+    <SiteHeader showSceneCount />
     <slot />
+    <SiteFooter />
+    <ThemeControlScript />
     <script is:inline src="/mdbase-murmuration.js"></script>
   </body>
 </html>

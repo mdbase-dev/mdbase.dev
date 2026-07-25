@@ -73,7 +73,9 @@ function rewrite(html, archive) {
     .replace(/href="\.\/\d{2}-[^"#]+\.md#([^"]+)"/g, 'href="#$1"')
     .replace(
       "</head>",
-      `  <link rel="canonical" href="${pageUrl}">\n`
+      `  <link rel="stylesheet" href="/mdbase-theme.css">\n`
+      + `  <link rel="stylesheet" href="/mdbase-shell.css">\n`
+      + `  <link rel="canonical" href="${pageUrl}">\n`
       + `  <meta property="og:type" content="article">\n`
       + `  <meta property="og:title" content="${pageTitle}">\n`
       + `  <meta property="og:description" content="The full mdbase specification for typed Markdown collections.">\n`

@@ -17,8 +17,8 @@ import conformance from "../../data/conformance.json";
       <div class="page-hero__aside">
         <p>
           mdbase v0.3 uses atomic profiles. Each row below names an artifact,
-          version, evidence date, and the profiles it claims. Legacy
-          “Level 6” descriptions do not apply to v0.3.
+          version, evidence date, and the profiles it claims. Atomic profiles
+          replace the legacy “Level 6” descriptions.
         </p>
         <div class="button-row">
           <a class="button button--primary" href="/spec/#section-16">Conformance rules</a>
@@ -104,13 +104,13 @@ import conformance from "../../data/conformance.json";
       </tbody>
     </table>
     <div class="callout">
-      <strong>The current Rust claim does not include workflow execution.</strong>
+      <strong>Current Rust workflow claim: pending</strong>
       <p>
         The Rust runtime has durable workflow tests, including recovery and
-        timers. Its current public conformance claim still records{" "}
-        <code>runtime_execution: false</code>. The site will publish{" "}
-        <code>workflow/0.1</code> only after the artifact has a separate claim
-        backed by the shared execution fixture.
+        timers. Its public conformance file currently records{" "}
+        <code>runtime_execution: false</code>. A separate{" "}
+        <code>workflow/0.1</code> claim will follow the shared execution
+        fixture.
       </p>
     </div>
   </section>

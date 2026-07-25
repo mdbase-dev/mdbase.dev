@@ -70,9 +70,9 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
   <h2 id="application-shape">Application structure</h2>
   <p>
     Create one <code>MdbaseConnect</code> instance at the application boundary.
-    Pass its collection-client behavior into feature code rather than importing
-    OAuth state throughout the application. The same feature code can then run
-    against Connect, the developer sandbox, or a future conforming transport.
+    Pass its collection-client behavior into feature code and keep OAuth state
+    at that boundary. The same feature code can then run against Connect, the
+    developer sandbox, or a future conforming transport.
   </p>
   <CodeBlock code={seam} language="ts" label="tasks.ts" />
   <div class="callout">

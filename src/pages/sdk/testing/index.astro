@@ -61,7 +61,7 @@ pnpm e2e`;
     <thead>
       <tr>
         <th>Covered</th>
-        <th>Deliberately not approximated</th>
+        <th>Test with the real stack</th>
       </tr>
     </thead>
     <tbody>
@@ -88,9 +88,8 @@ pnpm e2e`;
     </tbody>
   </table>
   <p>
-    The sandbox rejects <code>where</code> and <code>order_by</code> instead of
-    offering a loose imitation. This prevents a passing unit test from implying
-    that its expression behavior is conformant.
+    The sandbox rejects <code>where</code> and <code>order_by</code>. Run CEL
+    expression and ordering tests against a conforming collection authority.
   </p>
 
   <h2 id="real">Use the real stack at system boundaries</h2>

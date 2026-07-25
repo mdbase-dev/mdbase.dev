@@ -48,7 +48,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         <tr>
           <td>Absolute paths</td>
           <td>Remain at the local connector</td>
-          <td>Not applicable to provider-backed records</td>
+          <td>Hosted records use provider identifiers</td>
         </tr>
         <tr>
           <td>Operation payloads</td>
@@ -75,9 +75,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         <div>
           <h3>Operation scope</h3>
           <p>
-            Use contract-scoped access unless the feature truly needs
-            collection-wide types or saved views. Ask for additional operations
-            when the user opens the feature that needs them.
+            Start with contract-scoped access. Collection-wide types and saved
+            views require full collection access. Ask for additional operations
+            when the user opens the relevant feature.
           </p>
         </div>
       </div>
@@ -95,9 +95,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         <div>
           <h3>Notifications</h3>
           <p>
-            Never infer private state from a signal. Open the application, renew
-            authorization if needed, and read the latest authorized collection
-            state.
+            Treat each signal as a prompt to refresh. Open the application,
+            renew authorization if needed, and read the latest authorized
+            collection state.
           </p>
         </div>
       </div>

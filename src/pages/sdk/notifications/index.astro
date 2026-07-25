@@ -81,9 +81,9 @@ if (await deliveries.claim(event.delivery_id)) {
 >
   <p>
     Notification evaluation runs at the local connector or hosted provider.
-    Connect receives an opaque signal, grant, criterion, and cursor, then
-    delivers static presentation declared in the manifest. It does not receive
-    the matching record path, frontmatter, body, or runtime event payload.
+    Connect receives an opaque signal, grant, criterion, and cursor. Static
+    presentation comes from the manifest. Matching record paths, frontmatter,
+    bodies, and runtime event payloads remain at the collection authority.
   </p>
 
   <h2 id="criteria">Declare criteria in the application manifest</h2>
@@ -111,7 +111,8 @@ if (await deliveries.claim(event.delivery_id)) {
     Reconciliation is atomic. Unchanged timers keep their generation and fired
     state, changed timers receive a new generation, new timers are scheduled,
     and omitted active timers are cancelled. IDs and optional private data
-    remain at the collection authority and are not included in the signal.
+    remain at the collection authority. Signals carry the timer criterion and
+    cursor metadata.
   </p>
 
   <h2 id="webhooks">Use signed webhooks for developer-managed delivery</h2>

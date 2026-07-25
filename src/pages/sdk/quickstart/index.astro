@@ -39,7 +39,7 @@ const connectButton = `import { connect } from "./connect";
 
 export async function connectCollection() {
   await connect.authorize(["describe", "read", "query", "update"]);
-  // authorize() navigates to Connect and does not return.
+  // Authorization continues on the registered callback route.
 }`;
 
 const callback = `import { connect } from "./connect";
@@ -89,9 +89,8 @@ const validate = `mdbase-connect-dev validate-manifest \\
   <div class="callout">
     <strong>Private-beta requirement</strong>
     <p>
-      This guide uses the production service URL, but public application
-      registration is not open yet. Use the repository's local stack or a
-      private-beta account until the release gate is removed.
+      The production service currently accepts private-beta accounts. Use one
+      of those accounts or the repository's local stack for this guide.
     </p>
   </div>
 
@@ -99,14 +98,13 @@ const validate = `mdbase-connect-dev validate-manifest \\
   <p>
     Save this file at <code>public/.well-known/mdbase-app.json</code>. The SDK
     loads the file from your own application and posts it inline during
-    registration. Connect does not fetch your website.
+    registration. The control plane receives the canonical JSON from the SDK.
   </p>
   <CodeBlock code={manifest} language="json" label="public/.well-known/mdbase-app.json" />
   <p>
-    The reverse-domain ID and name are display metadata, not proof of
-    publication ownership. An approved grant is bound to the exact canonical
-    manifest content and the application installation that completed
-    authorization.
+    The reverse-domain ID and name are display metadata. An approved grant binds
+    the canonical manifest content to the application installation that
+    completed authorization.
   </p>
 
   <h2 id="install">2. Install the SDK and validator</h2>
@@ -115,7 +113,9 @@ const validate = `mdbase-connect-dev validate-manifest \\
   <CodeBlock code={validate} language="sh" label="Terminal" />
   <p>
     For a loopback development homepage and callback, add
-    {" "}<code>--allow-local</code>. Production manifests require HTTPS.
+    {" "}<code>--allow-local</code>. Production web homepages, icons, and
+    browser callbacks use HTTPS. Native callbacks may use a private scheme
+    derived from the application ID.
   </p>
 
   <h2 id="client">3. Create one Connect client</h2>
@@ -130,8 +130,7 @@ const validate = `mdbase-connect-dev validate-manifest \\
   <CodeBlock code={connectButton} language="ts" label="src/connect-button.ts" />
   <p>
     Connect shows compatible collections and asks the user to approve the exact
-    operations. Your application never receives an unauthorised collection
-    description while that choice is being made.
+    operations. The collection description becomes available after approval.
   </p>
 
   <h2 id="callback">5. Complete the callback</h2>
@@ -150,7 +149,7 @@ const validate = `mdbase-connect-dev validate-manifest \\
     cannot be silently overwritten.
   </p>
   <div class="callout">
-    <strong>Do not assume frontmatter field names across contracts.</strong>
+    <strong>Resolve domain fields from the contract descriptor.</strong>
     <p>
       Generic apps can use declared mdbase types directly. Domain applications
       should read the contract descriptors returned by <code>describe()</code>{" "}

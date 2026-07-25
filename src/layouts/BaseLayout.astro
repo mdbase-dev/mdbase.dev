@@ -3,9 +3,11 @@ import "@fontsource/atkinson-hyperlegible/400.css";
 import "@fontsource/atkinson-hyperlegible/700.css";
 import "@fontsource/azeret-mono/400.css";
 import "@fontsource/azeret-mono/500.css";
+import "../styles/shell.css";
 import "../styles/global.css";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import ThemeControlScript from "../components/ThemeControlScript.astro";
 
 interface Props {
   title: string;
@@ -29,7 +31,8 @@ const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#f7f9fb" />
+    <link rel="stylesheet" href="/mdbase-theme.css" />
+    <meta name="theme-color" content="#fcfcfd" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
@@ -37,42 +40,17 @@ const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
     <meta property="og:site_name" content="mdbase" />
     <meta name="twitter:card" content="summary" />
     {noIndex && <meta name="robots" content="noindex" />}
-    <script is:inline>
-      (() => {
-        const stored = localStorage.getItem("mdbase:theme");
-        if (stored === "light" || stored === "dark") {
-          document.documentElement.dataset.theme = stored;
-        }
-      })();
-    </script>
+    <script is:inline src="/theme-bootstrap.js"></script>
   </head>
-  <body>
+  <body class="site-body">
     <a class="skip-link" href="#main">Skip to content</a>
     <SiteHeader current={current} />
     <main id="main">
       <slot />
     </main>
     <SiteFooter />
+    <ThemeControlScript />
     <script is:inline>
-      const selects = document.querySelectorAll("[data-theme-select]");
-      const storedTheme = localStorage.getItem("mdbase:theme");
-      selects.forEach((select) => {
-        select.value = storedTheme === "light" || storedTheme === "dark" ? storedTheme : "system";
-        select.addEventListener("change", () => {
-          const value = select.value;
-          if (value === "system") {
-            localStorage.removeItem("mdbase:theme");
-            delete document.documentElement.dataset.theme;
-          } else {
-            localStorage.setItem("mdbase:theme", value);
-            document.documentElement.dataset.theme = value;
-          }
-          selects.forEach((other) => {
-            other.value = value;
-          });
-        });
-      });
-
       document.querySelectorAll("[data-copy-code]").forEach((button) => {
         button.addEventListener("click", async () => {
           const wrapper = button.closest(".code-block");
@@ -88,4 +66,3 @@ const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
     </script>
   </body>
 </html>
-
