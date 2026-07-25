@@ -1,7 +1,7 @@
 {
   "specification": {
     "repository": "mdbase-dev/mdbase-spec",
-    "ref": "6acdf889b28537546ac53e6a8c13d2dbd57d1a5f"
+    "ref": "f349c06ddc42e9a1fa772575dda45ea219274476"
   },
   "connect": {
     "repository": "mdbase-dev/mdbase-connect",
