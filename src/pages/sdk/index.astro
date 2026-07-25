@@ -64,6 +64,11 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
         <td>Browser APIs or adapters supplied by a native shell</td>
       </tr>
       <tr>
+        <td><code>MdbaseBrowserLocation</code></td>
+        <td>Bookmarkable collection selection, authorization return URLs, and browser navigation</td>
+        <td>A stable <code>MdbaseConnect</code> manager and browser history APIs</td>
+      </tr>
+      <tr>
         <td><code>MdbaseCollectionClient</code></td>
         <td>Domain and feature logic that should be independent of OAuth and hosting</td>
         <td>A small <code>MdbaseCollectionTransport</code></td>
@@ -84,12 +89,14 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
   <h2 id="application-shape">Application structure</h2>
   <p>
     Create one <code>MdbaseConnect</code> manager at the application boundary.
-    Resolve the ID in the URL with <code>manager.connection(id)</code>, then
-    pass that <code>MdbaseConnection</code> into feature code while keeping
-    OAuth and saved-connection state at the boundary. A bound connection never
-    changes collections underneath a repository, and feature code written
-    against <code>MdbaseCollectionClient</code> can also run against the
-    developer sandbox or another conforming transport.
+    Pair it with one <code>MdbaseBrowserLocation</code> at the browser
+    application boundary. Resolve its active connection, then pass that
+    {" "}<code>MdbaseConnection</code> into feature code. The location helper owns
+    bookmark selection and OAuth return cleanup; the manager owns saved
+    authorizations. A bound connection never changes collections underneath a
+    repository, and feature code written against
+    {" "}<code>MdbaseCollectionClient</code> can also run against the developer
+    sandbox or another conforming transport.
   </p>
   <p>
     A downloaded HTML file supplies

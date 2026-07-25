@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: mdbase-dev/mdbase-connect
-          ref: e6b8c7d552c74ad6c4163733ae3337302c97e434
+          ref: 8e960317f0886f8c504023dad873cf8cec82fd99
           path: .sources/mdbase-connect
 
       - name: Check out Rust implementation
