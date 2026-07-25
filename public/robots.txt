@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mdbase.dev/sitemap-index.xml
+

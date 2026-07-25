@@ -1,0 +1,157 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ConnectionDiagram from "../components/ConnectionDiagram.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+
+const installCode = `pnpm add @mdbase/connect`;
+const connectCode = `import { MdbaseConnect } from "@mdbase/connect";
+
+const connect = new MdbaseConnect({
+  serverUrl: "https://connect.mdbase.dev",
+  manifest: "/.well-known/mdbase-app.json",
+  redirectUri: new URL("/auth/mdbase/callback", location.origin).href
+});
+
+await connect.authorize(["describe", "read", "query", "update"]);`;
+---
+
+<BaseLayout
+  title="mdbase"
+  description="One typed Markdown collection for every application you choose, with exact access through mdbase Connect."
+>
+  <section class="hero-home">
+    <div class="hero-home__inner">
+      <div class="hero-home__copy">
+        <p class="eyebrow"><i></i> mdbase v0.3 · Connect private beta</p>
+        <h1>One collection. Every app you choose.</h1>
+        <p>
+          mdbase turns ordinary Markdown files into typed, queryable data.
+          Connect lets independent apps use them locally or online, with the
+          exact access you approve.
+        </p>
+        <div class="button-row">
+          <a class="button button--primary" href="/sdk/quickstart/">Build with Connect</a>
+          <a class="button" href="/spec/">Read the specification</a>
+        </div>
+      </div>
+      <ConnectionDiagram />
+    </div>
+  </section>
+
+  <div class="narrative">
+    <section class="narrative-section">
+      <div class="narrative-section__label">The collection</div>
+      <div class="narrative-section__content">
+        <h2>Your data still looks like your data.</h2>
+        <p>
+          A collection is a folder with an <code>mdbase.yaml</code> marker.
+          Records are Markdown with YAML frontmatter. Types are Markdown files
+          wrapping JSON Schema. You can inspect, version, sync, and edit every
+          part without mdbase.
+        </p>
+        <div class="artifact-row">
+          <code>mdbase.yaml</code>
+          <span>Collection settings and lifecycle policy</span>
+          <small>portable</small>
+        </div>
+        <div class="artifact-row">
+          <code>_types/task.md</code>
+          <span>A complete, versioned task type</span>
+          <small>JSON Schema</small>
+        </div>
+        <div class="artifact-row">
+          <code>tasks/today.md</code>
+          <span>Readable frontmatter and ordinary Markdown body</span>
+          <small>yours</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="narrative-section">
+      <div class="narrative-section__label">The connection</div>
+      <div class="narrative-section__content">
+        <h2>Applications ask. You choose the collection and operations.</h2>
+        <p>
+          An app declares the contracts it understands. Connect checks
+          compatibility, offers only suitable collections, and creates a grant
+          after you approve concrete operations such as read, query, or update.
+          Pause, narrow, or revoke that grant at the collection authority.
+        </p>
+        <div class="split-proof">
+          <div>
+            <h3>Local authority</h3>
+            <p>
+              The desktop connector opens the folder. Browser requests prefer
+              same-computer access and use an encrypted relay when direct access
+              is unavailable. Local paths never leave the computer.
+            </p>
+          </div>
+          <div>
+            <h3>Hosted authority</h3>
+            <p>
+              The hosted provider keeps authoritative Markdown for applications
+              that need an always-online collection. An optional local mirror
+              can work offline and synchronize with revision safety.
+            </p>
+          </div>
+        </div>
+        <div class="button-row" style="margin-top: 1.5rem">
+          <a class="button" href="/connect/">How Connect works</a>
+          <a class="button" href="/security/">Read the trust model</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="narrative-section">
+      <div class="narrative-section__label">For developers</div>
+      <div class="narrative-section__content">
+        <h2>The browser SDK handles authorization, routing, and renewal.</h2>
+        <p>
+          Bundle one application manifest, request the operations your feature
+          needs, then write against typed collection operations. Application
+          logic can depend on the transport-neutral collection client for fast,
+          deterministic tests.
+        </p>
+        <CodeBlock code={installCode} language="sh" label="Install" />
+        <CodeBlock code={connectCode} language="ts" label="app.ts" />
+        <div class="button-row">
+          <a class="button button--primary" href="/sdk/quickstart/">Start the quickstart</a>
+          <a class="button" href="/sdk/api/">Open the API reference</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="narrative-section">
+      <div class="narrative-section__label">Proof in use</div>
+      <div class="narrative-section__content">
+        <h2>TaskNotes v5 is a flagship consumer, not a special storage mode.</h2>
+        <p>
+          TaskNotes maps its task behavior onto a declared
+          <code>tasknotes.task</code> contract. The Obsidian plugin can act as a
+          local provider, while Connect-compatible applications use the same
+          generic operations and field-role mapping. The collection remains
+          mdbase.
+        </p>
+        <div class="split-proof">
+          <div>
+            <h3>Specification</h3>
+            <p>
+              Portable collection behavior: records, types, CEL queries, links,
+              mutations, lifecycle policy, runtime contracts, and workflows.
+            </p>
+            <p><a href="/spec/">Read mdbase v0.3</a></p>
+          </div>
+          <div>
+            <h3>Implementations</h3>
+            <p>
+              Exact profile claims are published per artifact. No legacy
+              “conformance level” shorthand and no feature claims without an
+              evidence file.
+            </p>
+            <p><a href="/implementations/">Compare implementations</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

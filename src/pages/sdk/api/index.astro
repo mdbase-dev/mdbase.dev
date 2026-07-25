@@ -1,0 +1,246 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+const constructor = `new MdbaseConnect<Frontmatter>({
+  serverUrl: string,
+  manifest?: MdbaseAppManifest | string,
+  redirectUri?: string,
+  storage?: Storage,
+  relayEncryption?: "required" | "disabled",
+  keyStore?: GrantKeyStore,
+  directAccess?: "auto" | "disabled",
+  loopbackUrl?: string,
+  navigate?: (url: string) => void | Promise<void>
+})`;
+
+const error = `try {
+  const result = unwrapOperation(await connect.update(input));
+} catch (error) {
+  if (error instanceof MdbaseOperationValidationError) {
+    renderDiagnostics(error.diagnostics);
+  } else if (error instanceof MdbaseConnectError) {
+    renderTransportError(error.code, error.recovery);
+  }
+}`;
+---
+
+<DocsLayout
+  title="API reference"
+  description="A compact reference for the public @mdbase/connect browser SDK, transport-neutral collection client, errors, and helper functions."
+  active="api"
+  headings={[
+    { href: "#constructor", label: "Constructor" },
+    { href: "#authorization", label: "Authorization methods" },
+    { href: "#operations", label: "Operation methods" },
+    { href: "#notifications", label: "Notifications and timers" },
+    { href: "#connection", label: "Connection and sync" },
+    { href: "#client", label: "Collection client" },
+    { href: "#errors", label: "Errors and helpers" }
+  ]}
+>
+  <h2 id="constructor">MdbaseConnect constructor</h2>
+  <CodeBlock code={constructor} language="ts" label="Signature" />
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Option</th>
+        <th>Default</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>serverUrl</code></td>
+        <td>Required</td>
+        <td>Connect control-plane origin</td>
+      </tr>
+      <tr>
+        <td><code>manifest</code></td>
+        <td>None</td>
+        <td>Bundled manifest object or app-local URL</td>
+      </tr>
+      <tr>
+        <td><code>redirectUri</code></td>
+        <td>Current page where supported</td>
+        <td>Exact callback listed in the manifest</td>
+      </tr>
+      <tr>
+        <td><code>storage</code></td>
+        <td><code>localStorage</code></td>
+        <td>Authorization persistence boundary</td>
+      </tr>
+      <tr>
+        <td><code>relayEncryption</code></td>
+        <td><code>required</code></td>
+        <td>Allow plaintext relay only in an intentional development environment</td>
+      </tr>
+      <tr>
+        <td><code>keyStore</code></td>
+        <td>IndexedDB non-extractable key store</td>
+        <td>Override encrypted grant key persistence</td>
+      </tr>
+      <tr>
+        <td><code>directAccess</code></td>
+        <td><code>auto</code></td>
+        <td>Prefer the same-computer connector</td>
+      </tr>
+      <tr>
+        <td><code>loopbackUrl</code></td>
+        <td>Fixed connector endpoint</td>
+        <td>Development and automated-test override</td>
+      </tr>
+      <tr>
+        <td><code>navigate</code></td>
+        <td><code>location.assign</code></td>
+        <td>Open authorization, including in a native system browser</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="authorization">Registration and authorization</h2>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Method</th>
+        <th>Result</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>register()</code></td>
+        <td><code>Promise&lt;Application&gt;</code></td>
+        <td>Load, canonicalize, and register the bundled manifest</td>
+      </tr>
+      <tr>
+        <td><code>authorize(operations?)</code></td>
+        <td>Does not return</td>
+        <td>Start PKCE and navigate to collection approval</td>
+      </tr>
+      <tr>
+        <td><code>completeAuthorization(callbackUrl?)</code></td>
+        <td>Connection metadata</td>
+        <td>Verify state, exchange the code, and retain the grant</td>
+      </tr>
+      <tr>
+        <td><code>authorizationCapabilities(required)</code></td>
+        <td><code>MdbaseAuthorizationCapabilities</code></td>
+        <td>Compare exact required and granted operations</td>
+      </tr>
+      <tr>
+        <td><code>hasOperations(required)</code></td>
+        <td><code>boolean</code></td>
+        <td>Check an operation subset</td>
+      </tr>
+      <tr>
+        <td><code>requestOperations(required)</code></td>
+        <td><code>Promise&lt;void&gt;</code></td>
+        <td>Request the least-privilege union when the current grant is insufficient</td>
+      </tr>
+      <tr>
+        <td><code>disconnect()</code></td>
+        <td><code>void</code></td>
+        <td>Clear this installation's retained authorization</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="operations">Collection operations</h2>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Method</th>
+        <th>Required operation</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>describe()</code></td><td><code>describe</code></td><td>Types, contracts, schemas, settings, and supported operations</td></tr>
+      <tr><td><code>changes(input?)</code></td><td><code>changes</code></td><td>One resumable cursor page</td></tr>
+      <tr><td><code>watch(options?)</code></td><td><code>changes</code></td><td>Async iterator with retry and reset status</td></tr>
+      <tr><td><code>read(&#123; path &#125;)</code></td><td><code>read</code></td><td>Effective and raw frontmatter plus revision</td></tr>
+      <tr><td><code>query(input?)</code></td><td><code>query</code></td><td>One query page</td></tr>
+      <tr><td><code>queryPages(input?, options?)</code></td><td><code>query</code></td><td>Snapshot-consistent async pages</td></tr>
+      <tr><td><code>queryAll(input?, options?)</code></td><td><code>query</code></td><td>Load every page into one result</td></tr>
+      <tr><td><code>create(input)</code></td><td><code>create</code></td><td>Typed frontmatter and optional body</td></tr>
+      <tr><td><code>update(input)</code></td><td><code>update</code></td><td>Canonical <code>patch</code> and optional revision</td></tr>
+      <tr><td><code>preflightRename(input)</code></td><td><code>rename</code></td><td>Reference impact without mutation</td></tr>
+      <tr><td><code>rename(input)</code></td><td><code>rename</code></td><td>Move with optional reference updates</td></tr>
+      <tr><td><code>renameWithProgress(input, options)</code></td><td><code>rename</code></td><td>Preflight reuse, cancellation, and outcome recovery</td></tr>
+      <tr><td><code>preflightDelete(input)</code></td><td><code>delete</code></td><td>Backlink impact without mutation</td></tr>
+      <tr><td><code>delete(input)</code></td><td><code>delete</code></td><td>Delete with optional backlink check</td></tr>
+      <tr><td><code>deleteWithProgress(input, options)</code></td><td><code>delete</code></td><td>Preflight reuse, cancellation, and outcome recovery</td></tr>
+      <tr><td><code>validate(input?)</code></td><td><code>validate</code></td><td>Canonical collection validation envelope</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Saved views and type source</h3>
+  <p>
+    Saved view methods are <code>listViews()</code>,
+    <code>executeView()</code>, <code>readViewSource()</code>,
+    <code>createViewSource()</code>, <code>updateViewSource()</code>, and
+    <code>deleteViewSource()</code>. Type source methods are
+    <code>readType()</code>, <code>createType()</code>, and
+    <code>updateType()</code>. Updates require the source revision.
+  </p>
+
+  <h2 id="notifications">Notifications and timers</h2>
+  <table class="api-table">
+    <thead>
+      <tr><th>Method</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>registerNotifications(options)</code></td><td>Register Web Push and select declared criteria</td></tr>
+      <tr><td><code>unregisterNotifications(worker)</code></td><td>Remove the server channel, then unsubscribe the browser</td></tr>
+      <tr><td><code>registerNativeNotifications(options)</code></td><td>Register or rotate one FCM token</td></tr>
+      <tr><td><code>unregisterNativeNotifications()</code></td><td>Remove the native channel before deleting its token</td></tr>
+      <tr><td><code>listTimers(namespace)</code></td><td>Read timers within this grant namespace</td></tr>
+      <tr><td><code>putTimer(input)</code></td><td>Create or replace one generation-fenced timer</td></tr>
+      <tr><td><code>cancelTimer(input)</code></td><td>Cancel one timer</td></tr>
+      <tr><td><code>reconcileTimers(input)</code></td><td>Atomically project the complete desired timer set</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="connection">Connection, routing, and hosted sync</h2>
+  <table class="api-table">
+    <thead>
+      <tr><th>Method</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>connection()</code></td><td>Read collection ID, operations, scope, route, and direct status</td></tr>
+      <tr><td><code>onConnectionChange(listener)</code></td><td>Subscribe and receive an unsubscribe function</td></tr>
+      <tr><td><code>checkDirectAccess()</code></td><td>Inspect same-computer availability without prompting</td></tr>
+      <tr><td><code>requestDirectAccess()</code></td><td>Prompt from a user gesture where required</td></tr>
+      <tr><td><code>disableDirectAccess()</code></td><td>Persist a relay-only preference for this app</td></tr>
+      <tr><td><code>hostedSync()</code></td><td>Return a refresh-aware sync transport for a hosted grant, or null</td></tr>
+      <tr><td><code>pendingMutation()</code></td><td>Inspect an interrupted encrypted mutation</td></tr>
+      <tr><td><code>resumePendingMutation()</code></td><td>Recover its exact durable connector receipt</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="client">MdbaseCollectionClient</h2>
+  <p>
+    Construct with any <code>MdbaseCollectionTransport</code>. It exposes the
+    record, query, view, type, validation, and timer methods above without
+    registration, authorization, routing, or notification-channel methods.
+    Domain packages should prefer this dependency when they do not need OAuth.
+  </p>
+
+  <h2 id="errors">Errors and helpers</h2>
+  <CodeBlock code={error} language="ts" label="errors.ts" />
+  <table class="api-table">
+    <thead>
+      <tr><th>Export</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>unwrapOperation()</code></td><td>Return a valid result or throw validation diagnostics</td></tr>
+      <tr><td><code>MdbaseConnectError</code></td><td>Transport, authorization, routing, and request errors with recovery metadata</td></tr>
+      <tr><td><code>MdbaseOperationValidationError</code></td><td>Invalid canonical operation envelope</td></tr>
+      <tr><td><code>isRetryableConnectError()</code></td><td>Classify transient Connect failures</td></tr>
+      <tr><td><code>parseMdbasePushPayload()</code></td><td>Validate a browser push envelope</td></tr>
+      <tr><td><code>parseMdbaseNativeNotificationData()</code></td><td>Validate string-valued FCM/APNs data</td></tr>
+      <tr><td><code>showMdbasePushNotification()</code></td><td>Validate and display static manifest presentation</td></tr>
+    </tbody>
+  </table>
+</DocsLayout>

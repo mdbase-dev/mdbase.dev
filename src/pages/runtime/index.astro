@@ -1,0 +1,115 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Runtime"
+  description="Understand the separate mdbase collection, runtime-contract, workflow-execution, and Connect hosting layers."
+  current="runtime"
+>
+  <section class="page-hero">
+    <div class="page-hero__inner">
+      <div>
+        <p class="eyebrow"><i></i> Runtime profile 0.1</p>
+        <h1>Active behavior without hiding the files.</h1>
+      </div>
+      <div class="page-hero__aside">
+        <p>
+          mdbase separates passive collection semantics from declared provider
+          contracts and durable workflow execution. A host can implement one
+          layer without pretending to implement all of them.
+        </p>
+        <div class="button-row">
+          <a class="button button--primary" href="/spec/#section-13">Runtime specification</a>
+          <a class="button" href="/implementations/">Implementation profiles</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Four related layers</h2>
+    <div class="steps">
+      <div class="step">
+        <div>
+          <h3>Collection semantics</h3>
+          <p>
+            Loading, typing, validation, CEL queries, links, saved views,
+            revision-safe mutations, lifecycle policy, and watching. These
+            behaviors operate on the collection whether or not a runtime host
+            exists.
+          </p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Runtime Contracts 0.1</h3>
+          <p>
+            Portable event and action declarations, provider registration,
+            compatibility checks, and preflight. The TypeScript package is a
+            browser-safe provider host. It is not a workflow engine or watcher.
+          </p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Workflow execution 0.1</h3>
+          <p>
+            Durable journals, idempotent actions, timers, recovery, and
+            provider-neutral execution. The Rust <code>mdbase-runtime</code>
+            crate implements this execution layer with in-memory, SQLite, and
+            PostgreSQL storage.
+          </p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Connect embedding</h3>
+          <p>
+            Connect compiles exact application grants into runtime behavior,
+            supplies local or hosted collection authorities, and routes
+            notification signals. Connect is a host of these contracts, not the
+            definition of the runtime profile.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Choose the profile you actually implement.</h2>
+    <p>
+      Conformance uses atomic profiles. A provider host can claim Runtime
+      Contracts without durable workflow execution. A workflow engine should
+      claim <code>workflow/0.1</code> only when its shared fixture evidence is
+      published.
+    </p>
+    <table class="profile-table">
+      <thead>
+        <tr>
+          <th>Profile</th>
+          <th>Proves</th>
+          <th>Does not prove</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>runtime_contracts/0.1</code></td>
+          <td>Declaration validation, registry behavior, compatibility, dispatch, preflight</td>
+          <td>Watching, timers, durable execution, or recovery</td>
+        </tr>
+        <tr>
+          <td><code>workflow/0.1</code></td>
+          <td>Durable workflow execution, action idempotency, timers, and recovery</td>
+          <td>All collection semantics unless separately claimed</td>
+        </tr>
+        <tr>
+          <td><code>watch</code></td>
+          <td>Real collection event delivery and ordering</td>
+          <td>Runtime provider or workflow behavior</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</BaseLayout>
+

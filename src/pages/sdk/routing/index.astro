@@ -1,0 +1,100 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+const direct = `const status = await connect.checkDirectAccess();
+
+if (status === "permission_required") {
+  directAccessButton.onclick = async () => {
+    await connect.requestDirectAccess();
+  };
+}
+
+connect.onConnectionChange((connection) => {
+  // "direct", "relay", or "hosted"
+  renderRoute(connection?.route);
+});`;
+
+const options = `const connect = new MdbaseConnect({
+  serverUrl: "https://connect.mdbase.dev",
+  manifest,
+  redirectUri,
+  directAccess: "auto",
+  relayEncryption: "required"
+});`;
+---
+
+<DocsLayout
+  title="Local and hosted routes"
+  description="Let the SDK select direct, encrypted relay, or hosted-provider transport while your feature code stays on one operation interface."
+  active="routing"
+  headings={[
+    { href: "#automatic", label: "Automatic routing" },
+    { href: "#direct", label: "Direct access" },
+    { href: "#relay", label: "Encrypted relay" },
+    { href: "#hosted", label: "Hosted provider" },
+    { href: "#native", label: "Native shells" }
+  ]}
+>
+  <h2 id="automatic">Route selection is not a storage mode</h2>
+  <p>
+    A collection has one write authority: either a local connector for a
+    filesystem folder or a hosted provider. For a local authority, the SDK
+    prefers the fixed same-computer endpoint and falls back to the encrypted
+    relay. The user chooses where the collection lives, not which network route
+    an individual request takes.
+  </p>
+  <CodeBlock code={options} language="ts" label="connect-options.ts" />
+
+  <h2 id="direct">Request same-computer browser access from a user gesture</h2>
+  <CodeBlock code={direct} language="ts" label="direct-access.ts" />
+  <p>
+    Browser local-network permission must be requested from a user action. Once
+    available, grantable operations prefer
+    <code>http://127.0.0.1:28485/v1/operations</code>. The connector checks the
+    exact origin, Host header, protocol version, grant, and application-key
+    proof.
+  </p>
+  <p>
+    Set <code>directAccess: "disabled"</code> only when the embedding
+    environment cannot make loopback requests.
+  </p>
+
+  <h2 id="relay">Encrypted relay fallback</h2>
+  <p>
+    Protocol 1 uses a non-extractable P-256 key and atomic message counter in
+    IndexedDB. The SDK encrypts operation inputs for the local connector and
+    decrypts results in the application. The control plane routes opaque bodies
+    while retaining operation and delivery metadata.
+  </p>
+  <p>
+    New authorizations require encrypted relay by default. An encrypted grant
+    never falls back to plaintext. Use
+    <code>relayEncryption: "disabled"</code> only against a development stack
+    that intentionally lacks end-to-end relay encryption.
+  </p>
+
+  <h2 id="hosted">Hosted-provider route</h2>
+  <p>
+    Authorization for a hosted collection returns a short-lived,
+    grant-bound provider capability. The SDK sends operations directly to the
+    provider, binds browser requests to the approved callback origin, and
+    refreshes that capability as needed.
+  </p>
+  <p>
+    Record payloads do not pass through the Connect control plane. The hosted
+    provider can decrypt records because it must execute canonical mdbase
+    operations. Treat it as a trusted data processor, not as zero-knowledge
+    storage.
+  </p>
+
+  <h2 id="native">Native shells</h2>
+  <p>
+    Supply <code>navigate</code> to open authorization in the system browser,
+    list a private-use callback scheme in the bundled manifest, and provide the
+    received deep link to <code>completeAuthorization(callbackUrl)</code>.
+    Native shells may also supply custom authorization storage and grant key
+    stores.
+  </p>
+</DocsLayout>
+

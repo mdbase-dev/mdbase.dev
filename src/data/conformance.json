@@ -1,0 +1,68 @@
+{
+  "generated_at": "2026-07-25",
+  "spec_version": "0.3.0",
+  "implementations": [
+    {
+      "name": "mdbase-rs",
+      "language": "Rust",
+      "version": "0.3.0-rc.1",
+      "repository": "https://github.com/callumalpass/mdbase-rs",
+      "evidence_date": "2026-07-22",
+      "profiles": [
+        "core_read",
+        "collection_semantics",
+        "cel",
+        "cel_match",
+        "cel_query",
+        "links",
+        "core_write",
+        "lifecycle",
+        "runtime_contracts/0.1",
+        "watch"
+      ],
+      "optional_features": [
+        "runtime_contract_materialization"
+      ],
+      "workflow_execution": false,
+      "note": "The Rust workflow engine exists, but workflow/0.1 is not advertised until shared fixture evidence is published."
+    },
+    {
+      "name": "mdbase",
+      "language": "TypeScript",
+      "version": "0.3.0-rc.1",
+      "repository": "https://github.com/callumalpass/mdbase",
+      "evidence_date": "2026-07-22",
+      "profiles": [
+        "core_read",
+        "collection_semantics",
+        "cel",
+        "cel_query",
+        "links",
+        "core_write",
+        "lifecycle"
+      ],
+      "optional_features": [
+        "view_records"
+      ],
+      "workflow_execution": false,
+      "note": "Claims reflect the machine-readable implementation evidence, not legacy conformance levels."
+    }
+  ],
+  "coverage": {
+    "coverage_complete": [
+      "core_read",
+      "collection_semantics"
+    ],
+    "draft": [
+      "cel",
+      "cel_match",
+      "cel_query",
+      "links",
+      "core_write",
+      "lifecycle",
+      "runtime_contracts/0.1",
+      "workflow/0.1",
+      "watch"
+    ]
+  }
+}

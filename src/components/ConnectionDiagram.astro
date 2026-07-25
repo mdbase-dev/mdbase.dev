@@ -1,0 +1,46 @@
+<div class="connection-diagram" aria-label="One mdbase collection connected to several authorized applications">
+  <div class="diagram-collection">
+    <span class="diagram-label">your collection</span>
+    <div class="diagram-file diagram-file--config">
+      <span>mdbase.yaml</span>
+    </div>
+    <div class="diagram-file">
+      <span>tasks/today.md</span>
+      <small>Markdown + frontmatter</small>
+    </div>
+    <div class="diagram-file">
+      <span>projects/site.md</span>
+      <small>Markdown + frontmatter</small>
+    </div>
+  </div>
+
+  <div class="diagram-gate">
+    <span class="diagram-label">mdbase connect</span>
+    <div class="gate-body">
+      <span class="gate-status"><i></i> exact grant</span>
+      <code>read · query · update</code>
+    </div>
+  </div>
+
+  <div class="diagram-routes" aria-hidden="true">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <div class="diagram-apps">
+    <div class="diagram-app">
+      <strong>TaskNotes</strong>
+      <small>local</small>
+    </div>
+    <div class="diagram-app">
+      <strong>your app</strong>
+      <small>direct or relay</small>
+    </div>
+    <div class="diagram-app">
+      <strong>your agent</strong>
+      <small>MCP</small>
+    </div>
+  </div>
+</div>
+

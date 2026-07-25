@@ -1,0 +1,159 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+const criterion = `{
+  "notifications": {
+    "criteria": [{
+      "id": "task.changed",
+      "event": {
+        "id": "mdbase.record.modified",
+        "version": 1
+      },
+      "if": {
+        "$expr": "\\"task\\" in event.payload.types"
+      },
+      "debounce": "5s",
+      "minimum_interval": "1m",
+      "presentation": {
+        "title": "Tasks changed",
+        "body": "Open TaskNotes to see the latest changes.",
+        "tag": "task-changes"
+      }
+    }]
+  }
+}`;
+
+const browser = `const worker = await navigator.serviceWorker.register(
+  "/service-worker.js"
+);
+
+await connect.registerNotifications({
+  serviceWorker: worker,
+  criteria: ["task.changed"]
+});`;
+
+const serviceWorker = `import { showMdbasePushNotification } from "@mdbase/connect";
+
+self.addEventListener("push", (event) => {
+  event.waitUntil(
+    showMdbasePushNotification(
+      self.registration,
+      event.data?.json()
+    )
+  );
+});`;
+
+const timers = `await connect.reconcileTimers({
+  namespace: "task-reminders",
+  criterion_id: "task.reminder",
+  timers: [{
+    id: "task-123:reminder-1",
+    fire_at: "2026-07-25T10:00:00Z",
+    data: { kind: "task_reminder" }
+  }]
+});`;
+
+const webhook = `import { verifyNotificationWebhook } from "@mdbase/connect-webhooks";
+
+const event = verifyNotificationWebhook({
+  body: rawRequestBody,
+  headers: request.headers,
+  keys: cachedConnectSigningKeys
+});
+
+if (await deliveries.claim(event.delivery_id)) {
+  await sendPush(event.connection_id, event.notification);
+}`;
+---
+
+<DocsLayout
+  title="Notifications and timers"
+  description="Declare private criteria at the collection authority, deliver opaque wake-up signals, and schedule generation-fenced one-shot timers."
+  active="notifications"
+  headings={[
+    { href: "#criteria", label: "Declare criteria" },
+    { href: "#browser", label: "Browser push" },
+    { href: "#timers", label: "Authority timers" },
+    { href: "#webhooks", label: "Signed webhooks" },
+    { href: "#privacy", label: "Privacy boundary" }
+  ]}
+>
+  <p>
+    Notification evaluation runs at the local connector or hosted provider.
+    Connect receives an opaque signal, grant, criterion, and cursor, then
+    delivers static presentation declared in the manifest. It does not receive
+    the matching record path, frontmatter, body, or runtime event payload.
+  </p>
+
+  <h2 id="criteria">Declare criteria in the application manifest</h2>
+  <CodeBlock code={criterion} language="json" label="Manifest fragment" />
+  <p>
+    Criteria use canonical runtime event contracts and CEL. Presentation is
+    static manifest data, so private record content cannot be interpolated into
+    a push. The approved grant stores an exact snapshot of each selected
+    criterion.
+  </p>
+
+  <h2 id="browser">Register browser push from a user action</h2>
+  <CodeBlock code={browser} language="ts" label="enable-notifications.ts" />
+  <CodeBlock code={serviceWorker} language="ts" label="service-worker.ts" />
+  <p>
+    Treat the signal as a prompt to refresh current authorized state.
+    Re-registering atomically replaces the selected criteria for the
+    installation. Call <code>unregisterNotifications(worker)</code> when the
+    user opts out.
+  </p>
+
+  <h2 id="timers">Reconcile one-shot timers at the authority</h2>
+  <CodeBlock code={timers} language="ts" label="reminders.ts" />
+  <p>
+    Reconciliation is atomic. Unchanged timers keep their generation and fired
+    state, changed timers receive a new generation, new timers are scheduled,
+    and omitted active timers are cancelled. IDs and optional private data
+    remain at the collection authority and are not included in the signal.
+  </p>
+
+  <h2 id="webhooks">Use signed webhooks for developer-managed delivery</h2>
+  <p>
+    Distributed applications should normally keep Apple and Firebase sender
+    credentials in their own infrastructure. Declare one HTTPS webhook and
+    verify the signature over the exact raw body before parsing it.
+  </p>
+  <CodeBlock code={webhook} language="ts" label="notification-webhook.ts" />
+  <p>
+    Cache keys from
+    <code>/v1/notifications/webhook-signing-keys</code>, enforce the built-in
+    five-minute replay window, and store <code>delivery_id</code> before doing
+    work because Connect retries until the endpoint succeeds.
+  </p>
+
+  <h2 id="privacy">Delivery choices change the trust boundary</h2>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Mode</th>
+        <th>Best fit</th>
+        <th>Additional trust</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Web Push</td>
+        <td>Browser and installed PWA</td>
+        <td>Browser push service and Connect delivery storage</td>
+      </tr>
+      <tr>
+        <td>Managed FCM</td>
+        <td>Personal or single-owner native application</td>
+        <td>Connect sender identity can address the application's Firebase project</td>
+      </tr>
+      <tr>
+        <td>Signed webhook</td>
+        <td>Broadly distributed application</td>
+        <td>Developer backend holds its own platform sender credentials</td>
+      </tr>
+    </tbody>
+  </table>
+</DocsLayout>
+

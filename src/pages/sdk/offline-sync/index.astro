@@ -1,0 +1,111 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+const createReplica = `import {
+  IndexedDbReplicaStore,
+  OfflineReplica,
+  type ReplicaData
+} from "@mdbase/connect-sync";
+
+const hosted = connect.hostedSync();
+if (!hosted) {
+  throw new Error("Authorize a hosted collection first.");
+}
+
+const initial: ReplicaData<Task> = {
+  replicaId: hosted.replicaId,
+  records: {},
+  pending: [],
+  conflicts: {}
+};
+
+const store = new IndexedDbReplicaStore<Task>(
+  \`tasks:\${hosted.collectionId}\`,
+  initial
+);
+
+const replica = new OfflineReplica(hosted.transport, store);
+await replica.initialize();`;
+
+const mutate = `const optimistic = await replica.queueCreate({
+  path: "tasks/offline.md",
+  frontmatter: {
+    type: "task",
+    title: "Written offline",
+    status: "open"
+  },
+  types: ["task"]
+});
+
+render(await replica.records());
+
+// Run now and again when connectivity returns.
+await replica.sync();`;
+
+const conflict = `for (const { recordId, receipt } of await replica.conflictEntries()) {
+  const choice = await askUserToResolve(receipt.conflict);
+  await replica.resolveConflict(recordId, choice); // "local" or "remote"
+}
+
+await replica.sync();`;
+---
+
+<DocsLayout
+  title="Offline sync"
+  description="Build an offline-first cache for hosted collections with durable mutation IDs, explicit conflicts, and provider-neutral replication."
+  active="offline-sync"
+  headings={[
+    { href: "#requirements", label: "Requirements" },
+    { href: "#replica", label: "Create a replica" },
+    { href: "#mutations", label: "Queue mutations" },
+    { href: "#conflicts", label: "Resolve conflicts" },
+    { href: "#mirrors", label: "Markdown mirrors" }
+  ]}
+>
+  <h2 id="requirements">Require a hosted collection</h2>
+  <p>
+    Add <code>"collection_kind": "hosted"</code> to the manifest requirements
+    when the application needs an always-online authority and
+    <code>hostedSync()</code>. The same application can still maintain an
+    IndexedDB cache and operate while offline.
+  </p>
+  <p>
+    Add both packages:
+    <code>@mdbase/connect</code> and <code>@mdbase/connect-sync</code>.
+  </p>
+
+  <h2 id="replica">Create a persistent replica</h2>
+  <CodeBlock code={createReplica} language="ts" label="replica.ts" />
+  <p>
+    The SDK keeps the short-lived provider capability private and refreshes it
+    before sync calls. The sync package receives only the provider-neutral
+    transport.
+  </p>
+
+  <h2 id="mutations">Queue optimistic local mutations</h2>
+  <CodeBlock code={mutate} language="ts" label="offline-write.ts" />
+  <p>
+    The replica applies the local overlay immediately and keeps a durable
+    mutation ID. Each record carries a stable record identity independent of
+    its path. Unrelated records continue synchronizing when one record
+    conflicts.
+  </p>
+
+  <h2 id="conflicts">Make conflict resolution explicit</h2>
+  <CodeBlock code={conflict} language="ts" label="conflicts.ts" />
+  <p>
+    Keeping the local version rebases it as a new idempotent mutation against
+    the current hosted revision. Keeping the hosted version discards only that
+    record's queued mutations. Neither choice silently affects other records.
+  </p>
+
+  <h2 id="mirrors">Filesystem mirrors use the same protocol</h2>
+  <p>
+    <code>mdbase-mirror</code> materializes a hosted collection as Markdown,
+    either receive-only or writable. On first connection to an existing
+    directory it compares the complete remote snapshot before writing or
+    uploading. Differing paths stop for explicit review.
+  </p>
+</DocsLayout>
+

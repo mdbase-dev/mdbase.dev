@@ -1,0 +1,87 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+---
+
+<DocsLayout
+  title="Security model"
+  description="Design a least-privilege Connect integration that respects local authority, hosted-provider trust, credential storage, and private notification boundaries."
+  active="security"
+  headings={[
+    { href: "#least-privilege", label: "Least privilege" },
+    { href: "#credentials", label: "Credentials" },
+    { href: "#origins", label: "Origins and callbacks" },
+    { href: "#payloads", label: "Payload boundaries" },
+    { href: "#checklist", label: "Release checklist" }
+  ]}
+>
+  <h2 id="least-privilege">Use contract scope by default</h2>
+  <p>
+    Declare the domain contracts the application understands and request only
+    the operations needed for the current feature. Contract scope confines
+    records to types that provide those contracts. Use
+    <code>full_collection</code> only for genuine collection tools.
+  </p>
+
+  <h2 id="credentials">Choose a storage boundary deliberately</h2>
+  <p>
+    Browser defaults retain authorization in <code>localStorage</code> and
+    relay keys as non-extractable IndexedDB keys. Applications with a stronger
+    isolation boundary can supply a custom <code>Storage</code> and
+    <code>GrantKeyStore</code>. Native shells should use platform-protected
+    application storage where possible.
+  </p>
+  <p>
+    Never put Connect refresh credentials, hosted provider capabilities, or
+    mirror replica tokens in the mdbase collection itself.
+  </p>
+
+  <h2 id="origins">Keep origins and callbacks exact</h2>
+  <ul>
+    <li>Production homepage, icon, and browser callbacks use HTTPS.</li>
+    <li>Browser callbacks stay on the manifest homepage origin.</li>
+    <li>Native callback schemes match or extend the reverse-domain application ID.</li>
+    <li>PKCE remains mandatory for browser and native authorization.</li>
+    <li>The loopback connector validates the exact approved browser origin.</li>
+  </ul>
+
+  <h2 id="payloads">Understand each payload boundary</h2>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Route</th>
+        <th>Record payload visibility</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Direct local</td>
+        <td>Application and local connector</td>
+      </tr>
+      <tr>
+        <td>Encrypted relay</td>
+        <td>Application and local connector; relay sees routing metadata and sizes</td>
+      </tr>
+      <tr>
+        <td>Hosted</td>
+        <td>Application and hosted provider; control plane does not proxy record bodies</td>
+      </tr>
+      <tr>
+        <td>Notification</td>
+        <td>Authority evaluates private event data; delivery receives an opaque wake-up signal</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="checklist">Application release checklist</h2>
+  <ul>
+    <li>Validate the production manifest without <code>--allow-local</code>.</li>
+    <li>Test narrowing, pause, revocation, token rotation, and reauthorization.</li>
+    <li>Test direct-to-relay failover without duplicating a mutation.</li>
+    <li>Pass revisions on every destructive or overwriting operation.</li>
+    <li>Present preflight reference impact before rename and delete.</li>
+    <li>Keep notification presentation free of private interpolated content.</li>
+    <li>Deduplicate signed webhook deliveries before side effects.</li>
+    <li>Document the hosted provider as a trusted data processor.</li>
+  </ul>
+</DocsLayout>
+

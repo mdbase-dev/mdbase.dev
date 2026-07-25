@@ -1,0 +1,178 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+const contractManifest = `{
+  "manifest_version": 1,
+  "id": "dev.mdbase.tasknotes",
+  "name": "TaskNotes",
+  "homepage": "https://tasks.example",
+  "redirect_uris": [
+    "https://tasks.example/auth/mdbase/callback"
+  ],
+  "requirements": {
+    "contracts": [
+      { "id": "tasknotes.task", "version": 1 }
+    ]
+  },
+  "provisions": {
+    "types": [
+      {
+        "name": "Task",
+        "document": "---\\nkind: mdbase.type\\nname: task\\nversion: 1\\nschema:\\n  dialect: json-schema-2020-12\\n  value:\\n    type: object\\nx-tasknotes:\\n  contract: tasknotes.task\\n  version: 1\\n---\\n",
+        "provides": [
+          { "id": "tasknotes.task", "version": 1 }
+        ]
+      }
+    ]
+  }
+}`;
+
+const nativeManifest = `{
+  "manifest_version": 1,
+  "id": "dev.example.workouts",
+  "name": "Example Workouts",
+  "homepage": "https://workouts.example",
+  "redirect_uris": [
+    "https://workouts.example/auth/mdbase/callback",
+    "dev.example.workouts://auth/mdbase/callback"
+  ],
+  "requirements": { "contracts": [] }
+}`;
+---
+
+<DocsLayout
+  title="Application manifest"
+  description="Declare application identity, callback routes, collection compatibility, provisioning, and notification criteria in one bundled v1 file."
+  active="manifest"
+  headings={[
+    { href: "#identity", label: "Identity and callbacks" },
+    { href: "#requirements", label: "Requirements" },
+    { href: "#provisioning", label: "Provisioning" },
+    { href: "#native", label: "Native callbacks" },
+    { href: "#changes", label: "Manifest changes" }
+  ]}
+>
+  <p>
+    The manifest is a declaration, not a remote developer registration. Bundle
+    it with the application, load it through the SDK, and validate it as part of
+    the build. Connect identifies the exact canonical JSON by digest.
+  </p>
+  <p>
+    Canonical schema:
+    <a href="/connect/schemas/mdbase-app.v1.json"><code>mdbase-app.v1.json</code></a>
+  </p>
+
+  <h2 id="identity">Identity and callbacks</h2>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Rule</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>id</code></td>
+        <td>Stable lowercase reverse-domain identifier with at least three labels</td>
+      </tr>
+      <tr>
+        <td><code>name</code></td>
+        <td>Human-readable name shown during authorization</td>
+      </tr>
+      <tr>
+        <td><code>homepage</code></td>
+        <td>HTTPS application origin</td>
+      </tr>
+      <tr>
+        <td><code>redirect_uris</code></td>
+        <td>HTTPS URIs on the homepage origin, plus matching native schemes when needed</td>
+      </tr>
+      <tr>
+        <td><code>icon</code></td>
+        <td>Optional HTTPS icon on the homepage origin</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="requirements">Collection requirements</h2>
+  <p>
+    Requirements tell the authority which collections can satisfy the
+    application. They do not grant access by themselves.
+  </p>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>contracts</code></td>
+        <td>Exact domain contract IDs and major versions the app understands</td>
+      </tr>
+      <tr>
+        <td><code>access: "contract"</code></td>
+        <td>Default. Limit record access to types that provide required contracts</td>
+      </tr>
+      <tr>
+        <td><code>access: "full_collection"</code></td>
+        <td>Request collection-wide features such as saved views or type administration</td>
+      </tr>
+      <tr>
+        <td><code>collection_kind: "hosted"</code></td>
+        <td>Offer only provider-backed collections and enable the hosted sync handoff</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout">
+    <strong>Leave collection_kind out when either authority is acceptable.</strong>
+    <p>
+      Route choice within a local grant is automatic. Direct versus relay is
+      never a manifest requirement or a user storage choice.
+    </p>
+  </div>
+
+  <h2 id="provisioning">Provision a missing contract safely</h2>
+  <p>
+    A manifest may carry complete portable type documents. During approval, the
+    authority installs only the missing definitions, reopens the collection,
+    and verifies the declared contract before it creates the grant.
+    Provisioning does not give the application general
+    <code>create_type</code> access.
+  </p>
+  <CodeBlock code={contractManifest} language="json" label="Task contract example" />
+  <p>
+    A provision may only claim contracts listed in
+    <code>requirements.contracts</code>. Auxiliary types installed with the
+    same approved set use an empty <code>provides</code> array.
+  </p>
+
+  <h2 id="native">Native application callbacks</h2>
+  <p>
+    Native shells open authorization in the system browser and may list a
+    private-use scheme that exactly matches, or extends, the application ID.
+  </p>
+  <CodeBlock code={nativeManifest} language="json" label="Native callback example" />
+  <p>
+    Pass a <code>navigate</code> adapter to <code>MdbaseConnect</code>, then
+    call <code>completeAuthorization(callbackUrl)</code> when the deep link
+    returns to the application.
+  </p>
+
+  <h2 id="changes">Changing the manifest</h2>
+  <p>
+    Any canonical manifest change creates a new application identity digest. It
+    cannot silently broaden an existing grant. The existing installation stays
+    bound to its approved declaration until the user completes authorization
+    for the changed one.
+  </p>
+  <p>
+    This is especially important for new contracts, notification criteria, and
+    changed callback routes. Handle
+    <code>notification_reauthorization_required</code> by starting
+    authorization again.
+  </p>
+</DocsLayout>
+

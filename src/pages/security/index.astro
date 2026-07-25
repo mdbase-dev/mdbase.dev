@@ -1,0 +1,117 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Security"
+  description="The mdbase Connect trust model for local collections, hosted collections, application grants, relay encryption, and notifications."
+>
+  <section class="page-hero">
+    <div class="page-hero__inner">
+      <div>
+        <p class="eyebrow"><i></i> Connect protocol 1</p>
+        <h1>Trust the component that can open the data.</h1>
+      </div>
+      <div class="page-hero__aside">
+        <p>
+          Connect keeps authorization enforcement at the local connector or
+          hosted provider. It minimizes control-plane data, encrypts local relay
+          payloads end to end, and names the hosted provider's trust boundary
+          directly.
+        </p>
+        <div class="button-row">
+          <a class="button button--primary" href="/sdk/security/">Developer guidance</a>
+          <a class="button" href="https://github.com/mdbase-dev/mdbase-connect/tree/main/docs">
+            Architecture documents
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Data boundaries</h2>
+    <table class="trust-table">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Local collection</th>
+          <th>Hosted collection</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Markdown records</td>
+          <td>Remain on the registered computer</td>
+          <td>Encrypted at rest in the hosted provider</td>
+        </tr>
+        <tr>
+          <td>Absolute paths</td>
+          <td>Remain at the local connector</td>
+          <td>Not applicable to provider-backed records</td>
+        </tr>
+        <tr>
+          <td>Operation payloads</td>
+          <td>Encrypted app to connector across relay</td>
+          <td>Sent directly to the grant-bound provider</td>
+        </tr>
+        <tr>
+          <td>Grant policy</td>
+          <td>Cached and rechecked locally</td>
+          <td>Rechecked by the hosted provider</td>
+        </tr>
+        <tr>
+          <td>Notification signals</td>
+          <td colspan="2">Opaque signal, criterion, grant, and cursor metadata; no record path or content</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>What application developers must do</h2>
+    <div class="steps">
+      <div class="step">
+        <div>
+          <h3>Request the narrowest useful operation set.</h3>
+          <p>
+            Use contract-scoped access unless the feature truly needs
+            collection-wide types or saved views. Ask for additional operations
+            when the user opens the feature that needs them.
+          </p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Keep authorization state in an appropriate storage boundary.</h3>
+          <p>
+            Browser defaults use localStorage plus non-extractable IndexedDB
+            keys. Native shells should provide storage and navigation adapters
+            that match their platform security model.
+          </p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Treat notifications as wake-up hints.</h3>
+          <p>
+            Never infer private state from a signal. Open the application, renew
+            authorization if needed, and read the latest authorized collection
+            state.
+          </p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Use revision preconditions for writes.</h3>
+          <p>
+            Preserve the revision returned by reads and queries, then pass
+            <code>if_revision</code> to update, rename, and delete operations.
+            Resolve conflicts explicitly.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+

@@ -1,0 +1,129 @@
+---
+import DocsLayout from "../../components/DocsLayout.astro";
+import CodeBlock from "../../components/CodeBlock.astro";
+
+const install = `pnpm add @mdbase/connect`;
+const seam = `import type { MdbaseCollectionClient } from "@mdbase/connect";
+
+export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
+  return client.queryAll({
+    types: ["task"],
+    where: 'status == "open"',
+    order_by: [{ field: "due", direction: "asc" }]
+  });
+}`;
+---
+
+<DocsLayout
+  title="Build on mdbase Connect"
+  description="Authorize a collection once, then use typed mdbase operations without owning its storage or deployment topology."
+  active="overview"
+  headings={[
+    { href: "#choose-a-surface", label: "Choose a surface" },
+    { href: "#application-shape", label: "Application shape" },
+    { href: "#package-map", label: "Package map" }
+  ]}
+>
+  <p>
+    <code>@mdbase/connect</code> is the browser and native-shell SDK for
+    applications that operate on a user's local or hosted mdbase collection. It
+    owns application registration, OAuth with PKCE, grant renewal, local versus
+    hosted route selection, encrypted relay requests, and typed operation
+    envelopes.
+  </p>
+
+  <CodeBlock code={install} language="sh" label="Install" />
+
+  <h2 id="choose-a-surface">Choose the narrowest SDK surface</h2>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Surface</th>
+        <th>Use it for</th>
+        <th>Depends on</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>MdbaseConnect</code></td>
+        <td>Application entry points, authorization, routing, renewal, notifications, and operations</td>
+        <td>Browser APIs or adapters supplied by a native shell</td>
+      </tr>
+      <tr>
+        <td><code>MdbaseCollectionClient</code></td>
+        <td>Domain and feature logic that should be independent of OAuth and hosting</td>
+        <td>A small <code>MdbaseCollectionTransport</code></td>
+      </tr>
+      <tr>
+        <td><code>createSandbox()</code></td>
+        <td>Fast frontend tests for CRUD, revisions, pagination, defaults, and change cursors</td>
+        <td><code>@mdbase/connect-dev</code></td>
+      </tr>
+      <tr>
+        <td><code>OfflineReplica</code></td>
+        <td>Offline-first applications backed by a hosted collection</td>
+        <td><code>@mdbase/connect-sync</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="application-shape">Keep authorization at the edge</h2>
+  <p>
+    Create one <code>MdbaseConnect</code> instance at the application boundary.
+    Pass its collection-client behavior into feature code rather than importing
+    OAuth state throughout the application. The same feature code can then run
+    against Connect, the developer sandbox, or a future conforming transport.
+  </p>
+  <CodeBlock code={seam} language="ts" label="tasks.ts" />
+  <div class="callout">
+    <strong>The operation envelope is part of the contract.</strong>
+    <p>
+      Record operations return <code>{`{ valid, result, diagnostics }`}</code>.
+      Use <code>unwrapOperation()</code> when exceptions suit the calling code,
+      or inspect the envelope when the interface should present validation
+      diagnostics inline.
+    </p>
+  </div>
+
+  <h2 id="package-map">Package map</h2>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Package</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>@mdbase/connect</code></td>
+        <td>Authorization, routes, operations, notifications, and hosted sync handoff</td>
+      </tr>
+      <tr>
+        <td><code>@mdbase/connect-dev</code></td>
+        <td>Manifest validation, contract validation, and deterministic sandbox transport</td>
+      </tr>
+      <tr>
+        <td><code>@mdbase/connect-protocol</code></td>
+        <td>Shared TypeScript types and canonical JSON Schemas</td>
+      </tr>
+      <tr>
+        <td><code>@mdbase/connect-sync</code></td>
+        <td>Hosted replication state machine, IndexedDB replica, conflicts, and offline mutations</td>
+      </tr>
+      <tr>
+        <td><code>@mdbase/connect-webhooks</code></td>
+        <td>Server-side verification for signed notification webhooks</td>
+      </tr>
+      <tr>
+        <td><code>@mdbase/tasknotes</code></td>
+        <td>Contract-aware TaskNotes operations over generic collection clients</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="button-row" style="margin-top: 2rem">
+    <a class="button button--primary" href="/sdk/quickstart/">Continue to the quickstart</a>
+    <a class="button" href="/sdk/api/">Browse the API</a>
+  </div>
+</DocsLayout>
+

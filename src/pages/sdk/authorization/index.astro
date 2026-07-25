@@ -1,0 +1,155 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+const stepUp = `const required = ["read", "query", "update"] as const;
+const capability = connect.authorizationCapabilities([...required]);
+
+if (!capability.sufficient) {
+  await connect.requestOperations([...required]);
+}`;
+
+const listen = `const stop = connect.onConnectionChange((connection) => {
+  if (!connection) {
+    renderDisconnected();
+    return;
+  }
+
+  renderConnection({
+    collectionId: connection.collectionId,
+    route: connection.route,
+    operations: connection.operations
+  });
+});
+
+// Call stop() when the owning UI is destroyed.`;
+
+const recover = `try {
+  await connect.update(input);
+} catch (error) {
+  if (error instanceof MdbaseConnectError) {
+    switch (error.recovery) {
+      case "reauthorize":
+        await connect.requestOperations(["update"]);
+        break;
+      case "refresh":
+        await refreshVisibleState();
+        break;
+      case "resolve_outcome":
+        await connect.resumePendingMutation(input);
+        break;
+    }
+  }
+  throw error;
+}`;
+---
+
+<DocsLayout
+  title="Authorization"
+  description="Request exact operations, add permissions only when a feature needs them, and respond correctly to narrowing or revocation."
+  active="authorization"
+  headings={[
+    { href: "#operations", label: "Operation grants" },
+    { href: "#step-up", label: "Step-up authorization" },
+    { href: "#connection", label: "Connection state" },
+    { href: "#recovery", label: "Recovery" },
+    { href: "#disconnect", label: "Disconnect" }
+  ]}
+>
+  <p>
+    A Connect grant binds one application installation, one canonical manifest,
+    one collection, one scope, and an exact operation set. The collection
+    authority checks the grant again for every request.
+  </p>
+
+  <h2 id="operations">Choose operations by feature</h2>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Typical operations</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Browse records</td>
+        <td><code>describe</code>, <code>read</code>, <code>query</code></td>
+      </tr>
+      <tr>
+        <td>Live refresh</td>
+        <td><code>changes</code></td>
+      </tr>
+      <tr>
+        <td>Edit records</td>
+        <td><code>create</code>, <code>update</code></td>
+      </tr>
+      <tr>
+        <td>Move or remove records</td>
+        <td><code>rename</code>, <code>delete</code></td>
+      </tr>
+      <tr>
+        <td>Use saved views</td>
+        <td><code>list_views</code>, <code>execute_view</code></td>
+      </tr>
+      <tr>
+        <td>Administer saved view source</td>
+        <td><code>read_view_source</code>, <code>create_view_source</code>, <code>update_view_source</code>, <code>delete_view_source</code></td>
+      </tr>
+      <tr>
+        <td>Administer collection types</td>
+        <td><code>read_type</code>, <code>create_type</code>, <code>update_type</code></td>
+      </tr>
+      <tr>
+        <td>Authority timers</td>
+        <td><code>list_timers</code>, <code>put_timer</code>, <code>cancel_timer</code>, <code>reconcile_timers</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="step-up">Request additional operations at the point of use</h2>
+  <p>
+    Do not front-load every possible permission. Inspect the current gap when a
+    user opens an editing or administration feature.
+  </p>
+  <CodeBlock code={stepUp} language="ts" label="feature-entry.ts" />
+  <p>
+    <code>requestOperations()</code> is a no-op when the current grant is
+    already sufficient. Otherwise it asks for the least-privilege union of the
+    existing operations and the new requirements.
+  </p>
+
+  <h2 id="connection">Render current connection state</h2>
+  <CodeBlock code={listen} language="ts" label="connection-state.ts" />
+  <p>
+    The route is <code>direct</code>, <code>relay</code>, or
+    <code>hosted</code>. Treat that as status information, not a mode the user
+    must configure. A <code>null</code> connection means the SDK no longer has
+    a usable authorization.
+  </p>
+
+  <h2 id="recovery">Use structured recovery actions</h2>
+  <p>
+    <code>MdbaseConnectError</code> includes a machine-readable code, current
+    grant information where relevant, and a recovery action:
+    <code>retry</code>, <code>reauthorize</code>, <code>refresh</code>,
+    <code>resolve_outcome</code>, <code>fix_request</code>, or
+    <code>none</code>.
+  </p>
+  <CodeBlock code={recover} language="ts" label="recovery.ts" />
+  <div class="callout">
+    <strong>A local rejection is authoritative.</strong>
+    <p>
+      When the connector definitively rejects an encrypted grant, the SDK
+      removes only that stale credential. It does not bypass the local decision
+      through the relay.
+    </p>
+  </div>
+
+  <h2 id="disconnect">Disconnecting an application</h2>
+  <p>
+    <code>connect.disconnect()</code> clears this application's local
+    authorization state. It does not replace user-controlled revocation at the
+    collection authority. Provide a clear path to the Connect controller when a
+    user needs to review, narrow, pause, or revoke a grant.
+  </p>
+</DocsLayout>

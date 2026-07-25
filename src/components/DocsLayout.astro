@@ -1,0 +1,72 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  active: string;
+  headings?: Array<{ href: string; label: string }>;
+}
+
+const { title, description, active, headings = [] } = Astro.props;
+const docs = [
+  { href: "/sdk/", label: "Overview", key: "overview" },
+  { href: "/sdk/quickstart/", label: "Quickstart", key: "quickstart" },
+  { href: "/sdk/manifest/", label: "Application manifest", key: "manifest" },
+  { href: "/sdk/contracts/", label: "Contracts and adapters", key: "contracts" },
+  { href: "/sdk/authorization/", label: "Authorization", key: "authorization" },
+  { href: "/sdk/operations/", label: "Records and operations", key: "operations" },
+  { href: "/sdk/routing/", label: "Local and hosted routes", key: "routing" },
+  { href: "/sdk/testing/", label: "Testing", key: "testing" },
+  { href: "/sdk/notifications/", label: "Notifications and timers", key: "notifications" },
+  { href: "/sdk/offline-sync/", label: "Offline sync", key: "offline-sync" },
+  { href: "/sdk/security/", label: "Security model", key: "security" },
+  { href: "/sdk/api/", label: "API reference", key: "api" }
+];
+---
+
+<BaseLayout title={title} description={description} current="sdk">
+  <div class="docs-shell">
+    <aside class="docs-nav">
+      <details open>
+        <summary>Connect SDK</summary>
+        <nav aria-label="SDK documentation">
+          {
+            docs.map((doc) => (
+              <a href={doc.href} aria-current={active === doc.key ? "page" : undefined}>
+                {doc.label}
+              </a>
+            ))
+          }
+        </nav>
+      </details>
+      <div class="docs-nav__meta">
+        <span>@mdbase/connect</span>
+        <strong>0.1.0-beta.1</strong>
+      </div>
+    </aside>
+    <article class="docs-article">
+      <header class="docs-title">
+        <p>Connect SDK</p>
+        <h1>{title}</h1>
+        <span>{description}</span>
+      </header>
+      <slot />
+      <footer class="docs-edit">
+        <a href="https://github.com/mdbase-dev/mdbase.dev/tree/main/src/pages/sdk">
+          Edit this page on GitHub
+        </a>
+      </footer>
+    </article>
+    {
+      headings.length > 0 && (
+        <aside class="docs-toc">
+          <strong>On this page</strong>
+          <nav aria-label="On this page">
+            {headings.map((heading) => <a href={heading.href}>{heading.label}</a>)}
+          </nav>
+        </aside>
+      )
+    }
+  </div>
+</BaseLayout>

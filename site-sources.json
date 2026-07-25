@@ -1,0 +1,20 @@
+{
+  "specification": {
+    "repository": "mdbase-dev/mdbase-spec",
+    "ref": "6acdf889b28537546ac53e6a8c13d2dbd57d1a5f"
+  },
+  "connect": {
+    "repository": "mdbase-dev/mdbase-connect",
+    "ref": "fec3e222cebb8f1711d3e6eb111ab8f225680006"
+  },
+  "implementations": [
+    {
+      "repository": "callumalpass/mdbase-rs",
+      "ref": "fafea262cffbce1205563a580e4d5850e7e942b2"
+    },
+    {
+      "repository": "callumalpass/mdbase",
+      "ref": "4f419e0f4454682d42e067749db1fd16d72d1eb9"
+    }
+  ]
+}

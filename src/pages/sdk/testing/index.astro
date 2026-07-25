@@ -1,0 +1,115 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+const sandbox = `import { createSandbox } from "@mdbase/connect-dev";
+import type { JsonObject } from "@mdbase/connect";
+
+interface Task extends JsonObject {
+  type: "task";
+  title: string;
+  status: "open" | "done";
+}
+
+const { client, transport } = createSandbox<Task>({
+  records: [{
+    path: "tasks/first.md",
+    types: ["task"],
+    frontmatter: {
+      type: "task",
+      title: "First",
+      status: "open"
+    }
+  }]
+});
+
+const result = await listOpenTasks(client);
+expect(result.results).toHaveLength(1);
+expect(transport.snapshot()[0].path).toBe("tasks/first.md");`;
+
+const ci = `pnpm exec mdbase-connect-dev validate-manifest \\
+  public/.well-known/mdbase-app.json
+
+pnpm test
+
+# Run semantic and route tests against the real local stack.
+pnpm e2e`;
+---
+
+<DocsLayout
+  title="Testing"
+  description="Use the transport-neutral client and deterministic sandbox for feature tests, then reserve the real connector for CEL, authorization, encryption, and route behavior."
+  active="testing"
+  headings={[
+    { href: "#sandbox", label: "Sandbox tests" },
+    { href: "#coverage", label: "Sandbox coverage" },
+    { href: "#real", label: "Real connector tests" },
+    { href: "#ci", label: "CI sequence" }
+  ]}
+>
+  <h2 id="sandbox">Test feature logic through MdbaseCollectionClient</h2>
+  <CodeBlock code={sandbox} language="ts" label="tasks.test.ts" />
+  <p>
+    The sandbox implements the same small
+    <code>MdbaseCollectionTransport</code> seam used by
+    <code>MdbaseCollectionClient</code>. It is deterministic, requires no
+    browser authorization, and exposes a snapshot helper for assertions.
+  </p>
+
+  <h2 id="coverage">What the sandbox covers</h2>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Covered</th>
+        <th>Deliberately not approximated</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Typed CRUD and operation envelopes</td>
+        <td>CEL expression semantics</td>
+      </tr>
+      <tr>
+        <td>Revision preconditions</td>
+        <td>Query ordering semantics</td>
+      </tr>
+      <tr>
+        <td>Type filtering and pagination</td>
+        <td>OAuth, PKCE, and grant approval</td>
+      </tr>
+      <tr>
+        <td>Read defaults</td>
+        <td>Direct and encrypted relay routing</td>
+      </tr>
+      <tr>
+        <td>Change cursors</td>
+        <td>Filesystem and hosted-provider behavior</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    The sandbox rejects <code>where</code> and <code>order_by</code> instead of
+    offering a loose imitation. This prevents a passing unit test from implying
+    that its expression behavior is conformant.
+  </p>
+
+  <h2 id="real">Use the real stack at system boundaries</h2>
+  <p>Run integration tests against the local Connect stack for:</p>
+  <ul>
+    <li>manifest registration and callback validation;</li>
+    <li>OAuth with PKCE and refresh-token rotation;</li>
+    <li>grant narrowing, pausing, revocation, and operation gaps;</li>
+    <li>CEL filters, ordering, links, saved views, and type behavior;</li>
+    <li>direct-to-relay failover and durable mutation receipts;</li>
+    <li>hosted capabilities, sync, notifications, and authority timers.</li>
+  </ul>
+
+  <h2 id="ci">Recommended CI sequence</h2>
+  <CodeBlock code={ci} language="sh" label="CI" />
+  <p>
+    Validate the manifest before tests so a callback or requirement error is
+    reported as a declaration problem. Keep deterministic feature tests fast,
+    then run the real-stack suite as the release boundary.
+  </p>
+</DocsLayout>
+

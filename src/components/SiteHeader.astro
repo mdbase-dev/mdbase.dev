@@ -1,0 +1,61 @@
+---
+import BrandMark from "./BrandMark.astro";
+
+interface Props {
+  current?: "connect" | "sdk" | "runtime" | "implementations" | "spec";
+}
+
+const { current } = Astro.props;
+const links = [
+  { href: "/connect/", label: "Connect", key: "connect" },
+  { href: "/sdk/", label: "Build", key: "sdk" },
+  { href: "/runtime/", label: "Runtime", key: "runtime" },
+  { href: "/implementations/", label: "Implementations", key: "implementations" },
+  { href: "/spec/", label: "Spec", key: "spec" }
+] as const;
+---
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <a class="wordmark" href="/" aria-label="mdbase home">
+      <BrandMark compact />
+      <span>mdbase</span>
+    </a>
+    <nav class="desktop-nav" aria-label="Primary navigation">
+      {
+        links.map((link) => (
+          <a href={link.href} aria-current={current === link.key ? "page" : undefined}>
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+    <div class="header-actions">
+      <label class="theme-control">
+        <span class="sr-only">Color theme</span>
+        <select data-theme-select aria-label="Color theme">
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+      <a class="header-github" href="https://github.com/mdbase-dev" aria-label="mdbase on GitHub">
+        GitHub
+      </a>
+      <details class="mobile-nav">
+        <summary>Menu</summary>
+        <nav aria-label="Mobile navigation">
+          {
+            links.map((link) => (
+              <a href={link.href} aria-current={current === link.key ? "page" : undefined}>
+                {link.label}
+              </a>
+            ))
+          }
+          <a href="https://github.com/mdbase-dev">GitHub</a>
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>
+

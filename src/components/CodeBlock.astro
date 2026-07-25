@@ -1,0 +1,18 @@
+---
+interface Props {
+  code: string;
+  language?: string;
+  label?: string;
+}
+
+const { code, language = "text", label } = Astro.props;
+---
+
+<figure class="code-block">
+  <figcaption>
+    <span>{label ?? language}</span>
+    <button type="button" data-copy-code>Copy</button>
+  </figcaption>
+  <pre><code class={`language-${language}`}>{code.trim()}</code></pre>
+</figure>
+

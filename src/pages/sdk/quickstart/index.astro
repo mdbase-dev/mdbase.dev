@@ -1,0 +1,165 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+const manifest = `{
+  "manifest_version": 1,
+  "id": "dev.example.workouts",
+  "name": "Example Workouts",
+  "homepage": "https://workouts.example",
+  "redirect_uris": [
+    "https://workouts.example/auth/mdbase/callback"
+  ],
+  "requirements": {
+    "contracts": []
+  }
+}`;
+
+const install = `pnpm add @mdbase/connect
+pnpm add -D @mdbase/connect-dev`;
+
+const client = `import {
+  MdbaseConnect,
+  type JsonObject
+} from "@mdbase/connect";
+
+export interface Workout extends JsonObject {
+  type: "workout";
+  title: string;
+  completed?: boolean;
+}
+
+export const connect = new MdbaseConnect<Workout>({
+  serverUrl: "https://connect.mdbase.dev",
+  manifest: new URL("/.well-known/mdbase-app.json", location.origin).href,
+  redirectUri: new URL("/auth/mdbase/callback", location.origin).href
+});`;
+
+const connectButton = `import { connect } from "./connect";
+
+export async function connectCollection() {
+  await connect.authorize(["describe", "read", "query", "update"]);
+  // authorize() navigates to Connect and does not return.
+}`;
+
+const callback = `import { connect } from "./connect";
+
+export async function completeMdbaseCallback() {
+  const connection = await connect.completeAuthorization(location.href);
+  history.replaceState({}, "", "/");
+  return connection;
+}`;
+
+const query = `import { connect } from "./connect";
+import { unwrapOperation } from "@mdbase/connect";
+
+const page = unwrapOperation(await connect.query({
+  types: ["workout"],
+  where: 'completed != true',
+  order_by: [{ field: "title", direction: "asc" }],
+  limit: 50
+}));
+
+const first = page.results[0];
+if (first) {
+  unwrapOperation(await connect.update({
+    path: first.path,
+    patch: { completed: true },
+    if_revision: first.revision
+  }));
+}`;
+
+const validate = `mdbase-connect-dev validate-manifest \\
+  public/.well-known/mdbase-app.json`;
+---
+
+<DocsLayout
+  title="Quickstart"
+  description="Connect a browser application, complete authorization, query records, and make a revision-safe update."
+  active="quickstart"
+  headings={[
+    { href: "#manifest", label: "1. Add a manifest" },
+    { href: "#install", label: "2. Install" },
+    { href: "#client", label: "3. Create the client" },
+    { href: "#authorize", label: "4. Authorize" },
+    { href: "#callback", label: "5. Complete callback" },
+    { href: "#operate", label: "6. Use operations" }
+  ]}
+>
+  <div class="callout">
+    <strong>Private-beta requirement</strong>
+    <p>
+      This guide uses the production service URL, but public application
+      registration is not open yet. Use the repository's local stack or a
+      private-beta account until the release gate is removed.
+    </p>
+  </div>
+
+  <h2 id="manifest">1. Add a bundled application manifest</h2>
+  <p>
+    Save this file at <code>public/.well-known/mdbase-app.json</code>. The SDK
+    loads the file from your own application and posts it inline during
+    registration. Connect does not fetch your website.
+  </p>
+  <CodeBlock code={manifest} language="json" label="public/.well-known/mdbase-app.json" />
+  <p>
+    The reverse-domain ID and name are display metadata, not proof of
+    publication ownership. An approved grant is bound to the exact canonical
+    manifest content and the application installation that completed
+    authorization.
+  </p>
+
+  <h2 id="install">2. Install the SDK and validator</h2>
+  <CodeBlock code={install} language="sh" label="Terminal" />
+  <p>Validate the bundled file during development and CI:</p>
+  <CodeBlock code={validate} language="sh" label="Terminal" />
+  <p>
+    For a loopback development homepage and callback, add
+    <code>--allow-local</code>. Production manifests require HTTPS.
+  </p>
+
+  <h2 id="client">3. Create one Connect client</h2>
+  <CodeBlock code={client} language="ts" label="src/connect.ts" />
+  <p>
+    Keep this instance stable. It owns persisted authorization state, refresh
+    rotation, the non-extractable relay key, route selection, and connection
+    change notifications.
+  </p>
+
+  <h2 id="authorize">4. Start authorization from a user action</h2>
+  <CodeBlock code={connectButton} language="ts" label="src/connect-button.ts" />
+  <p>
+    Connect shows compatible collections and asks the user to approve the exact
+    operations. Your application never receives an unauthorised collection
+    description while that choice is being made.
+  </p>
+
+  <h2 id="callback">5. Complete the callback</h2>
+  <CodeBlock code={callback} language="ts" label="src/mdbase-callback.ts" />
+  <p>
+    Call this once on the exact callback route listed in the manifest. PKCE is
+    mandatory. On success, the client stores the grant-bound authorization and
+    emits the active connection.
+  </p>
+
+  <h2 id="operate">6. Query and update with a revision</h2>
+  <CodeBlock code={query} language="ts" label="src/workouts.ts" />
+  <p>
+    Query results include a revision token. Pass it as
+    <code>if_revision</code> when changing the record so a concurrent edit
+    cannot be silently overwritten.
+  </p>
+  <div class="callout">
+    <strong>Do not assume frontmatter field names across contracts.</strong>
+    <p>
+      Generic apps can use declared mdbase types directly. Domain applications
+      should read the contract descriptors returned by <code>describe()</code>
+      or use a contract adapter such as <code>@mdbase/tasknotes</code>.
+    </p>
+  </div>
+
+  <div class="button-row" style="margin-top: 2rem">
+    <a class="button button--primary" href="/sdk/manifest/">Design the manifest</a>
+    <a class="button" href="/sdk/testing/">Add tests</a>
+  </div>
+</DocsLayout>

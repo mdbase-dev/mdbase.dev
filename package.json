@@ -1,0 +1,27 @@
+{
+  "name": "mdbase.dev",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "check": "astro check",
+    "preview": "astro preview",
+    "sync:sources": "node scripts/sync-sources.mjs",
+    "import:spec": "node scripts/import-spec.mjs",
+    "check:links": "node scripts/check-links.mjs",
+    "test": "pnpm check && pnpm build && pnpm import:spec && pnpm check:links"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource/atkinson-hyperlegible": "^5.3.0",
+    "@fontsource/azeret-mono": "^5.3.0",
+    "astro": "^7.1.3",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "typescript": "^6.0.3"
+  }
+}

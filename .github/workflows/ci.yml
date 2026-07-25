@@ -1,0 +1,81 @@
+name: Site checks
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out website
+        uses: actions/checkout@v4
+
+      - name: Check out specification
+        uses: actions/checkout@v4
+        with:
+          repository: mdbase-dev/mdbase-spec
+          ref: 6acdf889b28537546ac53e6a8c13d2dbd57d1a5f
+          path: .sources/mdbase-spec
+
+      - name: Check out Connect
+        uses: actions/checkout@v4
+        with:
+          repository: mdbase-dev/mdbase-connect
+          ref: fec3e222cebb8f1711d3e6eb111ab8f225680006
+          path: .sources/mdbase-connect
+
+      - name: Check out Rust implementation
+        uses: actions/checkout@v4
+        with:
+          repository: callumalpass/mdbase-rs
+          ref: fafea262cffbce1205563a580e4d5850e7e942b2
+          path: .sources/mdbase-rs
+
+      - name: Check out TypeScript implementation
+        uses: actions/checkout@v4
+        with:
+          repository: callumalpass/mdbase
+          ref: 4f419e0f4454682d42e067749db1fd16d72d1eb9
+          path: .sources/mdbase
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install website dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build specification artifact
+        working-directory: .sources/mdbase-spec/site
+        run: npm ci && npm run build
+
+      - name: Synchronize schemas and conformance claims
+        run: pnpm sync:sources
+        env:
+          MDBASE_SPEC_DIR: .sources/mdbase-spec
+          MDBASE_CONNECT_DIR: .sources/mdbase-connect
+          MDBASE_RS_DIR: .sources/mdbase-rs
+          MDBASE_TS_DIR: .sources/mdbase
+
+      - name: Type and content checks
+        run: pnpm check
+
+      - name: Build website
+        run: pnpm build
+
+      - name: Import specification
+        run: pnpm import:spec
+        env:
+          MDBASE_SPEC_DIR: .sources/mdbase-spec
+
+      - name: Check local links
+        run: pnpm check:links

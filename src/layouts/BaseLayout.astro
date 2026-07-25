@@ -1,0 +1,91 @@
+---
+import "@fontsource/atkinson-hyperlegible/400.css";
+import "@fontsource/atkinson-hyperlegible/700.css";
+import "@fontsource/azeret-mono/400.css";
+import "@fontsource/azeret-mono/500.css";
+import "../styles/global.css";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  current?: "connect" | "sdk" | "runtime" | "implementations" | "spec";
+  noIndex?: boolean;
+}
+
+const { title, description, current, noIndex = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#f7f9fb" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="mdbase" />
+    <meta name="twitter:card" content="summary" />
+    {noIndex && <meta name="robots" content="noindex" />}
+    <script is:inline>
+      (() => {
+        const stored = localStorage.getItem("mdbase:theme");
+        if (stored === "light" || stored === "dark") {
+          document.documentElement.dataset.theme = stored;
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <SiteHeader current={current} />
+    <main id="main">
+      <slot />
+    </main>
+    <SiteFooter />
+    <script is:inline>
+      const selects = document.querySelectorAll("[data-theme-select]");
+      const storedTheme = localStorage.getItem("mdbase:theme");
+      selects.forEach((select) => {
+        select.value = storedTheme === "light" || storedTheme === "dark" ? storedTheme : "system";
+        select.addEventListener("change", () => {
+          const value = select.value;
+          if (value === "system") {
+            localStorage.removeItem("mdbase:theme");
+            delete document.documentElement.dataset.theme;
+          } else {
+            localStorage.setItem("mdbase:theme", value);
+            document.documentElement.dataset.theme = value;
+          }
+          selects.forEach((other) => {
+            other.value = value;
+          });
+        });
+      });
+
+      document.querySelectorAll("[data-copy-code]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const wrapper = button.closest(".code-block");
+          const code = wrapper?.querySelector("code")?.textContent ?? "";
+          await navigator.clipboard.writeText(code);
+          const previous = button.textContent;
+          button.textContent = "Copied";
+          window.setTimeout(() => {
+            button.textContent = previous;
+          }, 1400);
+        });
+      });
+    </script>
+  </body>
+</html>
+

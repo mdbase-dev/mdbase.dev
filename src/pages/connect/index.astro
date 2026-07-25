@@ -1,0 +1,166 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const steps = [
+  {
+    title: "The application declares what it understands",
+    copy: "Its bundled manifest names callback URLs, required domain contracts, collection kind, and any type definitions that can be installed safely."
+  },
+  {
+    title: "Connect checks compatibility without exposing a collection",
+    copy: "The local or hosted authority decides whether each collection is ready, provisionable, or incompatible. The application does not inspect collections before authorization."
+  },
+  {
+    title: "The user approves exact operations",
+    copy: "The decision names one collection and concrete operations. Contract access is scoped to records that match the declared domain contracts unless full collection access is explicitly requested."
+  },
+  {
+    title: "Every request is checked at the authority",
+    copy: "The connector or hosted provider rechecks the current grant. Narrowing, pausing, or revoking access takes effect at the place that can open the data."
+  }
+];
+---
+
+<BaseLayout
+  title="mdbase Connect"
+  description="Authorize independent applications to use local or hosted mdbase collections without giving an app ownership of the data."
+  current="connect"
+>
+  <section class="page-hero">
+    <div class="page-hero__inner">
+      <div>
+        <p class="eyebrow"><i></i> Private beta · protocol 1</p>
+        <h1>Connect apps to data you control.</h1>
+      </div>
+      <div class="page-hero__aside">
+        <p>
+          mdbase Connect is an authorization, routing, and collection-hosting
+          layer. It gives an application one exact grant without exposing a
+          local folder or turning the collection into the app's database.
+        </p>
+        <div class="button-row">
+          <a class="button button--primary" href="/sdk/quickstart/">Build an integration</a>
+          <a class="button" href="https://github.com/mdbase-dev/mdbase-connect">View source</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>One approval flow, two collection authorities.</h2>
+    <p>
+      Applications use the same SDK and operation envelopes. The route changes
+      according to where the authoritative collection lives.
+    </p>
+    <table class="trust-table">
+      <thead>
+        <tr>
+          <th>Authority</th>
+          <th>Where Markdown lives</th>
+          <th>Application route</th>
+          <th>What the control plane sees</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Local connector</td>
+          <td>A folder on the user's computer</td>
+          <td>Direct loopback, then encrypted relay fallback</td>
+          <td>Account, grant, operation name, routing metadata, timing, and sizes</td>
+        </tr>
+        <tr>
+          <td>Hosted provider</td>
+          <td>Encrypted provider storage, with optional local mirror</td>
+          <td>Direct, short-lived provider capability</td>
+          <td>Account, grant, capability issuance, and provider routing metadata</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>Hosted collections use a standard hosted trust model.</strong>
+      <p>
+        The provider must decrypt collection data to execute canonical mdbase
+        operations. Hosted storage is encrypted at rest, but it is not
+        zero-knowledge storage.
+      </p>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>The authorization sequence</h2>
+    <div class="steps">
+      {
+        steps.map((step) => (
+          <div class="step">
+            <div>
+              <h3>{step.title}</h3>
+              <p>{step.copy}</p>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Security boundaries are explicit.</h2>
+    <p>
+      Connect minimizes the places that can read records, but it does not hide
+      ordinary infrastructure facts behind vague privacy language.
+    </p>
+    <table class="trust-table">
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Can read collection records?</th>
+          <th>Responsibility</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Application</td>
+          <td>Only through its current grant</td>
+          <td>Uses authorized results and protects its local SDK credentials</td>
+        </tr>
+        <tr>
+          <td>Local connector</td>
+          <td>Yes, for registered local collections</td>
+          <td>Final local authorization boundary and operation executor</td>
+        </tr>
+        <tr>
+          <td>Connect control plane</td>
+          <td>No local operation payloads or results</td>
+          <td>Identity, pairing, grants, short-lived tokens, and relay routing</td>
+        </tr>
+        <tr>
+          <td>Hosted provider</td>
+          <td>Yes, for hosted collections</td>
+          <td>Encrypted storage, canonical execution, sync, and durable receipts</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="button-row" style="margin-top: 2rem">
+      <a class="button" href="/security/">Complete security model</a>
+      <a class="button" href="/sdk/routing/">Routing guide</a>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <p class="eyebrow"><i></i> Release status</p>
+    <h2 style="margin-top: 1rem">The implementation is functional; public release gates remain.</h2>
+    <p>
+      The private-beta stack includes local and hosted authorities, encrypted
+      relay operations, grant narrowing and revocation, sync, notifications,
+      and the browser SDK. Public registration, a production restore drill,
+      signed desktop releases, and abuse-response operations remain launch
+      gates.
+    </p>
+    <div class="button-row" style="margin-top: 2rem">
+      <a class="button button--primary" href="/sdk/">Read the SDK documentation</a>
+      <a class="button" href="https://github.com/mdbase-dev/mdbase-connect/blob/main/README.md">
+        Follow release status
+      </a>
+    </div>
+  </section>
+</BaseLayout>
+
