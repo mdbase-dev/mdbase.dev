@@ -34,7 +34,10 @@ The homepage is based directly on
 `mdbase-connect/docs/mdbase-configurations-v2.html`. Its signature is one field
 of 361 record particles. The field begins as a murmuration and becomes concrete
 collection, structure, authority, permission, and access diagrams as the reader
-scrolls. This is the only expressive visual element.
+scrolls. This is the only expressive visual element. Canvas surfaces, labels,
+edges, and particles use the same light and dark color roles as the page. The
+introductory field uses the soft text and accent roles; later scenes use accent
+particles to distinguish metadata, hosted authority, and moving packets.
 
 ## Typography
 
@@ -48,7 +51,9 @@ are compact and leave room for their explanatory text. Reading columns use a
 The homepage has six long chapters in a left reading column and a fixed canvas
 on the right. On narrow screens, the canvas moves above each chapter. Interior
 pages use low, ruled page openings and narrow documentation columns. Navigation,
-buttons, tables, callouts, and footer links remain visually quiet.
+buttons, tables, callouts, and footer links remain visually quiet. A reading
+wash sits between the homepage canvas and its copy, becoming opaque before the
+mobile text region begins.
 
 ## Motion
 

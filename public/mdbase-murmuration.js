@@ -26,12 +26,16 @@
       let scrollFrame = 0;
       const palette = {
         paper: "rgb(252 252 251)",
+        surface: "rgb(252 252 251)",
+        surfaceSubtle: "rgb(247 248 249)",
         ink: "rgb(25 27 31)",
+        soft: "rgb(68 73 80)",
         muted: "rgb(111 116 124)",
         line: "rgb(204 208 213)",
         lineSoft: "rgb(226 229 232)",
         accent: "rgb(42 104 143)",
         particle: "rgb(25 27 31 / 0.88)",
+        particleIntro: "rgb(25 27 31 / 0.88)",
         replica: "rgb(81 87 95 / 0.62)"
       };
 
@@ -39,17 +43,25 @@
         const styles = getComputedStyle(document.documentElement);
         const dark = styles.colorScheme === "dark";
         palette.paper = styles.getPropertyValue("--color-surface").trim() || palette.paper;
+        palette.surface = styles.getPropertyValue("--color-surface").trim() || palette.surface;
+        palette.surfaceSubtle =
+          styles.getPropertyValue("--color-surface-subtle").trim() || palette.surfaceSubtle;
         palette.ink = styles.getPropertyValue("--color-text").trim() || palette.ink;
+        palette.soft = styles.getPropertyValue("--color-text-soft").trim() || palette.soft;
         palette.muted = styles.getPropertyValue("--color-text-muted").trim() || palette.muted;
-        palette.line = styles.getPropertyValue("--color-border-strong").trim() || palette.line;
+        palette.line = dark
+          ? styles.getPropertyValue("--color-text-faint").trim() || palette.muted
+          : styles.getPropertyValue("--color-text-muted").trim() || palette.muted;
         palette.lineSoft = styles.getPropertyValue("--color-border").trim() || palette.lineSoft;
         palette.accent = styles.getPropertyValue("--color-accent").trim() || palette.accent;
         palette.particle = dark
-          ? styles.getPropertyValue("--color-text-soft").trim() || palette.ink
-          : "rgb(25 27 31 / 0.88)";
-        palette.replica = dark
           ? styles.getPropertyValue("--color-text-muted").trim() || palette.muted
-          : "rgb(81 87 95 / 0.62)";
+          : styles.getPropertyValue("--color-text").trim() || palette.ink;
+        palette.particleIntro = dark
+          ? styles.getPropertyValue("--color-text-soft").trim() || palette.soft
+          : styles.getPropertyValue("--color-text").trim() || palette.ink;
+        palette.replica =
+          styles.getPropertyValue("--color-text-muted").trim() || palette.muted;
       }
 
       class Particle {
@@ -842,7 +854,8 @@
         if (!points || points.length < 2) return;
 
         context.save();
-        context.strokeStyle = "rgb(113 120 129 / 0.48)";
+        context.strokeStyle = palette.muted;
+        context.globalAlpha = 0.88;
         context.lineWidth = 1;
         context.setLineDash(edge.dashed ? [4, 5] : []);
         context.beginPath();
@@ -854,7 +867,8 @@
         const finalPoint = points[points.length - 1];
         const previousPoint = points[points.length - 2];
         const angle = Math.atan2(finalPoint.y - previousPoint.y, finalPoint.x - previousPoint.x);
-        context.fillStyle = "rgb(113 120 129 / 0.62)";
+        context.fillStyle = palette.muted;
+        context.globalAlpha = 0.95;
         context.beginPath();
         context.moveTo(finalPoint.x, finalPoint.y);
         context.lineTo(
@@ -882,7 +896,7 @@
         context.font =
           `${compact ? 8 : 9}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
         const metrics = context.measureText(edge.label);
-        context.fillStyle = "rgb(252 252 251 / 0.96)";
+        context.fillStyle = palette.surface;
         context.fillRect(x - metrics.width / 2 - 4, y - 7, metrics.width + 8, 12);
         context.fillStyle = palette.muted;
         context.textAlign = "center";
@@ -895,18 +909,18 @@
         context.save();
 
         if (node.kind === "boundary") {
-          context.fillStyle = "rgb(252 252 251 / 0.42)";
-          context.strokeStyle = "rgb(126 133 142 / 0.48)";
+          context.fillStyle = palette.surface;
+          context.strokeStyle = palette.line;
           context.setLineDash([5, 5]);
+        } else if (node.kind === "authority") {
+          context.fillStyle = palette.surfaceSubtle;
+          context.strokeStyle = palette.accent;
+          context.setLineDash([]);
         } else {
           context.fillStyle =
-            node.kind === "authority"
-              ? "rgb(247 250 251 / 0.94)"
-              : "rgb(252 252 251 / 0.90)";
+            node.kind === "service" ? palette.surfaceSubtle : palette.surface;
           context.strokeStyle =
-            node.kind === "authority"
-              ? "rgb(42 104 143 / 0.62)"
-              : "rgb(152 158 166 / 0.56)";
+            node.kind === "replica" ? palette.muted : palette.line;
           context.setLineDash(node.kind === "replica" ? [4, 4] : []);
         }
 
@@ -950,8 +964,30 @@
         context.restore();
       }
 
+      function particleFill(particle) {
+        if (particle.role === "packet" || particle.role === "metadata") {
+          return palette.accent;
+        }
+        if (activeScene === "intro") {
+          return particle.index % 17 === 0
+            ? palette.accent
+            : palette.particleIntro;
+        }
+        if (activeScene === "modes" && particle.index >= 181) {
+          return palette.accent;
+        }
+        if (
+          activeScene === "access"
+          && particle.index >= 151
+          && particle.index < 301
+        ) {
+          return palette.accent;
+        }
+        return palette.particle;
+      }
+
       function drawParticle(particle, compact) {
-        const baseSize = compact ? 2.25 : 3.25;
+        const baseSize = compact ? 2.5 : 3.25;
         const size =
           particle.role === "packet"
             ? baseSize * 1.5
@@ -961,14 +997,11 @@
 
         if (particle.role === "replica") {
           context.strokeStyle = palette.replica;
-          context.lineWidth = 0.8;
-          context.strokeRect(x, y, Math.max(1.5, size), Math.max(1.5, size));
+          context.lineWidth = 0.9;
+          context.strokeRect(x, y, Math.max(1.75, size), Math.max(1.75, size));
         } else {
-          context.fillStyle =
-            particle.role === "packet" || particle.role === "metadata"
-              ? palette.accent
-              : palette.particle;
-          context.fillRect(x, y, Math.max(1.5, size), Math.max(1.5, size));
+          context.fillStyle = particleFill(particle);
+          context.fillRect(x, y, Math.max(1.75, size), Math.max(1.75, size));
         }
       }
 

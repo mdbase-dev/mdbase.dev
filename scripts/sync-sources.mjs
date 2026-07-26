@@ -141,12 +141,16 @@ function addThemeAwareCanvasPalette(source) {
     palettePattern,
     `      const palette = {
         paper: "rgb(252 252 251)",
+        surface: "rgb(252 252 251)",
+        surfaceSubtle: "rgb(247 248 249)",
         ink: "rgb(25 27 31)",
+        soft: "rgb(68 73 80)",
         muted: "rgb(111 116 124)",
         line: "rgb(204 208 213)",
         lineSoft: "rgb(226 229 232)",
         accent: "rgb(42 104 143)",
         particle: "rgb(25 27 31 / 0.88)",
+        particleIntro: "rgb(25 27 31 / 0.88)",
         replica: "rgb(81 87 95 / 0.62)"
       };
 
@@ -154,34 +158,172 @@ function addThemeAwareCanvasPalette(source) {
         const styles = getComputedStyle(document.documentElement);
         const dark = styles.colorScheme === "dark";
         palette.paper = styles.getPropertyValue("--color-surface").trim() || palette.paper;
+        palette.surface = styles.getPropertyValue("--color-surface").trim() || palette.surface;
+        palette.surfaceSubtle =
+          styles.getPropertyValue("--color-surface-subtle").trim() || palette.surfaceSubtle;
         palette.ink = styles.getPropertyValue("--color-text").trim() || palette.ink;
+        palette.soft = styles.getPropertyValue("--color-text-soft").trim() || palette.soft;
         palette.muted = styles.getPropertyValue("--color-text-muted").trim() || palette.muted;
-        palette.line = styles.getPropertyValue("--color-border-strong").trim() || palette.line;
+        palette.line = dark
+          ? styles.getPropertyValue("--color-text-faint").trim() || palette.muted
+          : styles.getPropertyValue("--color-text-muted").trim() || palette.muted;
         palette.lineSoft = styles.getPropertyValue("--color-border").trim() || palette.lineSoft;
         palette.accent = styles.getPropertyValue("--color-accent").trim() || palette.accent;
         palette.particle = dark
-          ? styles.getPropertyValue("--color-text-soft").trim() || palette.ink
-          : "rgb(25 27 31 / 0.88)";
-        palette.replica = dark
           ? styles.getPropertyValue("--color-text-muted").trim() || palette.muted
-          : "rgb(81 87 95 / 0.62)";
+          : styles.getPropertyValue("--color-text").trim() || palette.ink;
+        palette.particleIntro = dark
+          ? styles.getPropertyValue("--color-text-soft").trim() || palette.soft
+          : styles.getPropertyValue("--color-text").trim() || palette.ink;
+        palette.replica =
+          styles.getPropertyValue("--color-text-muted").trim() || palette.muted;
       }`
   );
-  const withParticles = withPalette
-    .replace(
-      '          context.strokeStyle = "rgb(81 87 95 / 0.62)";',
-      "          context.strokeStyle = palette.replica;"
-    )
-    .replace(
-      '              : "rgb(25 27 31 / 0.88)";',
-      "              : palette.particle;"
-    );
-  if (
-    !withParticles.includes("context.strokeStyle = palette.replica;")
-    || !withParticles.includes(": palette.particle;")
-  ) {
-    throw new Error("Could not apply the theme-aware particle colors");
-  }
+  const withEdges = replaceCanvasFunction(
+    withPalette,
+    /      function drawEdge\(edge, compact\) \{[\s\S]*?\n      \}\n\n      function drawEdgeLabel/,
+    `      function drawEdge(edge, compact) {
+        const points = edge.from;
+        if (!points || points.length < 2) return;
+
+        context.save();
+        context.strokeStyle = palette.muted;
+        context.globalAlpha = 0.88;
+        context.lineWidth = 1;
+        context.setLineDash(edge.dashed ? [4, 5] : []);
+        context.beginPath();
+        context.moveTo(points[0].x, points[0].y);
+        points.slice(1).forEach((point) => context.lineTo(point.x, point.y));
+        context.stroke();
+        context.setLineDash([]);
+
+        const finalPoint = points[points.length - 1];
+        const previousPoint = points[points.length - 2];
+        const angle = Math.atan2(finalPoint.y - previousPoint.y, finalPoint.x - previousPoint.x);
+        context.fillStyle = palette.muted;
+        context.globalAlpha = 0.95;
+        context.beginPath();
+        context.moveTo(finalPoint.x, finalPoint.y);
+        context.lineTo(
+          finalPoint.x - Math.cos(angle - 0.48) * 6,
+          finalPoint.y - Math.sin(angle - 0.48) * 6
+        );
+        context.lineTo(
+          finalPoint.x - Math.cos(angle + 0.48) * 6,
+          finalPoint.y - Math.sin(angle + 0.48) * 6
+        );
+        context.closePath();
+        context.fill();
+        context.restore();
+      }
+
+      function drawEdgeLabel`
+  );
+  const withEdgeLabels = replaceCanvasFunction(
+    withEdges,
+    /      function drawEdgeLabel\(edge, compact\) \{[\s\S]*?\n      \}\n\n      function drawNodeSurface/,
+    `      function drawEdgeLabel(edge, compact) {
+        const points = edge.from;
+        if (!edge.label || !points || points.length < 2) return;
+
+        const midpoint = points[Math.floor((points.length - 1) / 2)];
+        const next = points[Math.floor((points.length - 1) / 2) + 1];
+        const x = (midpoint.x + next.x) / 2;
+        const y = (midpoint.y + next.y) / 2 - 8;
+        context.save();
+        context.font =
+          \`\${compact ? 8 : 9}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace\`;
+        const metrics = context.measureText(edge.label);
+        context.fillStyle = palette.surface;
+        context.fillRect(x - metrics.width / 2 - 4, y - 7, metrics.width + 8, 12);
+        context.fillStyle = palette.muted;
+        context.textAlign = "center";
+        context.fillText(edge.label, x, y + 2);
+        context.restore();
+      }
+
+      function drawNodeSurface`
+  );
+  const withNodeSurfaces = replaceCanvasFunction(
+    withEdgeLabels,
+    /      function drawNodeSurface\(node, compact\) \{[\s\S]*?\n      \}\n\n      function drawNodeLabel/,
+    `      function drawNodeSurface(node, compact) {
+        const { x, y, w, h } = node.box;
+        context.save();
+
+        if (node.kind === "boundary") {
+          context.fillStyle = palette.surface;
+          context.strokeStyle = palette.line;
+          context.setLineDash([5, 5]);
+        } else if (node.kind === "authority") {
+          context.fillStyle = palette.surfaceSubtle;
+          context.strokeStyle = palette.accent;
+          context.setLineDash([]);
+        } else {
+          context.fillStyle =
+            node.kind === "service" ? palette.surfaceSubtle : palette.surface;
+          context.strokeStyle =
+            node.kind === "replica" ? palette.muted : palette.line;
+          context.setLineDash(node.kind === "replica" ? [4, 4] : []);
+        }
+
+        context.lineWidth = node.kind === "authority" ? 1.25 : 1;
+        context.beginPath();
+        context.roundRect(x, y, w, h, compact ? 3 : 5);
+        context.fill();
+        context.stroke();
+        context.setLineDash([]);
+        context.restore();
+      }
+
+      function drawNodeLabel`
+  );
+  const withParticles = replaceCanvasFunction(
+    withNodeSurfaces,
+    /      function drawParticle\(particle, compact\) \{[\s\S]*?\n      \}\n\n      function draw\(now\)/,
+    `      function particleFill(particle) {
+        if (particle.role === "packet" || particle.role === "metadata") {
+          return palette.accent;
+        }
+        if (activeScene === "intro") {
+          return particle.index % 17 === 0
+            ? palette.accent
+            : palette.particleIntro;
+        }
+        if (activeScene === "modes" && particle.index >= 181) {
+          return palette.accent;
+        }
+        if (
+          activeScene === "access"
+          && particle.index >= 151
+          && particle.index < 301
+        ) {
+          return palette.accent;
+        }
+        return palette.particle;
+      }
+
+      function drawParticle(particle, compact) {
+        const baseSize = compact ? 2.5 : 3.25;
+        const size =
+          particle.role === "packet"
+            ? baseSize * 1.5
+            : baseSize * particle.scale;
+        const x = Math.round(particle.x - size / 2);
+        const y = Math.round(particle.y - size / 2);
+
+        if (particle.role === "replica") {
+          context.strokeStyle = palette.replica;
+          context.lineWidth = 0.9;
+          context.strokeRect(x, y, Math.max(1.75, size), Math.max(1.75, size));
+        } else {
+          context.fillStyle = particleFill(particle);
+          context.fillRect(x, y, Math.max(1.75, size), Math.max(1.75, size));
+        }
+      }
+
+      function draw(now)`
+  );
   const initialization = "      resize();\n      updateScrollState();";
   if (!withParticles.includes(initialization)) {
     throw new Error("Could not find the prototype initialization");
@@ -203,6 +345,13 @@ function addThemeAwareCanvasPalette(source) {
       });
       addEventListener("pagehide", stopAnimation);`
   );
+}
+
+function replaceCanvasFunction(source, pattern, replacement) {
+  if (!pattern.test(source)) {
+    throw new Error("Could not replace a prototype canvas drawing function");
+  }
+  return source.replace(pattern, replacement);
 }
 
 function copyAlias(source, destination) {
