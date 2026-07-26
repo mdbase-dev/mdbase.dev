@@ -16,7 +16,7 @@ const manifest = `{
 
 const browserBundle = `<script
   src="https://cdn.jsdelivr.net/npm/@mdbase/connect@0.1.0-beta.1/dist/browser/mdbase-connect.min.js"
-  integrity="sha384-6GTn5SRbBhjL6mSvjFUYGC+h7EV/Scj7NzxwbbmCFPWip8vc11F3EiZsOshUvLeP"
+  integrity="sha384-PD+lazz69NHRGmB9iNPltd6StRK0fJ5hockUI2jyoYwSu3ti0AnRQNrjWMXlHs2D"
   crossorigin="anonymous"></script>`;
 
 const application = `<button id="connect">Connect a collection</button>
@@ -95,18 +95,20 @@ const application = `<button id="connect">Connect a collection</button>
   <p>
     Connect identifies the normalized manifest by its SHA-256 digest. Changing
     any declared field creates a different application identity and requires a
-    new approval. Portable applications currently authorize computer-owned
-    collections only. A manifest that requests
-    {" "}<code>collection_kind: "hosted"</code> is rejected.
+    new approval. Portable applications can authorize local or hosted
+    collections through the same connection API. Add
+    {" "}<code>collection_kind: "hosted"</code> when the app specifically needs
+    a durable provider-backed collection; omit it to offer every compatible
+    authority.
   </p>
 
   <h2 id="authorization">Authorize with a short code and installation key</h2>
   <ol>
-    <li>The file registers its inline manifest and generates a P-256 relay key.</li>
+    <li>The file registers its inline manifest and generates an ephemeral P-256 key so a local collection remains available as a choice.</li>
     <li>Connect returns a short-lived device code and an eight-character user code.</li>
     <li>The SDK opens the Connect approval page in a popup and reports the code through <code>onDeviceCode</code>.</li>
-    <li>The signed-in user confirms the code, reviews the downloaded-file warning, chooses a local collection, and narrows the operations.</li>
-    <li>The SDK polls at the server-provided interval and accepts only the grant bound to its application key.</li>
+    <li>The signed-in user confirms the code, reviews the downloaded-file warning, chooses a compatible local or hosted collection, and narrows the operations.</li>
+    <li>The SDK polls at the server-provided interval and accepts only an exact opaque-origin grant: key-bound encrypted relay for local access, or a scoped provider capability for hosted access.</li>
   </ol>
   <p>
     Device codes expire after ten minutes, are stored as hashes by the control
@@ -125,9 +127,11 @@ const application = `<button id="connect">Connect a collection</button>
   <p>
     Browsers serialize local-file origins as <code>null</code>. For a portable
     manifest opened from <code>file://</code>, the SDK stores the authorization
-    token and non-extractable private key in process memory. Another downloaded
-    file cannot inherit them through <code>localStorage</code> or IndexedDB.
-    Reloading or reopening the file requires authorization again.
+    token and non-extractable private key in process memory. The key is
+    discarded after a hosted collection is selected. Another downloaded file
+    cannot inherit the refresh credential or hosted capability through
+    {" "}<code>localStorage</code> or IndexedDB. Reloading or reopening the file
+    requires authorization again.
   </p>
   <p>
     An embedding shell can inject custom <code>storage</code> and
@@ -162,14 +166,28 @@ dist/browser/mdbase-connect.min.js.sha384`}
 
   <h2 id="example">Connect from one HTML file</h2>
   <CodeBlock code={application} language="html" label="portable-notes.html" />
+  <p>
+    Application code does not choose a transport. The returned
+    {" "}<code>MdbaseConnection</code> uses direct, relay, or hosted access as
+    required while <code>describe()</code>, <code>query()</code>,
+    {" "}<code>create()</code>, and the other operation methods stay the same.
+    Read <code>connection.route</code> only for diagnostics or status UI.
+  </p>
 
   <h2 id="security">Keep the application page inside the grant boundary</h2>
   <p>
-    The local connector is the final authorization boundary. It accepts
+    For local access, the connector is the final authorization boundary. It accepts
     {" "}<code>Origin: null</code> only for an active portable grant with the exact
     encrypted relay binding. Every operation authenticates the grant,
     application, connector, collection, key ID, epoch, counter, request ID, and
-    ciphertext. CORS permission alone does not authorize an operation.
+    ciphertext.
+  </p>
+  <p>
+    For hosted access, the provider receives a short-lived bearer capability
+    limited to one replica, collection, grant, operation set, record scope,
+    expiry, and the exact <code>Origin: null</code> value. Refresh rotates both
+    the Connect credential and provider capability. CORS permission alone does
+    not authorize an operation.
   </p>
   <p>
     Code already running inside an approved page can use that page's

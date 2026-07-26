@@ -95,12 +95,13 @@ const options = `const mdbase = new MdbaseConnect({
     a trusted data processor.
   </p>
 
-  <h2 id="portable">Portable files use local authority only</h2>
+  <h2 id="portable">Portable files use the same route-neutral connection</h2>
   <p>
-    A downloaded file uses the same direct and encrypted-relay routes after its
-    short-code approval. Portable manifests cannot request a hosted collection.
-    This restriction keeps hosted renewal capabilities out of an opaque browser
-    origin until they have an equivalent sender constraint.
+    A downloaded file can use direct, encrypted-relay, or hosted-provider access
+    after its short-code approval. For hosted access, its short-lived capability
+    is bound to the exact grant, collection, scope, operations, expiry, and
+    opaque <code>Origin: null</code>, and remains in process memory. The
+    consuming operation API is identical across all three routes.
   </p>
 
   <h2 id="native">Native shells</h2>
