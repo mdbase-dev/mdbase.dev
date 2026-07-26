@@ -41,7 +41,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   </head>
   <body class="home-body">
     <a class="home-skip-link" href="#intro">Skip to introduction</a>
-    <SiteHeader showSceneCount />
+    <SiteHeader current="home" showSceneCount />
     <slot />
     <SiteFooter />
     <ThemeControlScript />

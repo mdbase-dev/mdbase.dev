@@ -9,20 +9,36 @@ interface Props {
 }
 
 const { title, description, active, headings = [] } = Astro.props;
-const docs = [
-  { href: "/sdk/", label: "Overview", key: "overview" },
-  { href: "/sdk/quickstart/", label: "Quickstart", key: "quickstart" },
-  { href: "/sdk/portable-apps/", label: "Portable HTML apps", key: "portable-apps" },
-  { href: "/sdk/manifest/", label: "Application manifest", key: "manifest" },
-  { href: "/sdk/contracts/", label: "Contracts and adapters", key: "contracts" },
-  { href: "/sdk/authorization/", label: "Authorization", key: "authorization" },
-  { href: "/sdk/operations/", label: "Records and operations", key: "operations" },
-  { href: "/sdk/routing/", label: "Local and hosted routes", key: "routing" },
-  { href: "/sdk/testing/", label: "Testing", key: "testing" },
-  { href: "/sdk/notifications/", label: "Notifications and timers", key: "notifications" },
-  { href: "/sdk/offline-sync/", label: "Offline sync", key: "offline-sync" },
-  { href: "/sdk/security/", label: "Security model", key: "security" },
-  { href: "/sdk/api/", label: "API reference", key: "api" }
+const docGroups = [
+  {
+    label: "Start",
+    docs: [
+      { href: "/sdk/quickstart/", label: "Try the SDK locally", key: "quickstart" },
+      { href: "/sdk/connect-quickstart/", label: "Connect a browser app", key: "connect-quickstart" },
+      { href: "/sdk/", label: "SDK overview", key: "overview" }
+    ]
+  },
+  {
+    label: "Build",
+    docs: [
+      { href: "/sdk/portable-apps/", label: "Portable HTML apps", key: "portable-apps" },
+      { href: "/sdk/manifest/", label: "Application manifest", key: "manifest" },
+      { href: "/sdk/contracts/", label: "Contracts and adapters", key: "contracts" },
+      { href: "/sdk/authorization/", label: "Authorization", key: "authorization" },
+      { href: "/sdk/operations/", label: "Records and operations", key: "operations" },
+      { href: "/sdk/routing/", label: "Local and hosted routes", key: "routing" },
+      { href: "/sdk/testing/", label: "Testing", key: "testing" },
+      { href: "/sdk/notifications/", label: "Notifications and timers", key: "notifications" },
+      { href: "/sdk/offline-sync/", label: "Offline sync", key: "offline-sync" }
+    ]
+  },
+  {
+    label: "Reference",
+    docs: [
+      { href: "/sdk/security/", label: "Security model", key: "security" },
+      { href: "/sdk/api/", label: "API reference", key: "api" }
+    ]
+  }
 ];
 ---
 
@@ -33,10 +49,17 @@ const docs = [
         <summary>Connect SDK</summary>
         <nav aria-label="SDK documentation">
           {
-            docs.map((doc) => (
-              <a href={doc.href} aria-current={active === doc.key ? "page" : undefined}>
-                {doc.label}
-              </a>
+            docGroups.map((group) => (
+              <div class="docs-nav__group">
+                <strong>{group.label}</strong>
+                {
+                  group.docs.map((doc) => (
+                    <a href={doc.href} aria-current={active === doc.key ? "page" : undefined}>
+                      {doc.label}
+                    </a>
+                  ))
+                }
+              </div>
             ))
           }
         </nav>

@@ -1,0 +1,258 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+const manifest = `{
+  "manifest_version": 1,
+  "id": "dev.example.workouts",
+  "name": "Example Workouts",
+  "homepage": "http://localhost:5173",
+  "redirect_uris": [
+    "http://localhost:5173/auth/mdbase/callback"
+  ],
+  "requirements": {
+    "contracts": [
+      { "id": "workout.record", "version": 1 }
+    ]
+  },
+  "provisions": {
+    "types": [
+      {
+        "name": "Workout",
+        "document": "---\\nkind: mdbase.type\\nname: workout\\nversion: 1\\nschema:\\n  dialect: json-schema-2020-12\\n  value:\\n    type: object\\n    required: [type, title]\\n    additionalProperties: true\\n    properties:\\n      type: { const: workout }\\n      title: { type: string }\\n      completed: { type: boolean }\\nx-workout:\\n  contract: workout.record\\n  version: 1\\n  field_roles:\\n    title: title\\n---\\n",
+        "provides": [
+          { "id": "workout.record", "version": 1 }
+        ]
+      }
+    ]
+  }
+}`;
+
+const publicInstall = `pnpm add @mdbase/connect
+pnpm add -D @mdbase/connect-dev`;
+
+const betaBuild = `# Run in the mdbase-connect checkout.
+mkdir -p ../workouts-app/vendor
+pnpm package:consumer -- \\
+  --destination ../workouts-app/vendor \\
+  --packages connect,protocol`;
+
+const validate = `mdbase-connect-dev validate-manifest \\
+  public/.well-known/mdbase-app.json \\
+  --allow-local`;
+
+const client = `import {
+  MdbaseBrowserLocation,
+  MdbaseConnect,
+  type JsonObject
+} from "@mdbase/connect";
+
+export interface Workout extends JsonObject {
+  type: "workout";
+  title: string;
+  completed?: boolean;
+}
+
+export const mdbase = new MdbaseConnect<Workout>({
+  serverUrl: "https://connect.mdbase.dev",
+  manifest: new URL(
+    "/.well-known/mdbase-app.json",
+    location.origin
+  ).href,
+  redirectUri: new URL(
+    "/auth/mdbase/callback",
+    location.origin
+  ).href
+});
+
+export const collectionLocation =
+  new MdbaseBrowserLocation(mdbase);`;
+
+const connectButton = `import { collectionLocation, mdbase } from "./connect";
+
+export async function connectCollection() {
+  await mdbase.authorize({
+    operations: ["describe", "read", "query", "create", "update"],
+    collectionId:
+      collectionLocation.selectedCollectionId() ?? undefined,
+    returnTo: collectionLocation.authorizationReturnTo()
+  });
+  // authorize() navigates to Connect and does not return.
+}`;
+
+const callback = `import { collectionLocation } from "./connect";
+
+export async function completeMdbaseCallback() {
+  const connection =
+    await collectionLocation.completeAuthorization();
+
+  console.log(
+    "Connected collection:",
+    connection.collectionId
+  );
+
+  return connection;
+}`;
+
+const wiring = `import {
+  completeMdbaseCallback
+} from "./mdbase-callback";
+import { connectCollection } from "./connect-button";
+
+document
+  .querySelector("[data-connect-mdbase]")
+  ?.addEventListener("click", () => connectCollection());
+
+if (location.pathname === "/auth/mdbase/callback") {
+  await completeMdbaseCallback();
+}`;
+
+const operate = `import { unwrapOperation } from "@mdbase/connect";
+import { collectionLocation } from "./connect";
+
+const collection = collectionLocation.activeConnection();
+if (!collection) throw new Error("Choose a collection.");
+
+const page = unwrapOperation(await collection.query({
+  types: ["workout"],
+  where: "completed != true",
+  order_by: [{ field: "title", direction: "asc" }],
+  limit: 50
+}));
+
+const first = page.results[0];
+if (first) {
+  unwrapOperation(await collection.update({
+    path: first.path,
+    patch: { completed: true },
+    if_revision: first.revision
+  }));
+}`;
+---
+
+<DocsLayout
+  title="Connect a browser application"
+  description="Declare a workout contract, authorize one collection, complete the browser callback, and make a revision-safe update."
+  active="connect-quickstart"
+  headings={[
+    { href: "#before", label: "Before you begin" },
+    { href: "#manifest", label: "1. Add a manifest" },
+    { href: "#install", label: "2. Add packages" },
+    { href: "#client", label: "3. Create the client" },
+    { href: "#authorize", label: "4. Authorize" },
+    { href: "#callback", label: "5. Complete callback" },
+    { href: "#operate", label: "6. Use operations" },
+    { href: "#success", label: "Expected result" }
+  ]}
+>
+  <div class="callout">
+    <strong>Private-beta path</strong>
+    <p>
+      The production service currently accepts private-beta accounts. The
+      public SDK packages are also awaiting their first npm release. Start with
+      the <a href="/sdk/quickstart/">local sandbox guide</a> if you do not have
+      beta access.
+    </p>
+  </div>
+
+  <h2 id="before">Before you begin</h2>
+  <p>This guide expects:</p>
+  <ul>
+    <li>a private-beta account or the repository's local Connect stack;</li>
+    <li>a browser application running at <code>http://localhost:5173</code>;</li>
+    <li>Node 24 LTS and the repository's pinned pnpm version;</li>
+    <li>a Connect SDK source build or beta artifact.</li>
+  </ul>
+  <p>
+    The example manifest carries a complete workout type. Connect can install
+    that type during approval when the chosen collection does not yet provide
+    {" "}<code>workout.record@1</code>.
+  </p>
+
+  <h2 id="manifest">1. Add a bundled application manifest</h2>
+  <p>
+    Save this file at
+    {" "}<code>public/.well-known/mdbase-app.json</code>. The local URLs are valid
+    for development and require the validator's
+    {" "}<code>--allow-local</code> option.
+  </p>
+  <CodeBlock code={manifest} language="json" label="public/.well-known/mdbase-app.json" />
+  <p>
+    The contract requirement limits compatible collections. The provision
+    makes a collection safely provisionable during approval and does not give
+    the application general type-management access.
+  </p>
+
+  <h2 id="install">2. Add the SDK and validator</h2>
+  <p>After the public npm release, installation uses:</p>
+  <CodeBlock code={publicInstall} language="sh" label="Public release command" />
+  <p>
+    During the private beta, create immutable consumer archives from a clean
+    Connect checkout. The command prints the exact artifact filenames and
+    source revision. Add the printed protocol and client archives to the
+    application with <code>pnpm add &lt;archive&gt;</code>.
+  </p>
+  <CodeBlock code={betaBuild} language="sh" label="Private-beta source checkout" />
+  <p>
+    The validator is currently run from the Connect workspace or supplied as a
+    beta artifact:
+  </p>
+  <CodeBlock code={validate} language="sh" label="Terminal" />
+
+  <h2 id="client">3. Create one stable Connect client</h2>
+  <CodeBlock code={client} language="ts" label="src/connect.ts" />
+  <p>
+    The manager owns saved authorizations. The location helper owns the
+    bookmarkable collection ID, browser history changes, and authorization
+    return cleanup.
+  </p>
+
+  <h2 id="authorize">4. Start authorization from a user action</h2>
+  <CodeBlock code={connectButton} language="ts" label="src/connect-button.ts" />
+  <p>
+    Connect presents ready and provisionable collections, then asks the user
+    to approve the listed operations. Collection records remain private until
+    approval succeeds.
+  </p>
+
+  <h2 id="callback">5. Complete the exact callback route</h2>
+  <CodeBlock code={callback} language="ts" label="src/mdbase-callback.ts" />
+  <p>
+    Call this once at the manifest's callback path. PKCE is mandatory. A
+    successful callback stores the grant-bound authorization and returns a
+    collection-bound connection.
+  </p>
+  <CodeBlock code={wiring} language="ts" label="src/main.ts" />
+
+  <h2 id="operate">6. Query and update with a revision</h2>
+  <CodeBlock code={operate} language="ts" label="src/workouts.ts" />
+  <p>
+    Query results carry an opaque revision. Passing it as
+    {" "}<code>if_revision</code> prevents one application from silently
+    overwriting a newer change.
+  </p>
+
+  <h2 id="success">What success looks like</h2>
+  <ol>
+    <li>The Connect approval screen names <strong>Example Workouts</strong>.</li>
+    <li>The collection chooser marks a matching collection as ready or provisionable.</li>
+    <li>The approval screen lists the five requested operations.</li>
+    <li>The browser returns to <code>/auth/mdbase/callback</code>.</li>
+    <li>The console prints the stable ID of the approved collection.</li>
+    <li>The first incomplete workout receives <code>completed: true</code>.</li>
+  </ol>
+  <div class="callout">
+    <strong>Keep the collection ID in application URLs.</strong>
+    <p>
+      <code>MdbaseBrowserLocation</code> writes
+      {" "}<code>?collection=&lt;id&gt;</code> and follows browser back and forward
+      navigation. Collection IDs are opaque locators and can appear in browser
+      history and logs. They are not credentials.
+    </p>
+  </div>
+
+  <div class="button-row" style="margin-top: 2rem">
+    <a class="button button--primary" href="/sdk/manifest/">Understand the manifest</a>
+    <a class="button" href="/sdk/authorization/">Handle connection states</a>
+  </div>
+</DocsLayout>

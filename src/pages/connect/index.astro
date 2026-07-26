@@ -34,17 +34,46 @@ const steps = [
       </div>
       <div class="page-hero__aside">
         <p>
-          mdbase Connect handles authorization, routing, and collection
-          hosting. A grant binds one application to one collection and an
-          approved set of operations. Local folder paths stay at the connector.
+          An application sends the user to Connect. The user chooses one
+          compatible collection and approves exact actions. The application
+          receives a collection-bound connection; local folder paths stay on
+          the user's computer.
         </p>
         <div class="button-row">
-          <a class="button button--primary" href="/sdk/quickstart/">SDK quickstart</a>
+          <a class="button button--primary" href="/sdk/connect-quickstart/">Connect an app</a>
+          <a class="button" href="/sdk/quickstart/">Try the SDK locally</a>
           <a class="button" href="/sdk/portable-apps/">Portable HTML apps</a>
           <a class="button" href="https://github.com/mdbase-dev/mdbase-connect">View source</a>
         </div>
       </div>
     </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Where Connect sits</h2>
+    <p>
+      Connect is optional. Applications can also use a conforming mdbase
+      implementation directly. Connect provides a common approval and routing
+      path when independent applications need access to a user's collections.
+    </p>
+    <ol class="plain-sequence" aria-label="Connect request path">
+      <li>
+        <strong>Application</strong>
+        <span>Declares compatible collections and requests exact operations.</span>
+      </li>
+      <li>
+        <strong>Connect</strong>
+        <span>Presents the request, records the decision, and selects the route.</span>
+      </li>
+      <li>
+        <strong>Collection authority</strong>
+        <span>Rechecks the grant and executes each approved operation.</span>
+      </li>
+      <li>
+        <strong>mdbase collection</strong>
+        <span>Remains the authoritative Markdown and collection history.</span>
+      </li>
+    </ol>
   </section>
 
   <section class="content-section">
@@ -163,5 +192,31 @@ const steps = [
         Follow release status
       </a>
     </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Terms used on this site</h2>
+    <dl class="glossary-list">
+      <div>
+        <dt>Grant</dt>
+        <dd>One user's approval for one application, one collection, and a concrete set of operations.</dd>
+      </div>
+      <div>
+        <dt>Authority</dt>
+        <dd>The local connector or hosted provider that controls the main copy and makes the final authorization decision.</dd>
+      </div>
+      <div>
+        <dt>Control plane</dt>
+        <dd>The Connect service for identity, pairing, grants, short-lived tokens, and route coordination.</dd>
+      </div>
+      <div>
+        <dt>Contract</dt>
+        <dd>A portable declaration of domain behavior and its mapping to one collection type.</dd>
+      </div>
+      <div>
+        <dt>Operation envelope</dt>
+        <dd>A typed result containing a validity flag, result value, and structured diagnostics.</dd>
+      </div>
+    </dl>
   </section>
 </BaseLayout>
