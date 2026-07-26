@@ -2,196 +2,152 @@
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
-const manifest = `{
-  "manifest_version": 1,
-  "id": "dev.example.workouts",
-  "name": "Example Workouts",
-  "homepage": "https://workouts.example",
-  "redirect_uris": [
-    "https://workouts.example/auth/mdbase/callback"
-  ],
-  "requirements": {
-    "contracts": []
-  }
-}`;
+const setup = `git clone https://github.com/mdbase-dev/mdbase-connect.git
+cd mdbase-connect
+corepack enable
+pnpm install
+pnpm build`;
 
-const install = `pnpm add @mdbase/connect
-pnpm add -D @mdbase/connect-dev`;
+const download = `curl -fsSLo packages/devkit/sandbox-quickstart.mjs \\
+  https://mdbase.dev/examples/sandbox-quickstart.mjs
 
-const client = `import {
-  MdbaseBrowserLocation,
-  MdbaseConnect,
-  type JsonObject
-} from "@mdbase/connect";
+node packages/devkit/sandbox-quickstart.mjs`;
 
-export interface Workout extends JsonObject {
-  type: "workout";
-  title: string;
-  completed?: boolean;
-}
+const example = `import { unwrapOperation } from "@mdbase/connect";
+import { createSandbox } from "@mdbase/connect-dev";
 
-export const mdbase = new MdbaseConnect<Workout>({
-  serverUrl: "https://connect.mdbase.dev",
-  manifest: new URL("/.well-known/mdbase-app.json", location.origin).href,
-  redirectUri: new URL("/auth/mdbase/callback", location.origin).href
+const { client, transport } = createSandbox({
+  records: [{
+    path: "tasks/first.md",
+    types: ["task"],
+    frontmatter: {
+      type: "task",
+      title: "Read the collection",
+      completed: false
+    }
+  }]
 });
 
-export const collectionLocation = new MdbaseBrowserLocation(mdbase);`;
+const first = unwrapOperation(
+  await client.read({ path: "tasks/first.md" })
+);
 
-const connectButton = `import { collectionLocation, mdbase } from "./connect";
-
-export async function connectCollection() {
-  await mdbase.authorize({
-    operations: ["describe", "read", "query", "update"],
-    collectionId: collectionLocation.selectedCollectionId() ?? undefined,
-    returnTo: collectionLocation.authorizationReturnTo()
-  });
-  // authorize() navigates to Connect and does not return.
-}`;
-
-const callback = `import { collectionLocation } from "./connect";
-
-export async function completeMdbaseCallback() {
-  return collectionLocation.completeAuthorization();
-}`;
-
-const query = `import { collectionLocation } from "./connect";
-import { unwrapOperation } from "@mdbase/connect";
-
-const collection = collectionLocation.activeConnection();
-if (!collection) throw new Error("Choose a collection.");
-
-const page = unwrapOperation(await collection.query({
-  types: ["workout"],
-  where: 'completed != true',
-  order_by: [{ field: "title", direction: "asc" }],
-  limit: 50
+const created = unwrapOperation(await client.create({
+  type: "task",
+  path: "tasks/second.md",
+  frontmatter: {
+    type: "task",
+    title: "Update one record",
+    completed: false
+  }
 }));
 
-const first = page.results[0];
-if (first) {
-  unwrapOperation(await collection.update({
-    path: first.path,
-    patch: { completed: true },
-    if_revision: first.revision
-  }));
-}`;
+const updated = unwrapOperation(await client.update({
+  path: created.path,
+  patch: { completed: true },
+  if_revision: created.revision
+}));
 
-const validate = `mdbase-connect-dev validate-manifest \\
-  public/.well-known/mdbase-app.json`;
+const tasks = unwrapOperation(await client.query({
+  types: ["task"],
+  limit: 20
+}));
+
+console.log(\`Read: \${first.frontmatter.title}\`);
+console.log(
+  \`Updated: \${updated.path} (completed: \${updated.frontmatter.completed})\`
+);
+console.log(\`Task records: \${tasks.results.length}\`);
+console.log(
+  \`Markdown paths: \${transport.snapshot()
+    .map((record) => record.path)
+    .join(", ")}\`
+);`;
+
+const output = `Read: Read the collection
+Updated: tasks/second.md (completed: true)
+Task records: 2
+Markdown paths: tasks/first.md, tasks/second.md`;
 ---
 
 <DocsLayout
-  title="Quickstart"
-  description="Connect a browser application, complete authorization, query records, and make a revision-safe update."
+  title="Try the SDK locally"
+  description="Run a typed read, create, update, and query against an in-memory mdbase collection with no account or service."
   active="quickstart"
   headings={[
-    { href: "#manifest", label: "1. Add a manifest" },
-    { href: "#install", label: "2. Install" },
-    { href: "#client", label: "3. Create the client" },
-    { href: "#authorize", label: "4. Authorize" },
-    { href: "#callback", label: "5. Complete callback" },
-    { href: "#operate", label: "6. Use operations" }
+    { href: "#prerequisites", label: "Prerequisites" },
+    { href: "#build", label: "1. Build the packages" },
+    { href: "#run", label: "2. Run the example" },
+    { href: "#read", label: "3. Read the code" },
+    { href: "#result", label: "4. Check the result" },
+    { href: "#next", label: "5. Continue" }
   ]}
 >
-  <div class="callout">
-    <strong>Private-beta requirement</strong>
+  <div class="callout callout--success">
+    <strong>No account, connector, or hosted service is required.</strong>
     <p>
-      The production service currently accepts private-beta accounts. Use one
-      of those accounts or the repository's local stack for this guide.
+      This example uses the real typed collection client and the deterministic
+      developer sandbox. It keeps every record in memory and makes no network
+      requests.
     </p>
   </div>
 
-  <h2 id="manifest">1. Add a bundled application manifest</h2>
+  <h2 id="prerequisites">Prerequisites</h2>
+  <ul>
+    <li>Git;</li>
+    <li>Node 24 LTS;</li>
+    <li>Corepack, which installs the repository's pinned pnpm version.</li>
+  </ul>
+
+  <h2 id="build">1. Build the current packages</h2>
   <p>
-    Save this file at <code>public/.well-known/mdbase-app.json</code>. The SDK
-    loads the file from your own application and posts it inline during
-    registration. The control plane receives the canonical JSON from the SDK.
+    The Connect packages await their first npm publication. Build the exact
+    beta packages from the public repository for this example.
   </p>
-  <CodeBlock code={manifest} language="json" label="public/.well-known/mdbase-app.json" />
+  <CodeBlock code={setup} language="sh" label="Terminal" />
+
+  <h2 id="run">2. Download and run the complete example</h2>
   <p>
-    The reverse-domain ID and name are display metadata. An approved grant binds
-    the canonical manifest content to the application installation that
-    completed authorization.
+    Save the example inside the developer package so Node resolves the local
+    workspace packages. The final command prints the result and exits.
+  </p>
+  <CodeBlock code={download} language="sh" label="Terminal" />
+  <p>
+    You can also
+    {" "}<a href="/examples/sandbox-quickstart.mjs" download>download the example file</a>
+    {" "}and save it as
+    {" "}<code>packages/devkit/sandbox-quickstart.mjs</code>.
   </p>
 
-  <h2 id="install">2. Install the SDK and validator</h2>
-  <CodeBlock code={install} language="sh" label="Terminal" />
-  <div class="callout">
-    <strong>The packages are awaiting their first npm publication.</strong>
-    <p>
-      The commands above are the public-beta installation path. Current
-      development builds <code>@mdbase/connect</code>,
-      {" "}<code>@mdbase/connect-protocol</code>, and
-      {" "}<code>@mdbase/connect-dev</code> from the
-      {" "}<a href="https://github.com/mdbase-dev/mdbase-connect">Connect repository</a>.
-    </p>
-  </div>
-  <p>Validate the bundled file during development and CI:</p>
-  <CodeBlock code={validate} language="sh" label="Terminal" />
+  <h2 id="read">3. See what the example does</h2>
+  <CodeBlock code={example} language="js" label="packages/devkit/sandbox-quickstart.mjs" />
   <p>
-    For a loopback development homepage and callback, add
-    {" "}<code>--allow-local</code>. Production web homepages, icons, and
-    browser callbacks use HTTPS. Native callbacks may use a private scheme
-    derived from the application ID.
+    <code>createSandbox()</code> returns the same
+    {" "}<code>MdbaseCollectionClient</code> boundary used by a connected
+    collection. The example reads one seed record, creates a second record,
+    updates it with its revision token, and queries both task records.
   </p>
 
-  <h2 id="client">3. Create one Connect client</h2>
-  <CodeBlock code={client} language="ts" label="src/connect.ts" />
+  <h2 id="result">4. Check the expected result</h2>
+  <CodeBlock code={output} language="text" label="Expected output" />
   <p>
-    Keep this manager stable. It owns the set of saved connections and returns
-    a separate collection-bound client for each one. Feature and repository
-    code should receive that bound client, never ambient “current collection”
-    state.
+    A stale revision fails with a
+    {" "}<code>concurrent_modification</code> diagnostic. The sandbox also supports
+    typed CRUD, pagination, read defaults, and change cursors. CEL expressions,
+    authorization, routing, and filesystem behavior belong in real-stack
+    integration tests.
   </p>
 
-  <h2 id="authorize">4. Start authorization from a user action</h2>
-  <CodeBlock code={connectButton} language="ts" label="src/connect-button.ts" />
+  <h2 id="next">5. Continue to a real collection</h2>
   <p>
-    Connect shows compatible collections and asks the user to approve the exact
-    operations. The collection description becomes available after approval.
+    The next guide adds an application manifest, a provisionable workout
+    contract, browser authorization, and one approved local or hosted
+    collection.
   </p>
-
-  <h2 id="callback">5. Complete the callback</h2>
-  <CodeBlock code={callback} language="ts" label="src/mdbase-callback.ts" />
-  <p>
-    Call this once on the exact callback route listed in the manifest. PKCE is
-    mandatory. On success, the client stores the grant-bound authorization and
-    returns the newly approved collection-bound connection. The location
-    helper restores the app-local return location, adds its collection ID, and
-    removes temporary OAuth parameters.
-  </p>
-
-  <h2 id="operate">6. Query and update with a revision</h2>
-  <CodeBlock code={query} language="ts" label="src/workouts.ts" />
-  <p>
-    Query results include a revision token. Pass it as
-    {" "}<code>if_revision</code> when changing the record so a concurrent edit
-    cannot be silently overwritten.
-  </p>
-  <div class="callout">
-    <strong>Use a stable collection ID in app URLs.</strong>
-    <p>
-      <code>MdbaseBrowserLocation</code> writes
-      {" "}<code>?collection=&lt;id&gt;</code>, follows browser back and
-      forward navigation through <code>onChange()</code>, and auto-selects only
-      when exactly one connection is saved. An explicit unavailable ID stays
-      authoritative, so show the chooser or reconnect that ID. Collection IDs
-      can appear in browser history and logs. They are opaque locators, not
-      credentials. Names are display text and can change.
-    </p>
-  </div>
-  <div class="callout">
-    <strong>Resolve domain fields from the contract descriptor.</strong>
-    <p>
-      Generic apps can use declared mdbase types directly. Domain applications
-      should read the contract descriptors returned by <code>describe()</code>{" "}
-      or use an adapter maintained by the owning application.
-    </p>
-  </div>
-
-  <div class="button-row" style="margin-top: 2rem">
-    <a class="button button--primary" href="/sdk/manifest/">Design the manifest</a>
-    <a class="button" href="/sdk/portable-apps/">Build one downloaded file</a>
+  <div class="button-row" style="margin-top: 1.5rem">
+    <a class="button button--primary" href="/sdk/connect-quickstart/">
+      Connect a browser application
+    </a>
+    <a class="button" href="/sdk/testing/">Understand the test boundary</a>
   </div>
 </DocsLayout>

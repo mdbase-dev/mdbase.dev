@@ -2,7 +2,6 @@
 import DocsLayout from "../../components/DocsLayout.astro";
 import CodeBlock from "../../components/CodeBlock.astro";
 
-const install = `pnpm add @mdbase/connect`;
 const seam = `import type { MdbaseCollectionClient } from "@mdbase/connect";
 
 export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
@@ -19,6 +18,7 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
   description="Use the Connect SDK to authorize a collection and call typed mdbase operations."
   active="overview"
   headings={[
+    { href: "#start", label: "Where to start" },
     { href: "#choose-a-surface", label: "Choose a surface" },
     { href: "#application-shape", label: "Application shape" },
     { href: "#package-map", label: "Package map" }
@@ -26,20 +26,37 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
 >
   <p>
     <code>@mdbase/connect</code> is the browser and native-shell SDK for
-    applications that operate on a user's local or hosted mdbase collection. It
-    owns application registration, OAuth with PKCE, grant renewal, local versus
-    hosted route selection, encrypted relay requests, and typed operation
-    envelopes.
+    applications that operate on one user-approved local or hosted mdbase
+    collection. The application asks for exact operations. Connect selects the
+    route and the collection authority checks the current grant.
   </p>
 
-  <CodeBlock code={install} language="sh" label="Install" />
+  <h2 id="start">Choose the first result you need</h2>
+  <div class="start-options">
+    <div>
+      <strong>Learn the collection API</strong>
+      <p>
+        Run typed reads and revision-safe changes against an in-memory
+        collection. This path needs no account or running service.
+      </p>
+      <a href="/sdk/quickstart/">Try the SDK locally</a>
+    </div>
+    <div>
+      <strong>Connect a real application</strong>
+      <p>
+        Add a manifest, authorize one compatible collection, complete the
+        browser callback, and use the approved connection.
+      </p>
+      <a href="/sdk/connect-quickstart/">Open the Connect guide</a>
+    </div>
+  </div>
   <div class="callout">
-    <strong>npm publication is pending.</strong>
+    <strong>Private-beta release status</strong>
     <p>
-      This is the public-beta install command. During private development, build
-      the packages from the
-      {" "}<a href="https://github.com/mdbase-dev/mdbase-connect">Connect repository</a>.
-      The production service and v1 protocol are already deployed.
+      The production service and protocol 1 are deployed for beta accounts.
+      The npm packages await their first public release. Current developers
+      build or pack the versioned artifacts from the
+      <a href="https://github.com/mdbase-dev/mdbase-connect">Connect repository</a>.
     </p>
   </div>
 
@@ -148,7 +165,8 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
   </table>
 
   <div class="button-row" style="margin-top: 2rem">
-    <a class="button button--primary" href="/sdk/quickstart/">Continue to the quickstart</a>
+    <a class="button button--primary" href="/sdk/quickstart/">Run the local example</a>
+    <a class="button" href="/sdk/connect-quickstart/">Connect a browser app</a>
     <a class="button" href="/sdk/portable-apps/">Build one HTML file</a>
   </div>
 </DocsLayout>
