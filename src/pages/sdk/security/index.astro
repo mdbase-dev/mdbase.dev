@@ -50,9 +50,12 @@ import DocsLayout from "../../../components/DocsLayout.astro";
   <h2 id="portable">Treat downloaded application code as authorized code</h2>
   <p>
     Every local file has the opaque browser origin <code>null</code>. Connect
-    does not trust that origin by itself. The connector accepts it only when
-    the request matches an active portable grant, the P-256 application key,
-    and the encrypted relay envelope.
+    does not trust that origin by itself. For a local grant, the connector also
+    requires the P-256 application key and encrypted relay envelope. For a
+    hosted grant, the provider requires a short-lived bearer capability scoped
+    to one grant, collection, operation set, record scope, expiry, and that
+    exact opaque origin. Both refresh credentials and provider capabilities
+    remain in process memory for <code>file://</code>.
   </p>
   <p>
     Code already running in an approved page has that page's access. Keep
@@ -91,7 +94,7 @@ import DocsLayout from "../../../components/DocsLayout.astro";
   <h2 id="checklist">Application release checklist</h2>
   <ul>
     <li>Validate the production manifest with default settings and omit <code>--allow-local</code>.</li>
-    <li>For portable files, test popup blocking, expiry, cancellation, reload, and a second unrelated local file.</li>
+    <li>For portable files, test popup blocking, expiry, cancellation, reload, a second unrelated local file, and both local and hosted collection routes.</li>
     <li>Pin portable CDN assets to exact versions and verify their SRI values.</li>
     <li>Test narrowing, pause, revocation, token rotation, and reauthorization.</li>
     <li>Test direct-to-relay failover and verify one durable mutation outcome.</li>

@@ -122,9 +122,9 @@ const portableManifest = `{
   </p>
   <CodeBlock code={portableManifest} language="json" label="Portable manifest example" />
   <p>
-    Portable manifests use key-bound short-code authorization, accept local
-    collections only, and keep their credentials in memory when opened from
-    {" "}<code>file://</code>. See the
+    Portable manifests use key-bound short-code authorization, can accept local
+    or hosted collections, and keep their credentials in memory when opened
+    from <code>file://</code>. See the
     {" "}<a href="/sdk/portable-apps/">portable HTML application guide</a>.
   </p>
 
@@ -155,15 +155,15 @@ const portableManifest = `{
       </tr>
       <tr>
         <td><code>collection_kind: "hosted"</code></td>
-        <td>Offer only provider-backed collections; unavailable to portable files</td>
+        <td>Offer only provider-backed collections, including to portable files</td>
       </tr>
     </tbody>
   </table>
   <div class="callout">
     <strong>Leave collection_kind out when either authority is acceptable.</strong>
     <p>
-      The SDK selects direct or relay transport automatically within a local
-      grant.
+      The SDK selects direct, relay, or hosted transport automatically after
+      approval.
     </p>
   </div>
 
