@@ -265,7 +265,7 @@ const error = `try {
     </tbody>
   </table>
 
-  <h2 id="connection">Connection, routing, and hosted sync</h2>
+  <h2 id="connection">Connection, routing, and sync</h2>
   <table class="api-table">
     <thead>
       <tr><th>Method</th><th>Purpose</th></tr>
@@ -280,7 +280,7 @@ const error = `try {
       <tr><td><code>checkDirectAccess()</code></td><td>Read same-computer availability silently</td></tr>
       <tr><td><code>requestDirectAccess()</code></td><td>Prompt from a user gesture where required</td></tr>
       <tr><td><code>disableDirectAccess()</code></td><td>Persist a relay-only preference for this app</td></tr>
-      <tr><td><code>hostedSync()</code></td><td>Return a refresh-aware sync transport for a hosted grant, or null</td></tr>
+      <tr><td><code>sync()</code></td><td>Return one credential-hiding sync transport for a remote, direct, or relayed authority, or null</td></tr>
       <tr><td><code>pendingMutation()</code></td><td>Inspect an interrupted encrypted mutation</td></tr>
       <tr><td><code>resumePendingMutation()</code></td><td>Recover its exact durable connector receipt</td></tr>
     </tbody>

@@ -8,24 +8,24 @@ const createReplica = `import {
   type ReplicaData
 } from "@mdbase/connect-sync";
 
-const hosted = connection.hostedSync();
-if (!hosted) {
-  throw new Error("Authorize a hosted collection first.");
+const sync = connection.sync();
+if (!sync) {
+  throw new Error("Authorize the sync operation first.");
 }
 
 const initial: ReplicaData<Task> = {
-  replicaId: hosted.replicaId,
+  replicaId: sync.replicaId,
   records: {},
   pending: [],
   conflicts: {}
 };
 
 const store = new IndexedDbReplicaStore<Task>(
-  \`tasks:\${hosted.collectionId}\`,
+  \`tasks:\${sync.collectionId}\`,
   initial
 );
 
-const replica = new OfflineReplica(hosted.transport, store);
+const replica = new OfflineReplica(sync.transport, store);
 await replica.initialize();`;
 
 const mutate = `const optimistic = await replica.queueCreate({
@@ -55,7 +55,7 @@ const promote = `mdbase-mirror promote ./worklog-mirror`;
 
 <DocsLayout
   title="Offline sync"
-  description="Build an offline-first cache for hosted collections with durable mutation IDs, explicit conflicts, and provider-neutral replication."
+  description="Build an offline-first cache for any sync-capable collection authority with durable mutation IDs, explicit conflicts, and provider-neutral replication."
   active="offline-sync"
   headings={[
     { href: "#requirements", label: "Requirements" },
@@ -66,12 +66,13 @@ const promote = `mdbase-mirror promote ./worklog-mirror`;
     { href: "#promote", label: "Move authority to local" }
   ]}
 >
-  <h2 id="requirements">Require a hosted collection</h2>
+  <h2 id="requirements">Require sync access</h2>
   <p>
-    Add <code>"collection_kind": "hosted"</code> to the manifest requirements
-    when the application needs an always-online authority and{" "}
-    <code>hostedSync()</code>. The same application can still maintain an
-    IndexedDB cache and operate while offline.
+    Request the <code>sync</code> operation, then call{" "}
+    <code>connection.sync()</code>. The returned transport is the same whether
+    the collection authority is remote, directly connected, or reached through
+    Connect's relay. Add <code>"collection_kind": "hosted"</code> only when the
+    application specifically requires an always-online hosted authority.
   </p>
   <p>
     Add both packages:
@@ -81,9 +82,8 @@ const promote = `mdbase-mirror promote ./worklog-mirror`;
   <h2 id="replica">Create a persistent replica</h2>
   <CodeBlock code={createReplica} language="ts" label="replica.ts" />
   <p>
-    The SDK keeps the short-lived provider capability private and refreshes it
-    before sync calls. The sync package receives only the provider-neutral
-    transport.
+    The SDK keeps authority credentials and route selection private. The sync
+    package receives only the provider-neutral transport.
   </p>
 
   <h2 id="mutations">Queue optimistic local mutations</h2>
@@ -99,31 +99,32 @@ const promote = `mdbase-mirror promote ./worklog-mirror`;
   <CodeBlock code={conflict} language="ts" label="conflicts.ts" />
   <p>
     Keeping the local version rebases it as a new idempotent mutation against
-    the current hosted revision. Keeping the hosted version discards only that
-    record's queued mutations. Neither choice silently affects other records.
+    the current authority revision. Keeping the authority version discards only
+    that record's queued mutations. Neither choice silently affects other
+    records.
   </p>
 
   <h2 id="mirrors">Filesystem mirrors use the same protocol</h2>
   <p>
-    <code>mdbase-mirror</code> materializes a hosted collection as Markdown,
-    either receive-only or writable. On first connection to an existing
-    directory it compares the complete remote snapshot before writing or
-    uploading. Differing paths stop for explicit review.
+    <code>mdbase-mirror</code> materializes a remotely authoritative collection
+    as Markdown, either receive-only or writable. On first connection to an
+    existing directory it compares the complete remote snapshot before writing
+    or uploading. Differing paths stop for explicit review.
   </p>
 
-  <h2 id="promote">Move hosted authority to a complete local mirror</h2>
-  <CodeBlock code={promote} language="sh" label="Hosted-to-local transfer" />
+  <h2 id="promote">Move remote authority to a complete local mirror</h2>
+  <CodeBlock code={promote} language="sh" label="Remote-to-local transfer" />
   <p>
     Promotion starts from a converged full writable mirror and opens a
-    short-lived approval in Connect. Approval freezes hosted writes at a final
+    short-lived approval in Connect. Approval freezes remote writes at a final
     sequence. The CLI pulls through that sequence, proves the exact record and
     resource manifest, registers the folder with the local connector, and then
     advances the collection authority epoch.
   </p>
   <p>
-    Old hosted grants, provider capabilities, and replicas are revoked at
+    Old remote grants, authority capabilities, and replicas are revoked at
     cutover. Applications authorize the new local authority explicitly.
-    Cancellation or expiry before completion restores hosted writes. The
+    Cancellation or expiry before completion restores remote writes. The
     command is resumable after local materialization.
   </p>
 </DocsLayout>
