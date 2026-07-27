@@ -32,14 +32,14 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: mdbase-dev/mdbase-connect
-          ref: 8e960317f0886f8c504023dad873cf8cec82fd99
+          ref: c4fd2f801b12686e1fd1bd25de4a72cf9e14bc5c
           path: .sources/mdbase-connect
 
       - name: Check out Rust implementation
         uses: actions/checkout@v7
         with:
           repository: callumalpass/mdbase-rs
-          ref: fafea262cffbce1205563a580e4d5850e7e942b2
+          ref: e9297f465f779d0bf6bb3a361abf16eaf80a6944
           path: .sources/mdbase-rs
 
       - name: Check out TypeScript implementation

@@ -80,7 +80,8 @@ const steps = [
     <h2>Local and hosted collections</h2>
     <p>
       Applications use the same SDK and operation envelopes. Routing changes
-      according to where the authoritative collection lives.
+      according to which connector or provider currently holds the collection's
+      authority.
     </p>
     <table class="trust-table">
       <thead>
@@ -112,6 +113,64 @@ const steps = [
         The provider must decrypt collection data to execute canonical mdbase
         operations. The provider acts as a trusted data processor for hosted
         collections.
+      </p>
+    </div>
+  </section>
+
+  <section class="content-section" id="one-authority">
+    <h2>Why one movable authority?</h2>
+    <p>
+      Authority is a coordination role, not the only copy of a collection.
+      Writable mirrors can keep ordinary Markdown on several devices, accept
+      changes while offline, and synchronize them later. One authority orders
+      the final accepted changes, enforces collection-wide rules, and gives
+      every mirror the same history to converge on.
+    </p>
+    <p>
+      Removing that role would not remove coordination. It would require every
+      peer—including filesystem editors that only know how to rewrite a
+      Markdown file—to preserve causal history and agree continuously about
+      concurrent edits, renames, deletes, schema changes, revocation, and
+      garbage collection.
+    </p>
+    <table class="trust-table">
+      <thead>
+        <tr>
+          <th>Concern</th>
+          <th>Equal peers would require</th>
+          <th>One movable authority provides</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Ordinary Markdown tools</td>
+          <td>CRDT or event metadata preserved by every writer</td>
+          <td>Open files remain the editable local format</td>
+        </tr>
+        <tr>
+          <td>Concurrent changes</td>
+          <td>A deterministic merge for every body and frontmatter value</td>
+          <td>Revision checks, durable mutation receipts, and explicit conflicts</td>
+        </tr>
+        <tr>
+          <td>Renames, deletes, and configuration</td>
+          <td>Distributed agreement over paths, tombstones, schemas, and constraints</td>
+          <td>One canonical order for collection-wide decisions</td>
+        </tr>
+        <tr>
+          <td>Offline devices</td>
+          <td>Split-brain reconciliation and peer-membership machinery</td>
+          <td>Queued local work that safely converges when the mirror reconnects</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>The role can move without changing the collection.</strong>
+      <p>
+        Authority transfer preserves the collection and record identities,
+        advances an authority epoch, and retires the previous authority. When
+        the previous authority was a local folder, that folder can continue as
+        a mirror. A stale authority cannot accept writes after cutover.
       </p>
     </div>
   </section>
@@ -203,7 +262,7 @@ const steps = [
       </div>
       <div>
         <dt>Authority</dt>
-        <dd>The local connector or hosted provider that controls the main copy and makes the final authorization decision.</dd>
+        <dd>The movable coordination role that orders accepted changes, enforces collection rules, and makes the final authorization decision.</dd>
       </div>
       <div>
         <dt>Control plane</dt>

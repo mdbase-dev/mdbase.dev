@@ -11,7 +11,7 @@ if (status === "permission_required") {
 }
 
 connection.onConnectionChange((info) => {
-  // "direct", "relay", or "hosted"
+  // "direct", "relay", or "remote"
   renderRoute(info?.route);
 });`;
 
@@ -25,14 +25,14 @@ const options = `const mdbase = new MdbaseConnect({
 ---
 
 <DocsLayout
-  title="Local and hosted routes"
-  description="The SDK selects direct, encrypted relay, or hosted-provider transport behind one operation interface."
+  title="Authority routes"
+  description="The SDK selects direct, encrypted relay, or remote-authority transport behind one operation interface."
   active="routing"
   headings={[
     { href: "#automatic", label: "Automatic routing" },
     { href: "#direct", label: "Direct access" },
     { href: "#relay", label: "Encrypted relay" },
-    { href: "#hosted", label: "Hosted provider" },
+    { href: "#remote", label: "Remote authority" },
     { href: "#portable", label: "Portable files" },
     { href: "#native", label: "Native shells" }
   ]}
@@ -47,7 +47,7 @@ const options = `const mdbase = new MdbaseConnect({
   </p>
   <p>
     Routing state belongs to a collection-bound <code>MdbaseConnection</code>.
-    Different saved collections can be hosted, direct, or relayed at the same
+    Different saved collections can be remote, direct, or relayed at the same
     time.
   </p>
   <CodeBlock code={options} language="ts" label="connect-options.ts" />
@@ -82,26 +82,27 @@ const options = `const mdbase = new MdbaseConnect({
     that intentionally lack end-to-end relay encryption.
   </p>
 
-  <h2 id="hosted">Hosted-provider route</h2>
+  <h2 id="remote">Remote-authority route</h2>
   <p>
-    Authorization for a hosted collection returns a short-lived,
-    grant-bound provider capability. The SDK sends operations directly to the
-    provider, binds browser requests to the approved callback origin, and
-    refreshes that capability as needed.
+    Authorization may return a short-lived, grant-bound remote-authority
+    capability. The SDK sends operations directly to that authority, binds
+    browser requests to the approved callback origin, and refreshes the
+    capability as needed.
   </p>
   <p>
-    Hosted operations go directly from the application to the provider. The
-    provider decrypts records to execute canonical mdbase operations and acts as
-    a trusted data processor.
+    An mdbase hosted provider is one remote-authority deployment. Its operations
+    go directly from the application to the provider. The provider decrypts
+    records to execute canonical mdbase operations and acts as a trusted data
+    processor.
   </p>
 
   <h2 id="portable">Portable files use the same route-neutral connection</h2>
   <p>
-    A downloaded file can use direct, encrypted-relay, or hosted-provider access
-    after its short-code approval. For hosted access, its short-lived capability
-    is bound to the exact grant, collection, scope, operations, expiry, and
-    opaque <code>Origin: null</code>, and remains in process memory. The
-    consuming operation API is identical across all three routes.
+    A downloaded file can use direct, encrypted-relay, or remote-authority
+    access after its short-code approval. For remote access, its short-lived
+    capability is bound to the exact grant, collection, scope, operations,
+    expiry, and opaque <code>Origin: null</code>, and remains in process
+    memory. The consuming operation API is identical across all three routes.
   </p>
 
   <h2 id="native">Native shells</h2>
