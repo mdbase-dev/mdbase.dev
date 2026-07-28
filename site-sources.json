@@ -9,10 +9,12 @@
   },
   "implementations": [
     {
+      "id": "rust",
       "repository": "callumalpass/mdbase-rs",
       "ref": "a94c364f71cd126723baaf6d027649f0144dd182"
     },
     {
+      "id": "typescript",
       "repository": "callumalpass/mdbase",
       "ref": "b7504f9292eca1202eed6f20eea025cd917bf748"
     }
