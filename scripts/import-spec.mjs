@@ -68,6 +68,10 @@ function rewrite(html, archive) {
       'href="../examples/annotated-collection/"',
       'href="https://github.com/mdbase-dev/mdbase-spec/tree/main/examples/annotated-collection"'
     )
+    .replaceAll(
+      'href="./standard-packs/mdbase-runtime/0.2.0/"',
+      'href="https://github.com/mdbase-dev/mdbase-spec/tree/main/standard-packs/mdbase-runtime/0.2.0"'
+    )
     .replace(/<a href="\.\/person\.md">([^<]+)<\/a>/g, "<code>$1</code>")
     .replace(/<a href="\.\/project\.md">([^<]+)<\/a>/g, "<code>$1</code>")
     .replace(/href="\.\/\d{2}-[^"#]+\.md#([^"]+)"/g, 'href="#$1"')

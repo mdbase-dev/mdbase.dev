@@ -28,6 +28,18 @@ required(interopSchemaSource, "mdbase interoperability schemas");
 mkdirSync(interopSchemaDestination, { recursive: true });
 cpSync(interopSchemaSource, interopSchemaDestination, { recursive: true, force: true });
 
+const runtimeSchemaSource = join(
+  specDir,
+  "standard-packs",
+  "mdbase-runtime",
+  "0.2.0",
+  "schemas",
+);
+const runtimeSchemaDestination = join(root, "public", "runtime", "schemas", "v0.2");
+required(runtimeSchemaSource, "mdbase Runtime 0.2 schemas");
+mkdirSync(runtimeSchemaDestination, { recursive: true });
+cpSync(runtimeSchemaSource, runtimeSchemaDestination, { recursive: true, force: true });
+
 const introductionSource = join(connectDir, "docs", "mdbase-configurations-v2.html");
 required(introductionSource, "Connect introduction prototype");
 const introduction = readFileSync(introductionSource, "utf8");
@@ -71,9 +83,12 @@ cpSync(
 
 const manifest = yaml(join(specDir, "tests", "v0.3", "manifest.yaml"));
 const claims = [
-  yaml(join(rustDir, "conformance", "v0.4.0-rc.2.yml")),
-  yaml(join(typescriptDir, "conformance", "v0.3.0-rc.3.yml"))
+  yaml(join(rustDir, "conformance", "v0.4.0-rc.3.yml")),
+  yaml(join(typescriptDir, "conformance", "v0.3.0-rc.4.yml"))
 ];
+const runtimeClaim = yaml(
+  join(rustDir, "crates", "mdbase-runtime", "conformance", "v0.3.0-rc.1.yml"),
+);
 const interopClaim = yaml(
   join(specDir, "packages", "interop", "conformance", "v0.1.yml")
 );
@@ -83,23 +98,29 @@ const conformance = {
   spec_version: manifest.spec_version,
   implementations: [
     ...claims.map((claim) => {
-      const verifiedAt = claim.evidence
-        .map((entry) => entry.verified_at)
-        .filter(Boolean)
-        .sort()
-        .at(-1);
       return {
         name: claim.implementation.id === "mdbase-ts" ? "mdbase" : claim.implementation.id,
         language: claim.implementation.language,
         version: claim.implementation.version,
         repository: claim.implementation.url,
-        evidence_date: verifiedAt ? String(verifiedAt).slice(0, 10) : null,
+        evidence_date: latestEvidenceDate(claim),
         profiles: claim.profiles ?? [],
         optional_features: claim.optional_features ?? [],
         workflow_execution: claim.limits?.runtime_execution === true,
         note: "The claim uses the machine-readable v0.3 atomic profiles."
       };
     }),
+    {
+      name: runtimeClaim.implementation.id,
+      language: runtimeClaim.implementation.language,
+      version: runtimeClaim.implementation.version,
+      repository: runtimeClaim.implementation.url,
+      evidence_date: latestEvidenceDate(runtimeClaim),
+      profiles: runtimeClaim.profiles ?? [],
+      optional_features: [],
+      workflow_execution: true,
+      note: `Durable Runtime ${runtimeClaim.runtime_profile_version}; interoperability ${runtimeClaim.interop_profile_version}.`,
+    },
     {
       name: interopClaim.implementation.application,
       language: "TypeScript",
@@ -129,6 +150,7 @@ writeFileSync(
 
 console.log(`Copied Connect schemas from ${schemaSource}`);
 console.log(`Copied interoperability schemas from ${interopSchemaSource}`);
+console.log(`Copied Runtime 0.2 schemas from ${runtimeSchemaSource}`);
 console.log(`Copied the homepage design and murmuration from ${introductionSource}`);
 console.log(`Copied shared theme values from ${connectThemeSource}`);
 console.log(`Generated conformance data from ${claims.length + 1} implementation claims`);
@@ -136,6 +158,15 @@ console.log(`Generated conformance data from ${claims.length + 1} implementation
 function yaml(path) {
   required(path, "YAML source");
   return parse(readFileSync(path, "utf8"));
+}
+
+function latestEvidenceDate(claim) {
+  const verifiedAt = claim.evidence
+    .map((entry) => entry.verified_at)
+    .filter(Boolean)
+    .sort()
+    .at(-1);
+  return verifiedAt ? String(verifiedAt).slice(0, 10) : null;
 }
 
 function required(path, label) {

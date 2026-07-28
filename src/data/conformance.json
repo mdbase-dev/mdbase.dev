@@ -5,7 +5,7 @@
     {
       "name": "mdbase-rs",
       "language": "Rust",
-      "version": "0.4.0-rc.2",
+      "version": "0.4.0-rc.3",
       "repository": "https://github.com/callumalpass/mdbase-rs",
       "evidence_date": "2026-07-28",
       "profiles": [
@@ -26,7 +26,7 @@
     {
       "name": "mdbase",
       "language": "TypeScript",
-      "version": "0.3.0-rc.3",
+      "version": "0.3.0-rc.4",
       "repository": "https://github.com/callumalpass/mdbase",
       "evidence_date": "2026-07-28",
       "profiles": [
@@ -44,6 +44,22 @@
       ],
       "workflow_execution": false,
       "note": "The claim uses the machine-readable v0.3 atomic profiles."
+    },
+    {
+      "name": "mdbase-runtime-rs",
+      "language": "Rust",
+      "version": "0.3.0-rc.1",
+      "repository": "https://github.com/callumalpass/mdbase-rs",
+      "evidence_date": "2026-07-29",
+      "profiles": [
+        "core_read",
+        "cel",
+        "event_action_interop/0.1",
+        "runtime/0.2"
+      ],
+      "optional_features": [],
+      "workflow_execution": true,
+      "note": "Durable Runtime 0.2; interoperability 0.1."
     },
     {
       "name": "mdbase-interop",
@@ -72,8 +88,7 @@
       "core_write",
       "lifecycle",
       "event_action_interop/0.1",
-      "runtime_contracts/0.1",
-      "workflow/0.1",
+      "runtime/0.2",
       "watch"
     ]
   }

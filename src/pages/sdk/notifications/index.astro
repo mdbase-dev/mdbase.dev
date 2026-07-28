@@ -8,10 +8,10 @@ const criterion = `{
       "id": "task.changed",
       "event": {
         "id": "mdbase.record.modified",
-        "version": 1
+        "version": "1.0.0"
       },
       "if": {
-        "$expr": "\\"task\\" in event.payload.types"
+        "$expr": "\\"task\\" in event.data.types"
       },
       "debounce": "5s",
       "minimum_interval": "1m",
@@ -89,10 +89,10 @@ if (await deliveries.claim(event.delivery_id)) {
   <h2 id="criteria">Declare criteria in the application manifest</h2>
   <CodeBlock code={criterion} language="json" label="Manifest fragment" />
   <p>
-    Criteria use canonical runtime event contracts and CEL. Presentation is
-    static manifest data, so private record content cannot be interpolated into
-    a push. The approved grant stores an exact snapshot of each selected
-    criterion.
+    Criteria use canonical Runtime 0.2 event contracts and CEL over CloudEvent
+    {" "}<code>data</code>. Presentation is static manifest data, so private
+    record content cannot be interpolated into a push. The approved grant
+    stores an exact snapshot of each selected criterion.
   </p>
 
   <h2 id="browser">Register browser push from a user action</h2>
