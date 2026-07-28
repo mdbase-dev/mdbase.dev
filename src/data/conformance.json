@@ -29,17 +29,19 @@
     {
       "name": "mdbase",
       "language": "TypeScript",
-      "version": "0.3.0-rc.1",
+      "version": "0.3.0-rc.2",
       "repository": "https://github.com/callumalpass/mdbase",
-      "evidence_date": "2026-07-22",
+      "evidence_date": "2026-07-28",
       "profiles": [
         "core_read",
         "collection_semantics",
         "cel",
+        "cel_match",
         "cel_query",
         "links",
         "core_write",
-        "lifecycle"
+        "lifecycle",
+        "runtime_contracts/0.1"
       ],
       "optional_features": [
         "view_records"

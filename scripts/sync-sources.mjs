@@ -66,7 +66,7 @@ cpSync(
 const manifest = yaml(join(specDir, "tests", "v0.3", "manifest.yaml"));
 const claims = [
   yaml(join(rustDir, "conformance", "v0.3.0-rc.1.yml")),
-  yaml(join(typescriptDir, "conformance", "v0.3.0-rc.1.yml"))
+  yaml(join(typescriptDir, "conformance", "v0.3.0-rc.2.yml"))
 ];
 
 const conformance = {
