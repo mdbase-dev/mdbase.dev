@@ -12,16 +12,44 @@ const contractManifest = `{
   ],
   "requirements": {
     "contracts": [
-      { "id": "example.work-item", "version": 1 }
+      { "id": "example.work-item", "version": "1.0.0" }
     ]
   },
   "provisions": {
-    "types": [
+    "type_packs": [
       {
-        "name": "Work item",
-        "document": "---\\nkind: mdbase.type\\nname: work-item\\nversion: 1\\nschema:\\n  dialect: json-schema-2020-12\\n  value:\\n    type: object\\nx-worklog:\\n  contract: example.work-item\\n  version: 1\\n---\\n",
         "provides": [
-          { "id": "example.work-item", "version": 1 }
+          { "id": "example.work-item", "version": "1.0.0" }
+        ],
+        "manifest": {
+          "kind": "mdbase.type-pack",
+          "id": "example.work-items",
+          "version": "1.0.0",
+          "name": "Work items",
+          "resources": [
+            {
+              "kind": "contract",
+              "source": "contracts/example.work-item.md",
+              "target": "_contracts/example.work-item.md",
+              "digest": "sha256:9cd7f8e4b23ba20aaeaec3f7e209c6ba8de3fa5cd224204f2baef4e14dd69936"
+            },
+            {
+              "kind": "type",
+              "source": "types/work-item.md",
+              "target": "_types/work-item.md",
+              "digest": "sha256:2be7d8a5cd316fe2e4d31fa49b1d09f2d26a584846392b3ef21ff0219893230b"
+            }
+          ]
+        },
+        "resources": [
+          {
+            "source": "contracts/example.work-item.md",
+            "document": "---\\nkind: mdbase.contract\\nid: example.work-item\\nversion: 1.0.0\\nschema:\\n  dialect: json-schema-2020-12\\n  value:\\n    $schema: https://json-schema.org/draft/2020-12/schema\\n    type: object\\n    additionalProperties: false\\n    properties:\\n      title: { type: string }\\n    required: [title]\\n---\\n"
+          },
+          {
+            "source": "types/work-item.md",
+            "document": "---\\nkind: mdbase.type\\nname: work-item\\nversion: 1\\nschema:\\n  dialect: json-schema-2020-12\\n  value:\\n    type: object\\n    additionalProperties: true\\n    properties:\\n      title: { type: string }\\n    required: [title]\\nimplements:\\n  - contract: example.work-item\\n    version: 1.0.0\\n    fields:\\n      title: title\\n---\\n"
+          }
         ]
       }
     ]
@@ -143,7 +171,7 @@ const portableManifest = `{
     <tbody>
       <tr>
         <td><code>contracts</code></td>
-        <td>Exact domain contract IDs and major versions the app understands</td>
+        <td>Exact contract IDs and semantic versions the app understands</td>
       </tr>
       <tr>
         <td><code>access: "contract"</code></td>
@@ -169,17 +197,19 @@ const portableManifest = `{
 
   <h2 id="provisioning">Provision a missing contract safely</h2>
   <p>
-    A manifest may carry complete portable type documents. During approval, the
-    authority installs only the missing definitions, reopens the collection,
-    and verifies the declared contract before it creates the grant.
+    A manifest may carry a complete transactional type pack. During approval,
+    the authority validates every declared digest, preflights the contract,
+    types, and referenced schemas together, and writes all resources or none.
+    It then reopens the collection and pins the exact contract and
+    implementation digests before creating the grant.
     General type administration requires a separate{" "}
     <code>create_type</code> grant.
   </p>
   <CodeBlock code={contractManifest} language="json" label="Work-item contract example" />
   <p>
-    A provision may only claim contracts listed in{" "}
-    <code>requirements.contracts</code>. Auxiliary types installed with the
-    same approved set use an empty <code>provides</code> array.
+    A pack may only claim contracts listed in{" "}
+    <code>requirements.contracts</code>. A target with different bytes is a
+    conflict, not an implicit overwrite. Repeating the same pack is idempotent.
   </p>
 
   <h2 id="native">Native application callbacks</h2>

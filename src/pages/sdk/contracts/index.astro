@@ -7,15 +7,19 @@ const generic = `const description = await connection.describe();
 const workItemContract = description.contracts.find(
   (contract) =>
     contract.id === "example.work-item" &&
-    contract.version === 1
+    contract.version === "1.0.0"
 );
 
 if (!workItemContract) {
-  throw new Error("The approved collection lacks example.work-item@1");
+  throw new Error("The approved collection lacks example.work-item 1.0.0");
 }
 
-const workItemType = workItemContract.type_name;
-const fieldRoles = workItemContract.configuration.field_roles;`;
+for (const implementation of workItemContract.implementations) {
+  console.log(
+    implementation.type_name,
+    implementation.fields
+  );
+}`;
 
 const domainFunction = `import type { MdbaseCollectionClient } from "@mdbase/connect";
 
@@ -27,7 +31,10 @@ export class WorklogCollection {
 
   list() {
     return this.client.queryAll({
-      types: [this.contract.typeName]
+      contract: {
+        id: "example.work-item",
+        version: "1.0.0"
+      }
     });
   }
 }`;
@@ -45,19 +52,26 @@ export class WorklogCollection {
   ]}
 >
   <p>
-    A type describes record shape. A domain contract identifies portable
-    behavior and maps semantic roles onto that type. Two collections can provide
-    the same contract while using different frontmatter property names or path
-    conventions.
+    A type describes how one collection stores records. A data contract is a
+    versioned JSON Schema for a stable, portable record view. A type opts into a
+    contract through{" "}<code>implements</code>, where it maps contract field names
+    to its own frontmatter fields.
+  </p>
+  <p>
+    This is intentionally many-to-many. Several types can implement one
+    contract, so reads union all of them. One type can implement contracts used
+    by several applications, so those applications can share the same records
+    without sharing implementation-specific conventions.
   </p>
 
   <h2 id="contract">Read the approved collection description</h2>
   <CodeBlock code={generic} language="ts" label="contract.ts" />
   <p>
-    <code>describe()</code> returns portable type definitions, complete contract
-    descriptors, collection settings, JSON Schemas, and supported operations.
-    Use this data after authorization. The manifest requirement guarantees that
-    Connect only offers a ready or safely provisionable collection.
+    <code>describe()</code> returns each exact string version, contract schema,
+    digest, and complete{" "}<code>implementations</code> list. Each implementation
+    includes its concrete type, field mapping, binding metadata, and digest. Use
+    this data after authorization; do not look for semantic meaning in{" "}
+    <code>x-*</code> extensions.
   </p>
 
   <h2 id="own-adapter">Keep your adapter on the transport-neutral client</h2>
@@ -67,6 +81,12 @@ export class WorklogCollection {
     <code>MdbaseCollectionClient</code>. This makes the adapter usable with
     Connect, <code>createSandbox()</code>, offline transports, and conforming
     providers.
+  </p>
+  <p>
+    A contract query returns normalized contract fields and unions every
+    approved implementation. If a record exposes several approved views, pass
+    the exact{" "}<code>{"{ id, version, type }"}</code> selector. Creates also need
+    an exact provider when more than one implementation is available.
   </p>
 
   <h2 id="ownership">Keep domain behavior with its application</h2>
@@ -80,10 +100,11 @@ export class WorklogCollection {
 
   <h2 id="scope">Contract scope and full collection access</h2>
   <p>
-    Contract-scoped grants confine record paths and operations to types that
-    provide the required contracts. They cannot administer collection-wide
-    type definitions. Request <code>full_collection</code> only for genuine
-    collection-level behavior such as arbitrary saved views, schema editors, or
-    general-purpose collection tools.
+    Contract-scoped grants expose only normalized mapped fields. Markdown
+    bodies, unmapped frontmatter, unrelated types, and collection-wide features
+    stay private. Filtering and sorting normalized fields happens in the
+    application. Request{" "}<code>full_collection</code> only for genuine
+    whole-record or collection-level behavior such as body-aware task tools,
+    arbitrary saved views, schema editors, or general-purpose collection tools.
   </p>
 </DocsLayout>

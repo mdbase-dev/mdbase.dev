@@ -12,16 +12,43 @@ const manifest = `{
   ],
   "requirements": {
     "contracts": [
-      { "id": "workout.record", "version": 1 }
+      { "id": "workout.record", "version": "1.0.0" }
     ]
   },
   "provisions": {
-    "types": [
+    "type_packs": [
       {
-        "name": "Workout",
-        "document": "---\\nkind: mdbase.type\\nname: workout\\nversion: 1\\nschema:\\n  dialect: json-schema-2020-12\\n  value:\\n    type: object\\n    required: [type, title]\\n    additionalProperties: true\\n    properties:\\n      type: { const: workout }\\n      title: { type: string }\\n      completed: { type: boolean }\\nx-workout:\\n  contract: workout.record\\n  version: 1\\n  field_roles:\\n    title: title\\n---\\n",
         "provides": [
-          { "id": "workout.record", "version": 1 }
+          { "id": "workout.record", "version": "1.0.0" }
+        ],
+        "manifest": {
+          "kind": "mdbase.type-pack",
+          "id": "example.workouts",
+          "version": "1.0.0",
+          "resources": [
+            {
+              "kind": "contract",
+              "source": "contracts/workout.record.md",
+              "target": "_contracts/workout.record.md",
+              "digest": "sha256:e0c2f77dd7158ca7e6b52b13da8c306f0a7e1b97582a1024f00ec0cf7fe5f259"
+            },
+            {
+              "kind": "type",
+              "source": "types/workout.md",
+              "target": "_types/workout.md",
+              "digest": "sha256:ff35309cd4598182d2021f698ee85cad4d320d965cd5f7c1bd608ee2eb16505b"
+            }
+          ]
+        },
+        "resources": [
+          {
+            "source": "contracts/workout.record.md",
+            "document": "---\\nkind: mdbase.contract\\nid: workout.record\\nversion: 1.0.0\\nschema:\\n  dialect: json-schema-2020-12\\n  value:\\n    $schema: https://json-schema.org/draft/2020-12/schema\\n    type: object\\n    additionalProperties: false\\n    properties:\\n      title: { type: string }\\n      completed: { type: boolean, default: false }\\n    required: [title]\\n---\\n"
+          },
+          {
+            "source": "types/workout.md",
+            "document": "---\\nkind: mdbase.type\\nname: workout\\nversion: 1\\nschema:\\n  dialect: json-schema-2020-12\\n  value:\\n    type: object\\n    additionalProperties: true\\n    properties:\\n      title: { type: string }\\n      completed: { type: boolean }\\n    required: [title]\\nimplements:\\n  - contract: workout.record\\n    version: 1.0.0\\n    fields:\\n      title: title\\n      completed: completed\\n---\\n"
+          }
         ]
       }
     ]
@@ -48,7 +75,6 @@ const client = `import {
 } from "@mdbase/connect";
 
 export interface Workout extends JsonObject {
-  type: "workout";
   title: string;
   completed?: boolean;
 }
@@ -114,17 +140,26 @@ const collection = collectionLocation.activeConnection();
 if (!collection) throw new Error("Choose a collection.");
 
 const page = unwrapOperation(await collection.query({
-  types: ["workout"],
-  where: "completed != true",
-  order_by: [{ field: "title", direction: "asc" }],
+  contract: {
+    id: "workout.record",
+    version: "1.0.0"
+  },
   limit: 50
 }));
 
-const first = page.results[0];
+const first = page.results
+  .filter((row) => row.completed !== true)
+  .sort((left, right) =>
+    left.title.localeCompare(right.title)
+  )[0];
 if (first) {
   unwrapOperation(await collection.update({
     path: first.path,
     patch: { completed: true },
+    contract: {
+      id: "workout.record",
+      version: "1.0.0"
+    },
     if_revision: first.revision
   }));
 }`;
@@ -164,9 +199,9 @@ if (first) {
     <li>a Connect SDK source build or beta artifact.</li>
   </ul>
   <p>
-    The example manifest carries a complete workout type. Connect can install
-    that type during approval when the chosen collection does not yet provide
-    {" "}<code>workout.record@1</code>.
+    The example manifest carries a complete transactional contract/type pack.
+    Connect can install it during approval when the chosen collection does not
+    yet provide <code>workout.record</code> <code>1.0.0</code>.
   </p>
 
   <h2 id="manifest">1. Add a bundled application manifest</h2>
@@ -178,9 +213,9 @@ if (first) {
   </p>
   <CodeBlock code={manifest} language="json" label="public/.well-known/mdbase-app.json" />
   <p>
-    The contract requirement limits compatible collections. The provision
-    makes a collection safely provisionable during approval and does not give
-    the application general type-management access.
+    The contract requirement limits compatible collections. The type pack makes
+    a collection safely provisionable during approval and does not give the
+    application general type-management access.
   </p>
 
   <h2 id="install">2. Add the SDK and validator</h2>
@@ -230,6 +265,11 @@ if (first) {
     Query results carry an opaque revision. Passing it as
     {" "}<code>if_revision</code> prevents one application from silently
     overwriting a newer change.
+  </p>
+  <p>
+    Contract-scoped queries expose normalized mapped fields only. They union
+    every approved implementation and deliberately leave filtering and sorting
+    those normalized values to the application.
   </p>
 
   <h2 id="success">What success looks like</h2>
