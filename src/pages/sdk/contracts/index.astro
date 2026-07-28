@@ -52,22 +52,25 @@ export class WorklogCollection {
   ]}
 >
   <p>
-    A type describes how one collection stores records. A data contract is a
-    versioned JSON Schema for a stable, portable record view. A type opts into a
-    contract through{" "}<code>implements</code>, where it maps contract field names
-    to its own frontmatter fields.
+    Every <code>mdbase.contract</code> has a stable ID, semantic version, exact
+    digest, and JSON Schema. Its <code>contract_type</code> says what it
+    describes: a portable <strong>record</strong> view, an emitted{" "}
+    <strong>event</strong>, or an invocable <strong>action</strong>.
   </p>
   <p>
-    This is intentionally many-to-many. Several types can implement one
-    contract, so reads union all of them. One type can implement contracts used
-    by several applications, so those applications can share the same records
-    without sharing implementation-specific conventions.
+    Only record contracts are implemented by type files. A type opts in through{" "}
+    <code>implements</code> and maps contract field names to its own
+    frontmatter fields. This is intentionally many-to-many: reads union every
+    approved implementing type, and several applications can consume the same
+    portable record view. Event sources and action providers declare executable
+    implementations through the <a href="/interop/">interoperability bridge</a>,
+    not through a type file.
   </p>
 
   <h2 id="contract">Read the approved collection description</h2>
   <CodeBlock code={generic} language="ts" label="contract.ts" />
   <p>
-    <code>describe()</code> returns each exact string version, contract schema,
+    <code>describe()</code> returns each exact record-contract version, schema,
     digest, and complete{" "}<code>implementations</code> list. Each implementation
     includes its concrete type, field mapping, binding metadata, and digest. Use
     this data after authorization; do not look for semantic meaning in{" "}

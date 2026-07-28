@@ -5,32 +5,8 @@
     {
       "name": "mdbase-rs",
       "language": "Rust",
-      "version": "0.3.0-rc.1",
+      "version": "0.4.0-rc.2",
       "repository": "https://github.com/callumalpass/mdbase-rs",
-      "evidence_date": "2026-07-22",
-      "profiles": [
-        "core_read",
-        "collection_semantics",
-        "cel",
-        "cel_match",
-        "cel_query",
-        "links",
-        "core_write",
-        "lifecycle",
-        "runtime_contracts/0.1",
-        "watch"
-      ],
-      "optional_features": [
-        "runtime_contract_materialization"
-      ],
-      "workflow_execution": false,
-      "note": "The current Rust claim records runtime_execution: false. workflow/0.1 will follow shared fixture evidence."
-    },
-    {
-      "name": "mdbase",
-      "language": "TypeScript",
-      "version": "0.3.0-rc.2",
-      "repository": "https://github.com/callumalpass/mdbase",
       "evidence_date": "2026-07-28",
       "profiles": [
         "core_read",
@@ -41,13 +17,46 @@
         "links",
         "core_write",
         "lifecycle",
-        "runtime_contracts/0.1"
+        "watch"
+      ],
+      "optional_features": [],
+      "workflow_execution": false,
+      "note": "The claim uses the machine-readable v0.3 atomic profiles."
+    },
+    {
+      "name": "mdbase",
+      "language": "TypeScript",
+      "version": "0.3.0-rc.3",
+      "repository": "https://github.com/callumalpass/mdbase",
+      "evidence_date": "2026-07-28",
+      "profiles": [
+        "core_read",
+        "collection_semantics",
+        "cel",
+        "cel_match",
+        "cel_query",
+        "links",
+        "core_write",
+        "lifecycle"
       ],
       "optional_features": [
         "view_records"
       ],
       "workflow_execution": false,
       "note": "The claim uses the machine-readable v0.3 atomic profiles."
+    },
+    {
+      "name": "mdbase-interop",
+      "language": "TypeScript",
+      "version": "0.1.0-rc.2",
+      "repository": "https://github.com/mdbase-dev/mdbase-spec",
+      "evidence_date": null,
+      "profiles": [
+        "event_action_interop/0.1"
+      ],
+      "optional_features": [],
+      "workflow_execution": false,
+      "note": "Reference ephemeral bridge; roles: event_source, event_consumer, action_caller, action_provider, bridge."
     }
   ],
   "coverage": {
@@ -62,6 +71,7 @@
       "links",
       "core_write",
       "lifecycle",
+      "event_action_interop/0.1",
       "runtime_contracts/0.1",
       "workflow/0.1",
       "watch"
