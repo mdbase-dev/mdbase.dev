@@ -4,71 +4,72 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="Runtime"
-  description="Understand how the durable runtime consumes the mdbase event/action interoperability profile."
+  description="Understand how Runtime profile 0.2 adds durable workflow execution to ordinary mdbase contracts and shared interoperability."
   current="runtime"
 >
   <section class="page-hero">
     <div class="page-hero__inner">
       <div>
-        <p class="eyebrow"><i></i> Runtime profile 0.1</p>
-        <h1>Durable execution builds on interoperability.</h1>
+        <p class="eyebrow"><i></i> Runtime profile 0.2</p>
+        <h1>Durable execution uses the same contracts.</h1>
       </div>
       <div class="page-hero__aside">
         <p>
-          The event/action profile defines portable messages and provider
-          resolution. The runtime adds journals, scheduling, retries, and
-          recovery without inventing a second contract system.
+          Contracts define meaning. Interoperability connects live
+          applications. The runtime adds admission, persistence, retries,
+          recovery, and honest outcomes when effects cannot be known.
         </p>
         <div class="button-row">
-          <a class="button button--primary" href="/interop/">Interoperability profile</a>
-          <a class="button" href="/implementations/">Implementation profiles</a>
+          <a class="button button--primary" href="/spec/#section-13">Read the runtime profile</a>
+          <a class="button" href="/interop/">Interoperability profile</a>
         </div>
       </div>
     </div>
   </section>
 
   <section class="content-section">
-    <h2>Four related layers</h2>
+    <h2>Four layers, one contract model</h2>
+    <p>
+      An application can consume a record type, publish an event, or provide an
+      action without becoming a workflow engine. Each layer has one job.
+    </p>
     <div class="steps">
       <div class="step">
         <div>
-          <h3>Collection semantics</h3>
+          <h3>1. Contracts define</h3>
           <p>
-            Loading, typing, validation, CEL queries, links, saved views,
-            revision-safe mutations, lifecycle policy, and watching. These
-            behaviors operate directly on the collection.
+            Record, event, and action artifacts share one identity, SemVer,
+            JSON Schema, digest, registry, and conflict model.
           </p>
         </div>
       </div>
       <div class="step">
         <div>
-          <h3>Event/action interoperability 0.1</h3>
+          <h3>2. Applications connect</h3>
           <p>
-            CloudEvents envelopes, exact contract evidence, role declarations,
-            boundary validation, and one-provider action resolution. The
-            browser-safe reference bridge implements this layer.
+            CloudEvents and action envelopes carry exact contract evidence.
+            Source and provider declarations bind live implementations to
+            artifacts. Events are multicast; actions resolve to one provider.
           </p>
         </div>
       </div>
       <div class="step">
         <div>
-          <h3>Workflow execution 0.1</h3>
+          <h3>3. The runtime admits</h3>
           <p>
-            Durable journals, idempotent actions, timers, recovery, and
-            provider-neutral execution. The Rust <code>mdbase-runtime</code>{" "}
-            crate implements this execution layer with in-memory, SQLite, and
-            PostgreSQL storage.
+            A workflow names compatible contracts. Admission resolves and pins
+            the exact event source, action provider, handler, versions, and
+            digests that the run may use.
           </p>
         </div>
       </div>
       <div class="step">
         <div>
-          <h3>Connect embedding</h3>
+          <h3>4. Durable execution recovers</h3>
           <p>
-            Connect compiles exact application grants into transport behavior,
-            supplies local or hosted collection authorities, and routes
-            notification signals. It can bind the same portable envelopes
-            durably without becoming mandatory for local applications.
+            Runs, attempts, leases, checkpoints, timers, cursors, and outcomes
+            survive crashes. The authorization host remains the final boundary
+            for every dispatch.
           </p>
         </div>
       </div>
@@ -76,42 +77,125 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   </section>
 
   <section class="content-section">
-    <h2>Conformance profiles</h2>
+    <h2>Readable requirements become exact evidence</h2>
     <p>
-      Conformance uses atomic profiles. Interoperability bridges claim{" "}
-      <code>event_action_interop/0.1</code>. Durable workflow engines add{" "}
-      <code>workflow/0.1</code> after publishing shared fixture evidence.
+      Authors name behavior and a compatible version. The admitted plan records
+      exact immutable bindings before any action runs.
     </p>
+    <pre><code>{`type: runtime_workflow
+id: canvas.zone.set-status
+version: 1.0.0
+name: Set status from canvas zone
+enabled: true
+
+triggers:
+  - id: drop-on-status-zone
+    event:
+      id: canvas.drop
+      version: ^1.0.0
+
+steps:
+  - id: patch-task-status
+    action:
+      id: mdbase.record.patch
+      version: ^2.0.0
+    provider:
+      application: task-editor
+    input:
+      path:
+        $expr: event.data.record.path
+      patch:
+        status:
+          $expr: event.data.target.value`}</code></pre>
+    <div class="callout">
+      <strong>Compatibility is not authority.</strong>
+      <p>
+        A matching schema or SemVer range never grants access. The runtime
+        admits exact candidates, and the embedding host still authorizes the
+        actual event delivery and action dispatch.
+      </p>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Standard runtime records</h2>
+    <p>
+      The <code>mdbase.runtime.standard@0.2.0</code> pack supplies ordinary
+      mdbase types, contracts, and JSON Schemas. Runtime state stays inspectable
+      with the same collection tools as other records.
+    </p>
+    <table class="profile-table">
+      <thead>
+        <tr>
+          <th>Records</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>runtime_workflow</code>, <code>runtime_policy</code></td>
+          <td>Portable workflow intent, provider selection, and capability grants</td>
+        </tr>
+        <tr>
+          <td><code>runtime_run</code>, <code>runtime_action_attempt</code></td>
+          <td>Run state, exact bindings, requests, attempts, and outcomes</td>
+        </tr>
+        <tr>
+          <td><code>runtime_checkpoint</code>, <code>runtime_timer</code></td>
+          <td>Recovery position, leases, one-shot scheduling, and missed-run policy</td>
+        </tr>
+        <tr>
+          <td><code>runtime_diagnostic</code>, <code>runtime_dead_letter</code></td>
+          <td>Portable failure evidence and work that needs operator attention</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <a href="/runtime/schemas/v0.2/mdbase.runtime.workflow/1.0.0.schema.json">
+        Open the workflow JSON Schema
+      </a>
+      {" · "}
+      <a href="https://github.com/mdbase-dev/mdbase-spec/tree/main/standard-packs/mdbase-runtime/0.2.0">
+        Inspect the complete standard pack
+      </a>
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>Profiles and implementations</h2>
     <table class="profile-table">
       <thead>
         <tr>
           <th>Profile</th>
           <th>Covered behavior</th>
-          <th>Separate profiles</th>
+          <th>Does not imply</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td><code>event_action_interop/0.1</code></td>
-          <td>CloudEvents, declarations, validation, authorization boundaries, multicast, and action resolution</td>
-          <td>Workflow syntax, scheduling, retries, persistence, or recovery</td>
+          <td>CloudEvents, declarations, validation, multicast, action resolution, and exact evidence</td>
+          <td>Persistence, retries, timers, or workflow recovery</td>
         </tr>
         <tr>
-          <td><code>runtime_contracts/0.1</code></td>
-          <td>Legacy runtime-host behavior during migration to the interoperability substrate</td>
-          <td>The portable event/action profile and durable execution evidence</td>
-        </tr>
-        <tr>
-          <td><code>workflow/0.1</code></td>
-          <td>Durable workflow execution, action idempotency, timers, and recovery</td>
-          <td>All collection semantics unless separately claimed</td>
+          <td><code>runtime/0.2</code></td>
+          <td>Admission, deterministic execution, journals, attempts, leases, recovery, cancellation, and timers</td>
+          <td>Authorization or unrelated collection profiles</td>
         </tr>
         <tr>
           <td><code>watch</code></td>
-          <td>Real collection event delivery and ordering</td>
-          <td>Runtime provider or workflow behavior</td>
+          <td>Collection change delivery and ordering</td>
+          <td>Portable event contracts or durable workflow behavior</td>
         </tr>
       </tbody>
     </table>
+    <p>
+      The TypeScript{" "}
+      <code>@callumalpass/mdbase-runtime</code>
+      {" "}package provides browser-safe record validation and admission. The
+      Rust{" "}
+      <code>mdbase-runtime</code>
+      {" "}crate supplies durable in-memory, SQLite, and PostgreSQL execution.
+    </p>
   </section>
 </BaseLayout>

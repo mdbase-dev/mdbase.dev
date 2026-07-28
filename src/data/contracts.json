@@ -28,6 +28,166 @@
           ]
         }
       ]
+    },
+    {
+      "id": "mdbase.record.created",
+      "version": "1.0.0",
+      "name": "Record created",
+      "description": "Published after a record is created and derived collection state is consistent.",
+      "contract_type": "event",
+      "digest": "sha256:4c157f94e63d1f4fb1a74da640e03264ccb6c78cfa9f88ddb71b09c8bd6d1d44",
+      "artifact": "./artifacts/contracts/mdbase.record.created/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.record.deleted",
+      "version": "1.0.0",
+      "name": "Record deleted",
+      "description": "Published after a record is deleted and derived collection state is consistent.",
+      "contract_type": "event",
+      "digest": "sha256:cb4f4a09f9f9b1f7f5e2207de0074ce02fd89008c08386626fd964a29299f956",
+      "artifact": "./artifacts/contracts/mdbase.record.deleted/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.record.modified",
+      "version": "1.0.0",
+      "name": "Record modified",
+      "description": "Published after a record is modified and derived collection state is consistent.",
+      "contract_type": "event",
+      "digest": "sha256:2f670ef18bf7330fbba73861f41889ee946b33644074ca7366e88913f6e4d88a",
+      "artifact": "./artifacts/contracts/mdbase.record.modified/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.record.renamed",
+      "version": "1.0.0",
+      "name": "Record renamed",
+      "description": "Published after a record is renamed and derived collection state is consistent.",
+      "contract_type": "event",
+      "digest": "sha256:b6c507198379ba48408c9b48161a1c22d46dad2d291691af449167618484bb4c",
+      "artifact": "./artifacts/contracts/mdbase.record.renamed/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.runtime.action-attempt",
+      "version": "1.0.0",
+      "name": "Durable action attempt",
+      "description": "Durable invocation intent and outcome evidence using the shared interoperability envelope.",
+      "contract_type": "record",
+      "digest": "sha256:04c1bf55580d0d280d2be645c56177da25c2d0129f8fa71def7d5f96cf0ea629",
+      "artifact": "./artifacts/contracts/mdbase.runtime.action-attempt/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.runtime.capability-grant",
+      "version": "1.0.0",
+      "name": "Capability grant evidence",
+      "description": "A materialized authorization grant scoped independently from contract conformance.",
+      "contract_type": "record",
+      "digest": "sha256:1cd3a2ff5fdc9294f766e538c371ed278ad4c54452480ba6fcc2870be08b47a1",
+      "artifact": "./artifacts/contracts/mdbase.runtime.capability-grant/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.runtime.checkpoint",
+      "version": "1.0.0",
+      "name": "Runtime checkpoint",
+      "description": "A durable, lease-safe workflow continuation.",
+      "contract_type": "record",
+      "digest": "sha256:6413676d7482a71b31cbe4abf8c5a543a54a530ef62f669f8ef8e21bcc6bc237",
+      "artifact": "./artifacts/contracts/mdbase.runtime.checkpoint/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.runtime.dead-letter",
+      "version": "1.0.0",
+      "name": "Runtime dead letter",
+      "description": "Retained event or action evidence that cannot be processed safely.",
+      "contract_type": "record",
+      "digest": "sha256:737d08bad6662e087c3393f6f17d24374f258d60b41112a3f864cb5138af8edd",
+      "artifact": "./artifacts/contracts/mdbase.runtime.dead-letter/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.runtime.diagnostic",
+      "version": "1.0.0",
+      "name": "Runtime diagnostic",
+      "description": "A machine-readable durable runtime diagnostic.",
+      "contract_type": "record",
+      "digest": "sha256:2e7379de9ceefa6435e9c66a71f4292e4805e8038ed6496c83dad946900267f6",
+      "artifact": "./artifacts/contracts/mdbase.runtime.diagnostic/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.runtime.policy",
+      "version": "1.0.0",
+      "name": "Runtime policy",
+      "description": "Local authorization, executor, limit, and provider-selection policy.",
+      "contract_type": "record",
+      "digest": "sha256:319a9bd4ca62a246871ee52e0ef0250a82c240cb14a95f88e4a505ad04450300",
+      "artifact": "./artifacts/contracts/mdbase.runtime.policy/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.runtime.provider-registration",
+      "version": "1.0.0",
+      "name": "Provider registration evidence",
+      "description": "An optional audit snapshot of a verified interoperability declaration; it never activates code.",
+      "contract_type": "record",
+      "digest": "sha256:97d157efaeb311745fc84e2cbe01e8147aaf44109384090c154527b68838d766",
+      "artifact": "./artifacts/contracts/mdbase.runtime.provider-registration/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.runtime.run.cancel",
+      "version": "1.0.0",
+      "name": "Cancel durable runtime run",
+      "description": "Request cooperative cancellation of one durable runtime run.",
+      "contract_type": "action",
+      "digest": "sha256:949f039334cfc3f096beb870419baa08c3b40679b184e9849f9330a34a6f524d",
+      "artifact": "./artifacts/contracts/mdbase.runtime.run.cancel/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.runtime.run",
+      "version": "1.0.0",
+      "name": "Durable run",
+      "description": "The durable state and immutable admitted plan for one workflow execution.",
+      "contract_type": "record",
+      "digest": "sha256:7e46270c951e6634fe25519dff10523652365f8adf30b034f01e29e1ca48cadb",
+      "artifact": "./artifacts/contracts/mdbase.runtime.run/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.runtime.timer.fired",
+      "version": "1.0.0",
+      "name": "Runtime timer fired",
+      "description": "Published with scheduling evidence and opaque application data when the current generation of a durable timer fires.",
+      "contract_type": "event",
+      "digest": "sha256:9381a2c6778a3268758ac235e3c3b66991a769fa8e19f7303d4404b1e7e62bc6",
+      "artifact": "./artifacts/contracts/mdbase.runtime.timer.fired/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.runtime.timer",
+      "version": "1.0.0",
+      "name": "Runtime timer",
+      "description": "A generation-safe one-shot timer that publishes through the interoperability profile.",
+      "contract_type": "record",
+      "digest": "sha256:0500a421e81eef09c37bc4ef559e3805843e87a6e1b2cf2a393da4d76d4384fc",
+      "artifact": "./artifacts/contracts/mdbase.runtime.timer/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.runtime.workflow",
+      "version": "1.0.0",
+      "name": "Durable workflow",
+      "description": "A portable workflow whose event and action references are resolved and pinned at admission.",
+      "contract_type": "record",
+      "digest": "sha256:7cf8ed016bf6232d9c1abc8d8bb9bb25fd2af1ffa6c6094317aa65baf3c31049",
+      "artifact": "./artifacts/contracts/mdbase.runtime.workflow/1.0.0.md",
+      "standards": []
     }
   ],
   "packs": [
@@ -45,6 +205,58 @@
         }
       ],
       "resource_count": 3,
+      "featured": true
+    },
+    {
+      "id": "mdbase.runtime.standard",
+      "version": "0.2.0",
+      "name": "mdbase durable runtime standard library",
+      "description": "Runtime record implementations and inspectable built-in event/action contracts.",
+      "digest": "sha256:998fa577db5ba3ac442f5ae06e721e247b9519613042b744cc4494e72c84e2e6",
+      "provision": "./packs/mdbase.runtime.standard/0.2.0.json",
+      "provides": [
+        {
+          "id": "mdbase.runtime.action-attempt",
+          "version": "1.0.0"
+        },
+        {
+          "id": "mdbase.runtime.capability-grant",
+          "version": "1.0.0"
+        },
+        {
+          "id": "mdbase.runtime.checkpoint",
+          "version": "1.0.0"
+        },
+        {
+          "id": "mdbase.runtime.dead-letter",
+          "version": "1.0.0"
+        },
+        {
+          "id": "mdbase.runtime.diagnostic",
+          "version": "1.0.0"
+        },
+        {
+          "id": "mdbase.runtime.policy",
+          "version": "1.0.0"
+        },
+        {
+          "id": "mdbase.runtime.provider-registration",
+          "version": "1.0.0"
+        },
+        {
+          "id": "mdbase.runtime.run",
+          "version": "1.0.0"
+        },
+        {
+          "id": "mdbase.runtime.timer",
+          "version": "1.0.0"
+        },
+        {
+          "id": "mdbase.runtime.workflow",
+          "version": "1.0.0"
+        }
+      ],
+      "resource_count": 43,
       "featured": true
     }
   ]

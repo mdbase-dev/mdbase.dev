@@ -1,0 +1,173 @@
+---
+kind: mdbase.type
+name: runtime_capability_grant
+version: 1
+description: Canonical Markdown implementation of mdbase.runtime.capability-grant.
+match:
+  where:
+    type: runtime_capability_grant
+schema:
+  dialect: json-schema-2020-12
+  value:
+    $schema: https://json-schema.org/draft/2020-12/schema
+    title: mdbase runtime capability grant
+    type: object
+    required:
+      - type
+      - id
+      - capability
+      - principal
+      - mode
+      - granted_at
+    properties:
+      type:
+        const: runtime_capability_grant
+      id:
+        type: string
+        pattern: ^[A-Za-z][A-Za-z0-9._:-]*$
+      capability:
+        type: string
+        pattern: ^[A-Za-z][A-Za-z0-9._:-]*$
+      principal:
+        $ref: "#/$defs/identity"
+      mode:
+        enum:
+          - allow
+          - deny
+      actions:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: "#/$defs/contractRequirement"
+      providers:
+        type: array
+        uniqueItems: true
+        items:
+          $ref: "#/$defs/providerSelector"
+      granted_at:
+        type: string
+        format: date-time
+      expires_at:
+        type: string
+        format: date-time
+    patternProperties:
+      ^x-[A-Za-z0-9._:-]+$: true
+    additionalProperties: false
+    $defs:
+      identifier:
+        type: string
+        pattern: ^[A-Za-z][A-Za-z0-9._:-]*$
+      semanticVersion:
+        type: string
+        pattern: ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$
+      digest:
+        type: string
+        pattern: ^sha256:[0-9a-f]{64}$
+      dateTime:
+        type: string
+        format: date-time
+      contractRequirement:
+        type: object
+        required:
+          - id
+          - version
+        properties:
+          id:
+            type: string
+            pattern: ^[A-Za-z][A-Za-z0-9._:-]*$
+          version:
+            type: string
+            minLength: 1
+          digest:
+            type: string
+            pattern: ^sha256:[0-9a-f]{64}$
+        patternProperties:
+          ^x-[A-Za-z0-9._:-]+$: true
+        additionalProperties: false
+      exactContractReference:
+        type: object
+        required:
+          - id
+          - version
+          - digest
+        properties:
+          id:
+            type: string
+            pattern: ^[A-Za-z][A-Za-z0-9._:-]*$
+          version:
+            type: string
+            pattern: ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$
+          digest:
+            type: string
+            pattern: ^sha256:[0-9a-f]{64}$
+        patternProperties:
+          ^x-[A-Za-z0-9._:-]+$: true
+        additionalProperties: false
+      identity:
+        type: object
+        required:
+          - application
+          - implementation
+          - version
+        properties:
+          application:
+            type: string
+            pattern: ^[A-Za-z][A-Za-z0-9._:-]*$
+          implementation:
+            type: string
+            pattern: ^[A-Za-z][A-Za-z0-9._:-]*$
+          version:
+            type: string
+            pattern: ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$
+          instance_id:
+            type: string
+            minLength: 1
+        patternProperties:
+          ^x-[A-Za-z0-9._:-]+$: true
+        additionalProperties: false
+      providerSelector:
+        type: object
+        required: []
+        properties:
+          application:
+            type: string
+            pattern: ^[A-Za-z][A-Za-z0-9._:-]*$
+          implementation:
+            type: string
+            pattern: ^[A-Za-z][A-Za-z0-9._:-]*$
+          instance_id:
+            type: string
+            minLength: 1
+        patternProperties:
+          ^x-[A-Za-z0-9._:-]+$: true
+        additionalProperties: false
+        minProperties: 1
+      expression:
+        type: object
+        required:
+          - $expr
+        properties:
+          $expr:
+            type: string
+            minLength: 1
+        additionalProperties: false
+    $id: https://mdbase.dev/schemas/runtime/v0.2/mdbase.runtime.capability-grant/1.0.0.schema.json
+implements:
+  - contract: mdbase.runtime.capability-grant
+    version: 1.0.0
+    fields:
+      type: type
+      id: id
+      capability: capability
+      principal: principal
+      mode: mode
+      actions: actions
+      providers: providers
+      granted_at: granted_at
+      expires_at: expires_at
+---
+
+# Capability grant evidence
+
+This canonical type makes `runtime_capability_grant` records discoverable through
+the ordinary mdbase record-contract registry.

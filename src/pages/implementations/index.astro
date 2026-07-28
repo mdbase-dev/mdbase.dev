@@ -104,13 +104,13 @@ import conformance from "../../data/conformance.json";
       </tbody>
     </table>
     <div class="callout">
-      <strong>Current Rust workflow claim: pending</strong>
+      <strong>Runtime 0.2 has separate evidence.</strong>
       <p>
-        The Rust runtime has durable workflow tests, including recovery and
-        timers. Its public conformance file currently records{" "}
-        <code>runtime_execution: false</code>. A separate{" "}
-        <code>workflow/0.1</code> claim will follow the shared execution
-        fixture.
+        The <code>mdbase-runtime-rs</code> row claims{" "}
+        <code>runtime/0.2</code> for durable admission, exact bindings,
+        recovery, and timers. The <code>mdbase-rs</code> row remains a
+        collection-engine claim; installing the collection crate alone does
+        not imply workflow execution.
       </p>
     </div>
   </section>
