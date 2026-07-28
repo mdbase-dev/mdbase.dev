@@ -33,11 +33,11 @@
   "packs": [
     {
       "id": "mdbase.jscontact",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "name": "JSContact 2.0 starter",
-      "description": "The mdbase JSContact Card core contract and a direct Markdown implementation.",
-      "digest": "sha256:a037e46891244018b0cb6c8269bbba56e800d272f0d7591cf525f3661db877b3",
-      "provision": "./packs/mdbase.jscontact/2.0.0.json",
+      "description": "The mdbase JSContact Card core contract and an editable Markdown implementation.",
+      "digest": "sha256:c277f278b20acbd0b182d88e2c3c018220c2808aa57f73fa2da1b413383ed21c",
+      "provision": "./packs/mdbase.jscontact/2.0.1.json",
       "provides": [
         {
           "id": "mdbase.jscontact.card",
