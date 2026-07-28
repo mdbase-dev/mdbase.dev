@@ -1,20 +1,20 @@
 {
   "specification": {
     "repository": "mdbase-dev/mdbase-spec",
-    "ref": "2c5e1bbc8736d71b95fcaea1b593dc2eeaec739b"
+    "ref": "f0f6b5ab497f201a21723e137997b5d5d02358be"
   },
   "connect": {
     "repository": "mdbase-dev/mdbase-connect",
-    "ref": "8e960317f0886f8c504023dad873cf8cec82fd99"
+    "ref": "fc94dffefb2408a756d7610f26730cac2b22a843"
   },
   "implementations": [
     {
       "repository": "callumalpass/mdbase-rs",
-      "ref": "fafea262cffbce1205563a580e4d5850e7e942b2"
+      "ref": "99d27a245523a6f6feea950a036bd796b89f99b4"
     },
     {
       "repository": "callumalpass/mdbase",
-      "ref": "4f419e0f4454682d42e067749db1fd16d72d1eb9"
+      "ref": "893c7aee289794a353a71546a8c87e9902d684ce"
     }
   ]
 }
