@@ -21,32 +21,44 @@ jobs:
       - name: Check out website
         uses: actions/checkout@v7
 
+      - name: Read pinned source identities
+        id: sources
+        run: |
+          echo "spec_repository=$(jq -r '.specification.repository' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "spec_ref=$(jq -r '.specification.ref' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "connect_repository=$(jq -r '.connect.repository' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "connect_ref=$(jq -r '.connect.ref' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "rust_repository=$(jq -r '.implementations[] | select(.id == "rust") | .repository' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "rust_ref=$(jq -r '.implementations[] | select(.id == "rust") | .ref' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "typescript_repository=$(jq -r '.implementations[] | select(.id == "typescript") | .repository' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "typescript_ref=$(jq -r '.implementations[] | select(.id == "typescript") | .ref' site-sources.json)" >> "$GITHUB_OUTPUT"
+
       - name: Check out specification
         uses: actions/checkout@v7
         with:
-          repository: mdbase-dev/mdbase-spec
-          ref: 2c5e1bbc8736d71b95fcaea1b593dc2eeaec739b
+          repository: ${{ steps.sources.outputs.spec_repository }}
+          ref: ${{ steps.sources.outputs.spec_ref }}
           path: .sources/mdbase-spec
 
       - name: Check out Connect
         uses: actions/checkout@v7
         with:
-          repository: mdbase-dev/mdbase-connect
-          ref: c4fd2f801b12686e1fd1bd25de4a72cf9e14bc5c
+          repository: ${{ steps.sources.outputs.connect_repository }}
+          ref: ${{ steps.sources.outputs.connect_ref }}
           path: .sources/mdbase-connect
 
       - name: Check out Rust implementation
         uses: actions/checkout@v7
         with:
-          repository: callumalpass/mdbase-rs
-          ref: e9297f465f779d0bf6bb3a361abf16eaf80a6944
+          repository: ${{ steps.sources.outputs.rust_repository }}
+          ref: ${{ steps.sources.outputs.rust_ref }}
           path: .sources/mdbase-rs
 
       - name: Check out TypeScript implementation
         uses: actions/checkout@v7
         with:
-          repository: callumalpass/mdbase
-          ref: 4f419e0f4454682d42e067749db1fd16d72d1eb9
+          repository: ${{ steps.sources.outputs.typescript_repository }}
+          ref: ${{ steps.sources.outputs.typescript_ref }}
           path: .sources/mdbase
 
       - uses: pnpm/action-setup@v6
