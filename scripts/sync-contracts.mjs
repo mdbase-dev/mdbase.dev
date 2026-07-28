@@ -22,7 +22,7 @@ required(source, "Built contract catalog");
 required(catalogPath, "Contract catalog index");
 
 const catalog = JSON.parse(readFileSync(catalogPath, "utf8"));
-if (catalog.catalog_version !== 1 || !Array.isArray(catalog.contracts) || !Array.isArray(catalog.packs)) {
+if (catalog.catalog_version !== 2 || !Array.isArray(catalog.contracts) || !Array.isArray(catalog.packs)) {
   throw new Error("The contract catalog has an unsupported shape.");
 }
 
@@ -38,4 +38,3 @@ console.log(
 function required(path, label) {
   if (!existsSync(path)) throw new Error(`${label} is missing: ${path}`);
 }
-
