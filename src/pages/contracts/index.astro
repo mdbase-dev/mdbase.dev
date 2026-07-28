@@ -3,6 +3,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import catalog from "../../data/contracts.json";
 
 const artifactHref = (path: string) => `/contracts/${path.replace(/^\.\//, "")}`;
+const readyMadePacks = catalog.packs.filter((pack) => pack.installation.visibility === "default");
+const advancedPacks = catalog.packs.filter((pack) => pack.installation.visibility === "advanced");
 ---
 
 <BaseLayout
@@ -71,36 +73,71 @@ const artifactHref = (path: string) => `/contracts/${path.replace(/^\.\//, "")}`
   </section>
 
   <section class="content-section">
-    <h2>Installable packs</h2>
-    <table class="profile-table">
-      <thead>
-        <tr>
-          <th>Pack</th>
-          <th>Version</th>
-          <th>Provides</th>
-          <th>Provision</th>
-        </tr>
-      </thead>
-      <tbody>
-        {
-          catalog.packs.map((pack) => (
-            <tr>
-              <td>
-                <strong>{pack.name}</strong><br />
-                <code>{pack.id}</code>
-              </td>
-              <td><code>{pack.version}</code></td>
-              <td>
-                {pack.provides.map((provided) => (
-                  <code style="display: block">{provided.id}@{provided.version}</code>
-                ))}
-              </td>
-              <td><a href={artifactHref(pack.provision)}>Pack JSON</a></td>
-            </tr>
-          ))
-        }
-      </tbody>
-    </table>
+    <h2>Ready-made types</h2>
+    <p class="section-intro">
+      Add these from <strong>Types → Add a type</strong> in mdbase-editor.
+      Each pack creates a local, editable type with its portable contract and
+      initial field mapping.
+    </p>
+    <div class="pack-grid">
+      {
+        readyMadePacks.map((pack) => (
+          <article class="pack-card">
+            <div class="pack-card__heading">
+              <div>
+                <h3>{pack.display.name}</h3>
+                <p>{pack.display.summary}</p>
+              </div>
+              <span>{pack.installation.types.length === 1
+                ? "1 type"
+                : `${pack.installation.types.length} types`}</span>
+            </div>
+            <div class="pack-card__meta">
+              {pack.display.badges?.map((badge) => <span>{badge}</span>)}
+            </div>
+            <details>
+              <summary>Technical details</summary>
+              <p><code>{pack.id}@{pack.version}</code></p>
+              <p>{pack.provides.length} {pack.provides.length === 1 ? "contract" : "contracts"} · {pack.resource_count} resources</p>
+              <a href={artifactHref(pack.provision)}>View pack JSON</a>
+            </details>
+          </article>
+        ))
+      }
+    </div>
+    {
+      advancedPacks.length > 0 && (
+        <details class="advanced-packs">
+          <summary>
+            <span>
+              <strong>Developer and infrastructure packs</strong>
+              <small>For integrations and specialised setups</small>
+            </span>
+            <span>{advancedPacks.length}</span>
+          </summary>
+          <div class="pack-grid">
+            {advancedPacks.map((pack) => (
+              <article class="pack-card pack-card--advanced">
+                <div class="pack-card__heading">
+                  <div>
+                    <h3>{pack.display.name}</h3>
+                    <p>{pack.display.summary}</p>
+                  </div>
+                  <span>{pack.installation.types.length} types</span>
+                </div>
+                {pack.installation.caution && <p class="pack-card__caution">{pack.installation.caution}</p>}
+                <details>
+                  <summary>Technical details</summary>
+                  <p><code>{pack.id}@{pack.version}</code></p>
+                  <p>{pack.provides.length} contracts · {pack.resource_count} resources</p>
+                  <a href={artifactHref(pack.provision)}>View pack JSON</a>
+                </details>
+              </article>
+            ))}
+          </div>
+        </details>
+      )
+    }
     <div class="callout">
       <strong>Published versions are immutable.</strong>
       <p>
@@ -112,3 +149,114 @@ const artifactHref = (path: string) => `/contracts/${path.replace(/^\.\//, "")}`
   </section>
 </BaseLayout>
 
+<style>
+  .section-intro {
+    max-width: 48rem;
+    color: var(--color-text-soft);
+  }
+
+  .pack-grid {
+    display: grid;
+    gap: 1px;
+    margin-top: 1.5rem;
+    border-block: 1px solid var(--color-border);
+    background: var(--color-border);
+  }
+
+  .pack-card {
+    padding: 1.25rem 0;
+    background: var(--color-canvas);
+  }
+
+  .pack-card__heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  .pack-card h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .pack-card__heading p {
+    max-width: 42rem;
+    margin: 0.35rem 0 0;
+    color: var(--color-text-soft);
+  }
+
+  .pack-card__heading > span,
+  .pack-card__meta span {
+    color: var(--color-text-muted);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+  }
+
+  .pack-card__meta {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.65rem;
+  }
+
+  .pack-card__meta span {
+    padding: 0.15rem 0.4rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+  }
+
+  .pack-card details {
+    margin-top: 0.75rem;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+  }
+
+  .pack-card details p {
+    display: inline-block;
+    margin: 0.65rem 1rem 0 0;
+  }
+
+  .advanced-packs {
+    margin-top: 1.5rem;
+    border-block: 1px solid var(--color-border);
+  }
+
+  .advanced-packs > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 0;
+    cursor: pointer;
+  }
+
+  .advanced-packs > summary span:first-child {
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .advanced-packs > summary small {
+    color: var(--color-text-muted);
+  }
+
+  .advanced-packs .pack-grid {
+    margin-top: 0;
+    border-bottom: 0;
+  }
+
+  .pack-card__caution {
+    margin: 0.9rem 0 0;
+    padding: 0.7rem 0.8rem;
+    border-left: 2px solid var(--color-warning);
+    color: var(--color-text-soft);
+    background: var(--color-surface-subtle);
+    font-size: 0.82rem;
+  }
+
+  @media (max-width: 640px) {
+    .pack-card__heading {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+  }
+</style>
