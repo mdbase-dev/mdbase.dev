@@ -44,7 +44,7 @@ const contractManifest = `{
         "resources": [
           {
             "source": "contracts/example.work-item.md",
-            "document": "---\\nkind: mdbase.contract\\nid: example.work-item\\nversion: 1.0.0\\nschema:\\n  dialect: json-schema-2020-12\\n  value:\\n    $schema: https://json-schema.org/draft/2020-12/schema\\n    type: object\\n    additionalProperties: false\\n    properties:\\n      title: { type: string }\\n    required: [title]\\n---\\n"
+            "document": "---\\nkind: mdbase.contract\\ncontract_type: record\\nid: example.work-item\\nversion: 1.0.0\\nrecord_schema:\\n  dialect: json-schema-2020-12\\n  value:\\n    $schema: https://json-schema.org/draft/2020-12/schema\\n    type: object\\n    additionalProperties: false\\n    properties:\\n      title: { type: string }\\n    required: [title]\\n---\\n"
           },
           {
             "source": "types/work-item.md",

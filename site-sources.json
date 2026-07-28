@@ -1,11 +1,11 @@
 {
   "specification": {
     "repository": "mdbase-dev/mdbase-spec",
-    "ref": "8180449530b5db54cde88383c3b96798596cc4b4"
+    "ref": "88f4d64ff2d54df23631db9d03a95eba566b4eee"
   },
   "connect": {
     "repository": "mdbase-dev/mdbase-connect",
-    "ref": "129d136cf082317d3ea07d25b18759b9e494526d"
+    "ref": "81199416aa67de140778b3d81d8f6bdbdac6fba6"
   },
   "contracts": {
     "repository": "mdbase-dev/mdbase-contracts",
@@ -15,12 +15,12 @@
     {
       "id": "rust",
       "repository": "callumalpass/mdbase-rs",
-      "ref": "a94c364f71cd126723baaf6d027649f0144dd182"
+      "ref": "323766220950371a3856d84eeb05e51ab106fd72"
     },
     {
       "id": "typescript",
       "repository": "callumalpass/mdbase",
-      "ref": "b7504f9292eca1202eed6f20eea025cd917bf748"
+      "ref": "a45632ab51f97f55dab05ad55d4fe91bdb118183"
     }
   ]
 }

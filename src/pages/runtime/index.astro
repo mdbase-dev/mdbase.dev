@@ -4,23 +4,23 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="Runtime"
-  description="Understand the separate mdbase collection, runtime-contract, workflow-execution, and Connect hosting layers."
+  description="Understand how the durable runtime consumes the mdbase event/action interoperability profile."
   current="runtime"
 >
   <section class="page-hero">
     <div class="page-hero__inner">
       <div>
         <p class="eyebrow"><i></i> Runtime profile 0.1</p>
-        <h1>Runtime contracts and workflow execution.</h1>
+        <h1>Durable execution builds on interoperability.</h1>
       </div>
       <div class="page-hero__aside">
         <p>
-          mdbase separates passive collection semantics from declared provider
-          contracts and durable workflow execution. Hosts declare support for
-          each layer independently.
+          The event/action profile defines portable messages and provider
+          resolution. The runtime adds journals, scheduling, retries, and
+          recovery without inventing a second contract system.
         </p>
         <div class="button-row">
-          <a class="button button--primary" href="/spec/#section-13">Runtime specification</a>
+          <a class="button button--primary" href="/interop/">Interoperability profile</a>
           <a class="button" href="/implementations/">Implementation profiles</a>
         </div>
       </div>
@@ -42,11 +42,11 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       </div>
       <div class="step">
         <div>
-          <h3>Runtime Contracts 0.1</h3>
+          <h3>Event/action interoperability 0.1</h3>
           <p>
-            Portable event and action declarations, provider registration,
-            compatibility checks, and preflight. The TypeScript package
-            implements this browser-safe provider-host layer.
+            CloudEvents envelopes, exact contract evidence, role declarations,
+            boundary validation, and one-provider action resolution. The
+            browser-safe reference bridge implements this layer.
           </p>
         </div>
       </div>
@@ -65,10 +65,10 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         <div>
           <h3>Connect embedding</h3>
           <p>
-            Connect compiles exact application grants into runtime behavior,
+            Connect compiles exact application grants into transport behavior,
             supplies local or hosted collection authorities, and routes
-            notification signals. The runtime profile defines the contracts
-            that Connect hosts.
+            notification signals. It can bind the same portable envelopes
+            durably without becoming mandatory for local applications.
           </p>
         </div>
       </div>
@@ -78,8 +78,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   <section class="content-section">
     <h2>Conformance profiles</h2>
     <p>
-      Conformance uses atomic profiles. Provider hosts claim{" "}
-      <code>runtime_contracts/0.1</code>. Workflow engines add{" "}
+      Conformance uses atomic profiles. Interoperability bridges claim{" "}
+      <code>event_action_interop/0.1</code>. Durable workflow engines add{" "}
       <code>workflow/0.1</code> after publishing shared fixture evidence.
     </p>
     <table class="profile-table">
@@ -92,9 +92,14 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       </thead>
       <tbody>
         <tr>
+          <td><code>event_action_interop/0.1</code></td>
+          <td>CloudEvents, declarations, validation, authorization boundaries, multicast, and action resolution</td>
+          <td>Workflow syntax, scheduling, retries, persistence, or recovery</td>
+        </tr>
+        <tr>
           <td><code>runtime_contracts/0.1</code></td>
-          <td>Declaration validation, registry behavior, compatibility, dispatch, preflight</td>
-          <td>Watching, timers, durable execution, or recovery</td>
+          <td>Legacy runtime-host behavior during migration to the interoperability substrate</td>
+          <td>The portable event/action profile and durable execution evidence</td>
         </tr>
         <tr>
           <td><code>workflow/0.1</code></td>

@@ -22,6 +22,12 @@ mkdirSync(schemaDestination, { recursive: true });
 cpSync(schemaSource, schemaDestination, { recursive: true, force: true });
 copyAlias("mdbase-app.schema.json", "mdbase-app.v1.json");
 
+const interopSchemaSource = join(specDir, "schemas", "interop", "v0.1");
+const interopSchemaDestination = join(root, "public", "interop", "schemas", "v0.1");
+required(interopSchemaSource, "mdbase interoperability schemas");
+mkdirSync(interopSchemaDestination, { recursive: true });
+cpSync(interopSchemaSource, interopSchemaDestination, { recursive: true, force: true });
+
 const introductionSource = join(connectDir, "docs", "mdbase-configurations-v2.html");
 required(introductionSource, "Connect introduction prototype");
 const introduction = readFileSync(introductionSource, "utf8");
@@ -65,34 +71,47 @@ cpSync(
 
 const manifest = yaml(join(specDir, "tests", "v0.3", "manifest.yaml"));
 const claims = [
-  yaml(join(rustDir, "conformance", "v0.3.0-rc.1.yml")),
-  yaml(join(typescriptDir, "conformance", "v0.3.0-rc.2.yml"))
+  yaml(join(rustDir, "conformance", "v0.4.0-rc.2.yml")),
+  yaml(join(typescriptDir, "conformance", "v0.3.0-rc.3.yml"))
 ];
+const interopClaim = yaml(
+  join(specDir, "packages", "interop", "conformance", "v0.1.yml")
+);
 
 const conformance = {
   generated_at: new Date().toISOString().slice(0, 10),
   spec_version: manifest.spec_version,
-  implementations: claims.map((claim) => {
-    const verifiedAt = claim.evidence
-      .map((entry) => entry.verified_at)
-      .filter(Boolean)
-      .sort()
-      .at(-1);
-    const isRust = claim.implementation.id === "mdbase-rs";
-    return {
-      name: claim.implementation.id === "mdbase-ts" ? "mdbase" : claim.implementation.id,
-      language: claim.implementation.language,
-      version: claim.implementation.version,
-      repository: claim.implementation.url,
-      evidence_date: verifiedAt ? String(verifiedAt).slice(0, 10) : null,
-      profiles: claim.profiles ?? [],
-      optional_features: claim.optional_features ?? [],
-      workflow_execution: claim.limits?.runtime_execution === true,
-      note: isRust
-        ? "The current Rust claim records runtime_execution: false. workflow/0.1 will follow shared fixture evidence."
-        : "The claim uses the machine-readable v0.3 atomic profiles."
-    };
-  }),
+  implementations: [
+    ...claims.map((claim) => {
+      const verifiedAt = claim.evidence
+        .map((entry) => entry.verified_at)
+        .filter(Boolean)
+        .sort()
+        .at(-1);
+      return {
+        name: claim.implementation.id === "mdbase-ts" ? "mdbase" : claim.implementation.id,
+        language: claim.implementation.language,
+        version: claim.implementation.version,
+        repository: claim.implementation.url,
+        evidence_date: verifiedAt ? String(verifiedAt).slice(0, 10) : null,
+        profiles: claim.profiles ?? [],
+        optional_features: claim.optional_features ?? [],
+        workflow_execution: claim.limits?.runtime_execution === true,
+        note: "The claim uses the machine-readable v0.3 atomic profiles."
+      };
+    }),
+    {
+      name: interopClaim.implementation.application,
+      language: "TypeScript",
+      version: interopClaim.implementation.version,
+      repository: "https://github.com/mdbase-dev/mdbase-spec",
+      evidence_date: null,
+      profiles: ["event_action_interop/0.1"],
+      optional_features: [],
+      workflow_execution: false,
+      note: `Reference ${interopClaim.transport.delivery.join(", ")} bridge; roles: ${interopClaim.roles.join(", ")}.`
+    }
+  ],
   coverage: {
     coverage_complete: manifest.claim_profiles
       .filter((profile) => profile.status === "coverage_complete")
@@ -109,9 +128,10 @@ writeFileSync(
 );
 
 console.log(`Copied Connect schemas from ${schemaSource}`);
+console.log(`Copied interoperability schemas from ${interopSchemaSource}`);
 console.log(`Copied the homepage design and murmuration from ${introductionSource}`);
 console.log(`Copied shared theme values from ${connectThemeSource}`);
-console.log(`Generated conformance data from ${claims.length} implementation claims`);
+console.log(`Generated conformance data from ${claims.length + 1} implementation claims`);
 
 function yaml(path) {
   required(path, "YAML source");

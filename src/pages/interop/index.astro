@@ -1,0 +1,160 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import CodeBlock from "../../components/CodeBlock.astro";
+
+const eventSource = `const tasknotes = bridge.connect({
+  application: "tasknotes",
+  implementation: "tasknotes.obsidian",
+  version: "5.0.0"
+});
+
+await tasknotes.registerEventSource({
+  declaration_id: "tasknotes.events",
+  contracts: [{ contract: taskCompletedContract }]
+});
+
+await tasknotes.publishEvent({
+  contract: { id: "tasknotes.task.completed", version: "1.0.0" },
+  subject: "Tasks/Ship%20contracts.md",
+  correlation_id: "workflow-42",
+  data: {
+    task_id: "task-42",
+    task_path: "Tasks/Ship contracts.md",
+    title: "Ship contracts",
+    status: "done",
+    completed_at: "2026-07-28T10:15:00Z"
+  }
+});`;
+
+const actionCaller = `const outcome = await workflows.invokeAction({
+  request_id: "workflow:run-42:add-card",
+  contract: { id: "canvas.card.create", version: "^1.0.0" },
+  requested_provider: { application: "canvas-bases" },
+  correlation_id: "workflow-42",
+  causation_id: "evt-42",
+  idempotency_key: "run-42:add-card",
+  input: {
+    canvas_path: "TaskNotes/Canvases/Completed tasks.canvas",
+    card: { kind: "file", file: "Tasks/Ship contracts.md" }
+  }
+});
+
+if (outcome.status !== "succeeded") {
+  throw new Error(\`\${outcome.error.message} [\${outcome.error.code}]\`);
+}`;
+---
+
+<BaseLayout
+  title="Event and action interoperability"
+  description="Exchange schema-validated CloudEvents and explicitly resolved actions between independent mdbase applications."
+  current="interop"
+>
+  <section class="page-hero">
+    <div class="page-hero__inner">
+      <div>
+        <p class="eyebrow"><i></i> Interoperability profile 0.1</p>
+        <h1>Shared contracts. Independent applications.</h1>
+      </div>
+      <div class="page-hero__aside">
+        <p>
+          Applications can publish events and invoke actions without adopting
+          one universal runtime. JSON Schema proves compatibility; a separate
+          bridge grant supplies authority.
+        </p>
+        <div class="button-row">
+          <a class="button button--primary" href="/spec/#section-05b">
+            Read the specification
+          </a>
+          <a class="button" href="/interop/schemas/v0.1/profile.schema.json">
+            Download the schemas
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>The mental model</h2>
+    <div class="steps">
+      <div class="step">
+        <div>
+          <h3>Contracts define meaning</h3>
+          <p>
+            Every record, event, and action is an ordinary first-class{" "}
+            <code>mdbase.contract</code>. Its discriminated shape names the
+            relevant JSON Schemas: <code>record_schema</code>,{" "}
+            <code>data_schema</code>, or action input and outcome schemas.
+          </p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Applications declare one role at a time</h3>
+          <p>
+            An application may be an event source, event consumer, action
+            caller, or action provider. A type file uses <code>implements</code>{" "}
+            only for record contracts; application declarations provide event
+            sources and action handlers.
+          </p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>The bridge validates and routes</h3>
+          <p>
+            Events multicast to every authorized compatible consumer. Actions
+            resolve to exactly one authorized provider before any side effect.
+            Multiple eligible providers produce <code>ambiguous_provider</code>{" "}
+            until the caller or policy selects one.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Events are CloudEvents 1.0</h2>
+    <p>
+      The profile uses CloudEvents structured JSON and adds exact contract
+      version, digest, application, and implementation attributes. The event
+      ID survives redelivery. Correlation and causation are explicit. Event
+      data always validates against the exact contract artifact.
+    </p>
+    <CodeBlock code={eventSource} language="ts" label="tasknotes-event.ts" />
+  </section>
+
+  <section class="content-section">
+    <h2>Actions produce evidence, not a delivery fiction</h2>
+    <p>
+      A logical request is admitted as an exact invocation with a selected
+      provider and concrete attempt. Its terminal outcome is{" "}
+      <code>succeeded</code>, <code>rejected</code>, <code>failed</code>,{" "}
+      <code>cancelled</code>, or <code>outcome_indeterminate</code>. Accepting a
+      message for delivery is never reported as successful execution.
+    </p>
+    <CodeBlock code={actionCaller} language="ts" label="workflow-action.ts" />
+  </section>
+
+  <section class="content-section">
+    <h2>What stays outside the profile</h2>
+    <table class="profile-table">
+      <thead>
+        <tr><th>In the profile</th><th>Owned elsewhere</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Contract identity, exact digests, envelopes, validation, resolution</td>
+          <td>Workflow languages, scheduling, retries, and application behavior</td>
+        </tr>
+        <tr>
+          <td>Correlation, causation, cancellation, duplicate and indeterminate semantics</td>
+          <td>Persistence, journals, leases, recovery, and offline queues</td>
+        </tr>
+        <tr>
+          <td>Identity and authorization context carried to a bridge</td>
+          <td>The user grant or transport-specific policy engine</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</BaseLayout>

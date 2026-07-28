@@ -43,7 +43,7 @@ const manifest = `{
         "resources": [
           {
             "source": "contracts/workout.record.md",
-            "document": "---\\nkind: mdbase.contract\\nid: workout.record\\nversion: 1.0.0\\nschema:\\n  dialect: json-schema-2020-12\\n  value:\\n    $schema: https://json-schema.org/draft/2020-12/schema\\n    type: object\\n    additionalProperties: false\\n    properties:\\n      title: { type: string }\\n      completed: { type: boolean, default: false }\\n    required: [title]\\n---\\n"
+            "document": "---\\nkind: mdbase.contract\\ncontract_type: record\\nid: workout.record\\nversion: 1.0.0\\nrecord_schema:\\n  dialect: json-schema-2020-12\\n  value:\\n    $schema: https://json-schema.org/draft/2020-12/schema\\n    type: object\\n    additionalProperties: false\\n    properties:\\n      title: { type: string }\\n      completed: { type: boolean, default: false }\\n    required: [title]\\n---\\n"
           },
           {
             "source": "types/workout.md",
