@@ -1,0 +1,114 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import catalog from "../../data/contracts.json";
+
+const artifactHref = (path: string) => `/contracts/${path.replace(/^\.\//, "")}`;
+---
+
+<BaseLayout
+  title="Contracts"
+  description="Browse versioned data contracts and installable starter type packs for mdbase collections."
+  current="sdk"
+>
+  <section class="page-hero">
+    <div class="page-hero__inner">
+      <div>
+        <p class="eyebrow"><i></i> Portable collection semantics</p>
+        <h1>Contracts and type packs</h1>
+      </div>
+      <div class="page-hero__aside">
+        <p>
+          Contracts describe portable record shapes. Type packs install a
+          contract, its referenced schemas, and a usable default implementation
+          as one digest-pinned transaction.
+        </p>
+        <div class="button-row">
+          <a class="button button--primary" href="/contracts/catalog.json">Catalog JSON</a>
+          <a class="button" href="https://github.com/mdbase-dev/mdbase-contracts">
+            Source repository
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Published contracts</h2>
+    <table class="profile-table">
+      <thead>
+        <tr>
+          <th>Contract</th>
+          <th>Version</th>
+          <th>Profile</th>
+          <th>Artifact</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          catalog.contracts.map((contract) => (
+            <tr>
+              <td>
+                <strong>{contract.name}</strong><br />
+                <code>{contract.id}</code>
+              </td>
+              <td><code>{contract.version}</code></td>
+              <td>
+                <span>{contract.description}</span>
+                {
+                  contract.standards.map((standard) => (
+                    <small style="display: block">
+                      {standard.name} {standard.version}: {standard.scope}
+                    </small>
+                  ))
+                }
+              </td>
+              <td><a href={artifactHref(contract.artifact)}>Markdown</a></td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>Installable packs</h2>
+    <table class="profile-table">
+      <thead>
+        <tr>
+          <th>Pack</th>
+          <th>Version</th>
+          <th>Provides</th>
+          <th>Provision</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          catalog.packs.map((pack) => (
+            <tr>
+              <td>
+                <strong>{pack.name}</strong><br />
+                <code>{pack.id}</code>
+              </td>
+              <td><code>{pack.version}</code></td>
+              <td>
+                {pack.provides.map((provided) => (
+                  <code style="display: block">{provided.id}@{provided.version}</code>
+                ))}
+              </td>
+              <td><a href={artifactHref(pack.provision)}>Pack JSON</a></td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>Published versions are immutable.</strong>
+      <p>
+        Catalog discovery may move forward, but an installation always selects
+        one exact pack version and verifies every embedded resource digest
+        before changing the collection.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+

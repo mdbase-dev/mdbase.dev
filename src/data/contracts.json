@@ -1,0 +1,51 @@
+{
+  "catalog_version": 1,
+  "id": "dev.mdbase.first-party",
+  "name": "mdbase contracts",
+  "description": "Reviewed first-party contracts and starter type packs for mdbase collections.",
+  "homepage": "https://mdbase.dev/contracts/",
+  "publisher": {
+    "name": "mdbase",
+    "url": "https://mdbase.dev/"
+  },
+  "contracts": [
+    {
+      "id": "mdbase.jscontact.card",
+      "version": "2.0.0",
+      "name": "JSContact Card 2.0 core",
+      "description": "A strict, portable core profile of an IETF JSContact 2.0 Card.",
+      "contract_type": "record",
+      "digest": "sha256:c56c5acbf7992155d6890294842a261fe80a933ec75a226ea875b97ba57dcaa2",
+      "artifact": "./artifacts/contracts/mdbase.jscontact.card/2.0.0.md",
+      "standards": [
+        {
+          "name": "JSContact",
+          "version": "2.0",
+          "scope": "Strict core profile covering the Card envelope, names, email addresses, phones, organizations, and notes.",
+          "references": [
+            "https://www.rfc-editor.org/rfc/rfc9553.html",
+            "https://www.rfc-editor.org/rfc/rfc9982.html"
+          ]
+        }
+      ]
+    }
+  ],
+  "packs": [
+    {
+      "id": "mdbase.jscontact",
+      "version": "2.0.0",
+      "name": "JSContact 2.0 starter",
+      "description": "The mdbase JSContact Card core contract and a direct Markdown implementation.",
+      "digest": "sha256:a037e46891244018b0cb6c8269bbba56e800d272f0d7591cf525f3661db877b3",
+      "provision": "./packs/mdbase.jscontact/2.0.0.json",
+      "provides": [
+        {
+          "id": "mdbase.jscontact.card",
+          "version": "2.0.0"
+        }
+      ],
+      "resource_count": 3,
+      "featured": true
+    }
+  ]
+}

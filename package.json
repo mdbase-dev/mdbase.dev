@@ -8,7 +8,8 @@
     "build": "astro build",
     "check": "astro check",
     "preview": "astro preview",
-    "sync:sources": "node scripts/sync-sources.mjs",
+    "sync:sources": "node scripts/sync-sources.mjs && node scripts/sync-contracts.mjs",
+    "sync:contracts": "node scripts/sync-contracts.mjs",
     "import:spec": "node scripts/import-spec.mjs",
     "check:links": "node scripts/check-links.mjs",
     "test": "pnpm check && pnpm build && pnpm import:spec && pnpm check:links"

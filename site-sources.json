@@ -7,6 +7,10 @@
     "repository": "mdbase-dev/mdbase-connect",
     "ref": "129d136cf082317d3ea07d25b18759b9e494526d"
   },
+  "contracts": {
+    "repository": "mdbase-dev/mdbase-contracts",
+    "ref": "2c2988911dd44b08d00fc90d0ecc2e8020c601df"
+  },
   "implementations": [
     {
       "id": "rust",

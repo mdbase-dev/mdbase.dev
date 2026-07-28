@@ -21,6 +21,8 @@ jobs:
           echo "spec_ref=$(jq -r '.specification.ref' site-sources.json)" >> "$GITHUB_OUTPUT"
           echo "connect_repository=$(jq -r '.connect.repository' site-sources.json)" >> "$GITHUB_OUTPUT"
           echo "connect_ref=$(jq -r '.connect.ref' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "contracts_repository=$(jq -r '.contracts.repository' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "contracts_ref=$(jq -r '.contracts.ref' site-sources.json)" >> "$GITHUB_OUTPUT"
           echo "rust_repository=$(jq -r '.implementations[] | select(.id == "rust") | .repository' site-sources.json)" >> "$GITHUB_OUTPUT"
           echo "rust_ref=$(jq -r '.implementations[] | select(.id == "rust") | .ref' site-sources.json)" >> "$GITHUB_OUTPUT"
           echo "typescript_repository=$(jq -r '.implementations[] | select(.id == "typescript") | .repository' site-sources.json)" >> "$GITHUB_OUTPUT"
@@ -39,6 +41,13 @@ jobs:
           repository: ${{ steps.sources.outputs.connect_repository }}
           ref: ${{ steps.sources.outputs.connect_ref }}
           path: .sources/mdbase-connect
+
+      - name: Check out contracts
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ steps.sources.outputs.contracts_repository }}
+          ref: ${{ steps.sources.outputs.contracts_ref }}
+          path: .sources/mdbase-contracts
 
       - name: Check out Rust implementation
         uses: actions/checkout@v7
@@ -66,15 +75,20 @@ jobs:
       - name: Install website dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build contract catalog
+        working-directory: .sources/mdbase-contracts
+        run: npm ci && npm run build
+
       - name: Build specification artifact
         working-directory: .sources/mdbase-spec/site
         run: npm ci && npm run build
 
-      - name: Synchronize schemas and conformance claims
+      - name: Synchronize schemas, contracts, and conformance claims
         run: pnpm sync:sources
         env:
           MDBASE_SPEC_DIR: .sources/mdbase-spec
           MDBASE_CONNECT_DIR: .sources/mdbase-connect
+          MDBASE_CONTRACTS_DIR: .sources/mdbase-contracts
           MDBASE_RS_DIR: .sources/mdbase-rs
           MDBASE_TS_DIR: .sources/mdbase
 

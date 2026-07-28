@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mdbase.dev/contracts/schemas/mdbase.jscontact.card/2.0.0.schema.json",
+  "title": "JSContact Card 2.0 core profile",
+  "description": "A strict mdbase core profile of an IETF JSContact 2.0 Card.",
+  "type": "object",
+  "required": ["@type", "version"],
+  "properties": {
+    "@type": { "const": "Card" },
+    "version": { "const": "2.0" },
+    "uid": { "type": "string", "minLength": 1 },
+    "kind": {
+      "enum": ["individual", "group", "org", "location", "device", "application"]
+    },
+    "name": { "$ref": "#/$defs/name" },
+    "emails": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": { "$ref": "#/$defs/emailAddress" }
+    },
+    "phones": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": { "$ref": "#/$defs/phone" }
+    },
+    "organizations": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": { "$ref": "#/$defs/organization" }
+    },
+    "notes": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": { "$ref": "#/$defs/note" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trueSet": {
+      "type": "object",
+      "additionalProperties": { "const": true }
+    },
+    "name": {
+      "type": "object",
+      "properties": {
+        "@type": { "const": "Name" },
+        "components": {
+          "type": "array",
+          "minItems": 1,
+          "contains": {
+            "type": "object",
+            "required": ["kind"],
+            "properties": {
+              "kind": { "not": { "const": "separator" } }
+            }
+          },
+          "items": { "$ref": "#/$defs/nameComponent" }
+        },
+        "full": { "type": "string", "minLength": 1 },
+        "isOrdered": { "type": "boolean" },
+        "defaultSeparator": { "type": "string" }
+      },
+      "anyOf": [
+        { "required": ["components"] },
+        { "required": ["full"] }
+      ],
+      "additionalProperties": false
+    },
+    "nameComponent": {
+      "type": "object",
+      "required": ["kind", "value"],
+      "properties": {
+        "@type": { "const": "NameComponent" },
+        "kind": {
+          "enum": [
+            "credential",
+            "generation",
+            "given",
+            "given2",
+            "separator",
+            "surname",
+            "surname2",
+            "title"
+          ]
+        },
+        "value": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "emailAddress": {
+      "type": "object",
+      "required": ["address"],
+      "properties": {
+        "@type": { "const": "EmailAddress" },
+        "address": { "type": "string", "format": "email" },
+        "contexts": { "$ref": "#/$defs/trueSet" },
+        "pref": { "type": "integer", "minimum": 1 },
+        "label": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "phone": {
+      "type": "object",
+      "required": ["number"],
+      "properties": {
+        "@type": { "const": "Phone" },
+        "number": { "type": "string", "minLength": 1 },
+        "features": { "$ref": "#/$defs/trueSet" },
+        "contexts": { "$ref": "#/$defs/trueSet" },
+        "pref": { "type": "integer", "minimum": 1 },
+        "label": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "organization": {
+      "type": "object",
+      "properties": {
+        "@type": { "const": "Organization" },
+        "name": { "type": "string", "minLength": 1 },
+        "units": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/orgUnit" }
+        },
+        "sortAs": { "type": "string" },
+        "contexts": { "$ref": "#/$defs/trueSet" }
+      },
+      "anyOf": [
+        { "required": ["name"] },
+        { "required": ["units"] }
+      ],
+      "additionalProperties": false
+    },
+    "orgUnit": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "@type": { "const": "OrgUnit" },
+        "name": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "note": {
+      "type": "object",
+      "required": ["note"],
+      "properties": {
+        "@type": { "const": "Note" },
+        "note": { "type": "string" },
+        "created": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+
