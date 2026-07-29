@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mdbase.dev/contracts/schemas/mdbase.contact/1.0.0.schema.json",
+  "title": "Contact",
+  "description": "A compact application-facing contact view.",
+  "type": "object",
+  "required": ["name"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The name applications should use when presenting this contact."
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["individual", "organisation", "group"],
+      "description": "The broad kind of contact when the collection distinguishes it."
+    },
+    "primary_email": {
+      "type": "string",
+      "format": "email",
+      "description": "The preferred email address for this contact."
+    },
+    "primary_phone": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The preferred telephone number for this contact."
+    },
+    "organisation": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The organisation most closely associated with this contact."
+    },
+    "birthday": {
+      "type": "string",
+      "format": "date",
+      "description": "The contact's birthday when known."
+    }
+  },
+  "additionalProperties": false
+}

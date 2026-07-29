@@ -1,0 +1,49 @@
+{
+  "manifest": {
+    "kind": "mdbase.type-pack",
+    "id": "mdbase.contact",
+    "version": "1.0.0",
+    "name": "Contact type pack",
+    "description": "A compact contact contract and a friendly, editable Contact type.",
+    "resources": [
+      {
+        "kind": "schema",
+        "source": "schemas/mdbase.contact/1.0.0.schema.json",
+        "target": "schemas/mdbase.contact/1.0.0.schema.json",
+        "digest": "sha256:bd8a011d18c71164b633f4e82cb33faa5b658cdba4f89312a34c13bf46a350d2"
+      },
+      {
+        "kind": "contract",
+        "source": "contracts/mdbase.contact/1.0.0.md",
+        "target": "_contracts/mdbase.contact/1.0.0.md",
+        "digest": "sha256:e3634a35737ada5eb62e3e15f1c0c9d2e27c55a3f98dfab94bbc14c40404903d"
+      },
+      {
+        "kind": "type",
+        "source": "types/contact/2.md",
+        "target": "_types/contact.md",
+        "digest": "sha256:c925ac22674b5fa9b1a7b8b3af827e5ce3ba15e423b64487f626f5ab4cc1c80a"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "source": "schemas/mdbase.contact/1.0.0.schema.json",
+      "document": "{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"$id\": \"https://mdbase.dev/contracts/schemas/mdbase.contact/1.0.0.schema.json\",\n  \"title\": \"Contact\",\n  \"description\": \"A compact application-facing contact view.\",\n  \"type\": \"object\",\n  \"required\": [\"name\"],\n  \"properties\": {\n    \"name\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"description\": \"The name applications should use when presenting this contact.\"\n    },\n    \"kind\": {\n      \"type\": \"string\",\n      \"enum\": [\"individual\", \"organisation\", \"group\"],\n      \"description\": \"The broad kind of contact when the collection distinguishes it.\"\n    },\n    \"primary_email\": {\n      \"type\": \"string\",\n      \"format\": \"email\",\n      \"description\": \"The preferred email address for this contact.\"\n    },\n    \"primary_phone\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"description\": \"The preferred telephone number for this contact.\"\n    },\n    \"organisation\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"description\": \"The organisation most closely associated with this contact.\"\n    },\n    \"birthday\": {\n      \"type\": \"string\",\n      \"format\": \"date\",\n      \"description\": \"The contact's birthday when known.\"\n    }\n  },\n  \"additionalProperties\": false\n}\n"
+    },
+    {
+      "source": "contracts/mdbase.contact/1.0.0.md",
+      "document": "---\nkind: mdbase.contract\ncontract_type: record\nid: mdbase.contact\nversion: 1.0.0\nname: Contact\ndescription: A compact application-facing view of a person or organisation.\nrecord_schema:\n  dialect: json-schema-2020-12\n  ref: ../../schemas/mdbase.contact/1.0.0.schema.json\n---\n\n# Contact\n\nThis contract exposes the small set of contact semantics commonly shared by\naddress books, relationship tools, and other applications. A collection keeps\nits own field names and may store richer local data; the implementing type maps\nonly the fields it wants applications to see.\n\nThe contract is deliberately not an interchange format. Exporters can convert\nthis view to JSContact, vCard, or another wire representation without requiring\nMarkdown records to store that representation directly.\n"
+    },
+    {
+      "source": "types/contact/2.md",
+      "document": "---\nkind: mdbase.type\nname: contact\nversion: 1\ndescription: A person or organisation you want to stay in touch with\nmatch:\n  where:\n    type: contact\nschema:\n  dialect: json-schema-2020-12\n  value:\n    $schema: https://json-schema.org/draft/2020-12/schema\n    title: Contact\n    description: A friendly local contact with room for collection-specific fields.\n    type: object\n    required:\n      - type\n      - name\n    properties:\n      type:\n        const: contact\n      name:\n        type: string\n        minLength: 1\n        description: The name shown in contact lists.\n      kind:\n        type: string\n        enum:\n          - individual\n          - organisation\n          - group\n        default: individual\n        description: The broad kind of contact.\n      email:\n        type: string\n        format: email\n        description: The preferred email address.\n      phone:\n        type: string\n        minLength: 1\n        description: The preferred telephone number.\n      organisation:\n        type: string\n        minLength: 1\n        description: The contact's main organisation.\n      birthday:\n        type: string\n        format: date\n        description: The contact's birthday.\n    additionalProperties: true\ncollection:\n  display:\n    name_field: name\n    description_field: organisation\n    icon: address-book\nimplements:\n  - contract: mdbase.contact\n    version: 1.0.0\n    fields:\n      name: name\n      kind: kind\n      primary_email: email\n      primary_phone: phone\n      organisation: organisation\n      birthday: birthday\n---\n\n# Contact\n\nContact notes use familiar frontmatter fields and leave the Markdown body free\nfor history, context, and anything else worth remembering. Applications using\nthe `mdbase.contact` contract see only the mapped contact fields.\n\nYou can rename or extend the local fields in mdbase-editor. Keep the contract\nmapping aligned so other contact-aware applications continue to understand\nthe type.\n"
+    }
+  ],
+  "provides": [
+    {
+      "id": "mdbase.contact",
+      "version": "1.0.0"
+    }
+  ]
+}
