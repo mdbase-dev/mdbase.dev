@@ -28,6 +28,18 @@ required(interopSchemaSource, "mdbase interoperability schemas");
 mkdirSync(interopSchemaDestination, { recursive: true });
 cpSync(interopSchemaSource, interopSchemaDestination, { recursive: true, force: true });
 
+const testbedSchemaSource = join(specDir, "schemas", "testbed", "v0.1");
+const testbedSchemaDestination = join(root, "public", "testbed", "schemas", "v0.1");
+required(testbedSchemaSource, "mdbase testbed schemas");
+mkdirSync(testbedSchemaDestination, { recursive: true });
+cpSync(testbedSchemaSource, testbedSchemaDestination, { recursive: true, force: true });
+
+const testbedSuiteSource = join(specDir, "testbed", "v0.1");
+const testbedSuiteDestination = join(root, "public", "testbed", "v0.1");
+required(testbedSuiteSource, "mdbase testbed suite");
+mkdirSync(testbedSuiteDestination, { recursive: true });
+cpSync(testbedSuiteSource, testbedSuiteDestination, { recursive: true, force: true });
+
 const runtimeSchemaSource = join(
   specDir,
   "standard-packs",
@@ -150,6 +162,7 @@ writeFileSync(
 
 console.log(`Copied Connect schemas from ${schemaSource}`);
 console.log(`Copied interoperability schemas from ${interopSchemaSource}`);
+console.log(`Copied testbed schemas and scenarios from ${testbedSuiteSource}`);
 console.log(`Copied Runtime 0.2 schemas from ${runtimeSchemaSource}`);
 console.log(`Copied the homepage design and murmuration from ${introductionSource}`);
 console.log(`Copied shared theme values from ${connectThemeSource}`);

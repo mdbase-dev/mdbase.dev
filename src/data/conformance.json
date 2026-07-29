@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-28",
+  "generated_at": "2026-07-29",
   "spec_version": "0.3.0",
   "implementations": [
     {
@@ -7,7 +7,7 @@
       "language": "Rust",
       "version": "0.4.0-rc.3",
       "repository": "https://github.com/callumalpass/mdbase-rs",
-      "evidence_date": "2026-07-28",
+      "evidence_date": "2026-07-29",
       "profiles": [
         "core_read",
         "collection_semantics",
@@ -28,7 +28,7 @@
       "language": "TypeScript",
       "version": "0.3.0-rc.4",
       "repository": "https://github.com/callumalpass/mdbase",
-      "evidence_date": "2026-07-28",
+      "evidence_date": "2026-07-29",
       "profiles": [
         "core_read",
         "collection_semantics",
