@@ -10,24 +10,14 @@
   },
   "contracts": [
     {
-      "id": "mdbase.jscontact.card",
-      "version": "2.0.0",
-      "name": "JSContact Card 2.0 core",
-      "description": "A strict, portable core profile of an IETF JSContact 2.0 Card.",
+      "id": "mdbase.contact",
+      "version": "1.0.0",
+      "name": "Contact",
+      "description": "A compact application-facing view of a person or organisation.",
       "contract_type": "record",
-      "digest": "sha256:c56c5acbf7992155d6890294842a261fe80a933ec75a226ea875b97ba57dcaa2",
-      "artifact": "./artifacts/contracts/mdbase.jscontact.card/2.0.0.md",
-      "standards": [
-        {
-          "name": "JSContact",
-          "version": "2.0",
-          "scope": "Strict core profile covering the Card envelope, names, email addresses, phones, organizations, and notes.",
-          "references": [
-            "https://www.rfc-editor.org/rfc/rfc9553.html",
-            "https://www.rfc-editor.org/rfc/rfc9982.html"
-          ]
-        }
-      ]
+      "digest": "sha256:e3634a35737ada5eb62e3e15f1c0c9d2e27c55a3f98dfab94bbc14c40404903d",
+      "artifact": "./artifacts/contracts/mdbase.contact/1.0.0.md",
+      "standards": []
     },
     {
       "id": "mdbase.record.created",
@@ -192,27 +182,27 @@
   ],
   "packs": [
     {
-      "id": "mdbase.jscontact",
-      "version": "2.0.3",
+      "id": "mdbase.contact",
+      "version": "1.0.0",
       "name": "Contact type pack",
-      "description": "The mdbase JSContact Card core contract and a fully expanded, editable Contact type.",
-      "digest": "sha256:e89693733a9d3d98bdd05fc040a08d7fb6f5eaea22089ed4ef8e0f1392e9c269",
-      "provision": "./packs/mdbase.jscontact/2.0.3.json",
+      "description": "A compact contact contract and a friendly, editable Contact type.",
+      "digest": "sha256:f5be1e7ea7b8dacda628d0cd809eb02cbad965505dc44c98bbd709ffb4847330",
+      "provision": "./packs/mdbase.contact/1.0.0.json",
       "provides": [
         {
-          "id": "mdbase.jscontact.card",
-          "version": "2.0.0"
+          "id": "mdbase.contact",
+          "version": "1.0.0"
         }
       ],
       "resource_count": 3,
       "display": {
         "name": "Contact",
-        "summary": "Store people and organisations with names, email addresses, phone numbers, and notes.",
+        "summary": "Keep people and organisations with familiar names, email addresses, phone numbers, and birthdays.",
         "category": "people",
         "audience": "general",
         "icon": "address-book",
         "badges": [
-          "JSContact 2.0"
+          "Portable contact semantics"
         ]
       },
       "installation": {

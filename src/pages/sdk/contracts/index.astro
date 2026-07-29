@@ -21,6 +21,27 @@ for (const implementation of workItemContract.implementations) {
   );
 }`;
 
+const typeImplementation = `kind: mdbase.type
+name: project_item
+version: 1
+schema:
+  dialect: json-schema-2020-12
+  value:
+    type: object
+    required: [heading, stage]
+    properties:
+      heading: { type: string, minLength: 1 }
+      stage: { type: string }
+implements:
+  - contract: example.work-item
+    version: 1.0.0
+    fields:
+      title: heading
+      status: stage
+    binding:
+      status:
+        completed_values: [done, cancelled]`;
+
 const domainFunction = `import type { MdbaseCollectionClient } from "@mdbase/connect";
 
 export class WorklogCollection {
@@ -45,6 +66,7 @@ export class WorklogCollection {
   description="Build domain behavior on declared contracts across different frontmatter fields and path conventions."
   active="contracts"
   headings={[
+    { href: "#type-file", label: "Implement in a type" },
     { href: "#contract", label: "Read a contract" },
     { href: "#own-adapter", label: "Your own adapter" },
     { href: "#ownership", label: "Adapter ownership" },
@@ -60,11 +82,29 @@ export class WorklogCollection {
   <p>
     Only record contracts are implemented by type files. A type opts in through{" "}
     <code>implements</code> and maps contract field names to its own
-    frontmatter fields. This is intentionally many-to-many: reads union every
+    frontmatter fields. Contracts should usually be compact semantic interfaces,
+    not copies of a storage or interchange format. This is intentionally
+    many-to-many: one type can implement several contracts, reads union every
     approved implementing type, and several applications can consume the same
-    portable record view. Event sources and action providers declare executable
-    implementations through the <a href="/interop/">interoperability bridge</a>,
-    not through a type file.
+    portable record view.
+  </p>
+
+  <h2 id="type-file">Implement a contract in the type file</h2>
+  <CodeBlock code={typeImplementation} language="yaml" label="_types/project_item.md" />
+  <p>
+    The type schema above governs stored frontmatter. The <code>fields</code>{" "}
+    object is a direct mapping from contract fields to local type fields; it does
+    not transform values. The optional <code>binding</code> object records
+    behavior and vocabulary choices defined by the contract's{" "}
+    <code>binding_schema</code>. For example, a task contract can let a
+    collection declare several status values as complete without changing the
+    stored status value.
+  </p>
+  <p>
+    General-purpose editors can safely expose both objects because their shapes
+    come from the contract's JSON Schemas. Domain applications may offer more
+    tailored controls and write the same <code>implements</code> entry. Unknown
+    fields and extensions should be preserved.
   </p>
 
   <h2 id="contract">Read the approved collection description</h2>
@@ -109,5 +149,10 @@ export class WorklogCollection {
     application. Request{" "}<code>full_collection</code> only for genuine
     whole-record or collection-level behavior such as body-aware task tools,
     arbitrary saved views, schema editors, or general-purpose collection tools.
+  </p>
+  <p>
+    Event sources and action providers declare executable implementations
+    through the <a href="/interop/">interoperability bridge</a>, not through a
+    type file.
   </p>
 </DocsLayout>

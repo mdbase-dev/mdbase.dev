@@ -3,6 +3,14 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import catalog from "../../data/contracts.json";
 
 const artifactHref = (path: string) => `/contracts/${path.replace(/^\.\//, "")}`;
+const publishedContracts = catalog.contracts as Array<{
+  id: string;
+  version: string;
+  name: string;
+  description: string;
+  artifact: string;
+  standards: Array<{ name: string; version: string; scope: string }>;
+}>;
 const readyMadePacks = catalog.packs.filter((pack) => pack.installation.visibility === "default");
 const advancedPacks = catalog.packs.filter((pack) => pack.installation.visibility === "advanced");
 ---
@@ -20,9 +28,10 @@ const advancedPacks = catalog.packs.filter((pack) => pack.installation.visibilit
       </div>
       <div class="page-hero__aside">
         <p>
-          Contracts describe portable record shapes. Type packs install a
-          contract, its referenced schemas, and a usable default implementation
-          as one digest-pinned transaction.
+          Contracts give applications a small, shared vocabulary without
+          forcing every collection to use the same field names or storage
+          format. Type packs install a contract and a friendly editable type
+          together.
         </p>
         <div class="button-row">
           <a class="button button--primary" href="/contracts/catalog.json">Catalog JSON</a>
@@ -34,6 +43,35 @@ const advancedPacks = catalog.packs.filter((pack) => pack.installation.visibilit
     </div>
   </section>
 
+  <section class="content-section contract-explainer">
+    <h2>Local notes, shared meaning</h2>
+    <p class="section-intro">
+      A type remains the source of truth for what your Markdown records store.
+      Its <code>implements</code> entries explain how compatible applications
+      should read those fields.
+    </p>
+    <ol>
+      <li>
+        <span>1</span>
+        <div><strong>Your type</strong><p>Uses familiar local names such as <code>email</code> or <code>stage</code>.</p></div>
+      </li>
+      <li>
+        <span>2</span>
+        <div><strong>Field mapping</strong><p>Connects local fields to a compact contract vocabulary such as <code>primary_email</code> or <code>status</code>.</p></div>
+      </li>
+      <li>
+        <span>3</span>
+        <div><strong>Contract settings</strong><p>Optionally describe behavior, such as which status values mean complete, using another JSON Schema.</p></div>
+      </li>
+    </ol>
+    <p class="contract-explainer__note">
+      One type can implement several contracts, and any number of applications
+      can consume the same contract. Interchange formats such as JSContact and
+      vCard belong in import and export adapters unless a collection
+      intentionally stores that wire format.
+    </p>
+  </section>
+
   <section class="content-section">
     <h2>Published contracts</h2>
     <table class="profile-table">
@@ -41,13 +79,13 @@ const advancedPacks = catalog.packs.filter((pack) => pack.installation.visibilit
         <tr>
           <th>Contract</th>
           <th>Version</th>
-          <th>Profile</th>
+          <th>Shared semantics</th>
           <th>Artifact</th>
         </tr>
       </thead>
       <tbody>
         {
-          catalog.contracts.map((contract) => (
+          publishedContracts.map((contract) => (
             <tr>
               <td>
                 <strong>{contract.name}</strong><br />
@@ -77,7 +115,8 @@ const advancedPacks = catalog.packs.filter((pack) => pack.installation.visibilit
     <p class="section-intro">
       Add these from <strong>Types → Add a type</strong> in mdbase-editor.
       Each pack creates a local, editable type with its portable contract and
-      initial field mapping.
+      initial field mapping. You can rename fields later; the editor keeps the
+      mapping visible and aligned.
     </p>
     <div class="pack-grid">
       {
@@ -153,6 +192,48 @@ const advancedPacks = catalog.packs.filter((pack) => pack.installation.visibilit
   .section-intro {
     max-width: 48rem;
     color: var(--color-text-soft);
+  }
+
+  .contract-explainer ol {
+    display: grid;
+    gap: 1px;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    border-block: 1px solid var(--color-border);
+    background: var(--color-border);
+    list-style: none;
+  }
+
+  .contract-explainer li {
+    width: 100%;
+    max-width: none;
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+    padding: 1rem 0;
+    background: var(--color-canvas);
+  }
+
+  .contract-explainer li > span {
+    color: var(--color-text-muted);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+  }
+
+  .contract-explainer li strong {
+    font-size: 0.9rem;
+  }
+
+  .contract-explainer li p,
+  .contract-explainer__note {
+    max-width: 48rem;
+    margin: 0.25rem 0 0;
+    color: var(--color-text-soft);
+  }
+
+  .contract-explainer__note {
+    margin-top: 1rem;
   }
 
   .pack-grid {
