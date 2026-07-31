@@ -23,33 +23,66 @@ const steps = [
 
 <BaseLayout
   title="mdbase Connect"
-  description="Authorize independent applications to use local or hosted mdbase collections under a grant you control."
+  description="Choose which apps can use your local or hosted mdbase collections, and exactly what each app can do."
   current="connect"
 >
   <section class="page-hero">
     <div class="page-hero__inner">
       <div>
-        <p class="eyebrow"><i></i> Private beta · protocol 1</p>
-        <h1>App access for local and hosted collections.</h1>
+        <p class="eyebrow"><i></i> Private beta</p>
+        <h1>Use your Markdown with the apps you choose.</h1>
       </div>
       <div class="page-hero__aside">
         <p>
-          An application sends the user to Connect. The user chooses one
-          compatible collection and approves exact actions. The application
-          receives a collection-bound connection; local folder paths stay on
-          the user's computer.
+          Start in the app you want to use. mdbase Connect opens when that app
+          needs a collection, shows what it is asking for, and lets you choose
+          the folder or hosted collection it can use.
         </p>
         <div class="button-row">
-          <a class="button button--primary" href="/sdk/connect-quickstart/">Connect an app</a>
-          <a class="button" href="/sdk/quickstart/">Try the SDK locally</a>
-          <a class="button" href="/sdk/portable-apps/">Portable HTML apps</a>
-          <a class="button" href="https://github.com/mdbase-dev/mdbase-connect">View source</a>
+          <a class="button button--primary" href="#use-connect">See how it works</a>
+          <a class="button" href="/sdk/connect-quickstart/">Build an app</a>
         </div>
       </div>
     </div>
   </section>
 
+  <section class="content-section" id="use-connect">
+    <p class="eyebrow"><i></i> For people using apps</p>
+    <h2>Start in the app you want to use</h2>
+    <p>
+      Connect keeps the same request open while it helps you sign in, pair this
+      computer, and choose or create a collection.
+    </p>
+    <ol class="plain-sequence" aria-label="Using an app with mdbase Connect">
+      <li>
+        <strong>Open the app</strong>
+        <span>Choose its Connect action. It opens a request that names the app and the access it needs.</span>
+      </li>
+      <li>
+        <strong>Choose your collection</strong>
+        <span>Use a folder on this computer or a hosted collection. Connect guides any sign-in or computer pairing along the way.</span>
+      </li>
+      <li>
+        <strong>Review the result</strong>
+        <span>See whether the app can view, edit, or delete records. You can remove permissions before approving.</span>
+      </li>
+      <li>
+        <strong>Return to the app</strong>
+        <span>Connect sends the approved collection back to the app. Pause, narrow, or revoke access at any time.</span>
+      </li>
+    </ol>
+    <div class="callout">
+      <strong>Local folder behavior</strong>
+      <p>
+        A collection kept on your computer remains ordinary Markdown in the
+        folder you chose. The app and account service do not receive that
+        folder path.
+      </p>
+    </div>
+  </section>
+
   <section class="content-section">
+    <p class="eyebrow"><i></i> For developers</p>
     <h2>Where Connect sits</h2>
     <p>
       Connect is optional. Applications can also use a conforming mdbase
