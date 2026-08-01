@@ -10,18 +10,36 @@ import HomeLayout from "../layouts/HomeLayout.astro";
 
   <canvas id="diagram" aria-hidden="true"></canvas>
 
-  <main>
+  <main id="main" tabindex="-1">
     <section id="intro" class="chapter is-active" data-scene="intro">
       <div class="chapter__inner">
-        <p class="chapter__status">mdbase v0.3 · Connect private beta</p>
+        <p class="chapter__status">mdbase specification v0.3 · open source</p>
         <h1>Use the same Markdown files in different apps.</h1>
         <p class="chapter__lead">
           An mdbase is a folder of ordinary Markdown files that more than one
           app can understand. You can open the files yourself, keep them where
           you choose, and decide which apps may use them.
         </p>
+        <dl class="product-map" aria-label="The parts of mdbase">
+          <div>
+            <dt><a href="/spec/">Specification</a></dt>
+            <dd>Open rules for typed, queryable Markdown collections</dd>
+          </div>
+          <div>
+            <dt><a href="/spec/#section-16">Libraries and CLI</a></dt>
+            <dd>Open tools that work directly with local collections</dd>
+          </div>
+          <div data-product="connect">
+            <dt><a href="/connect/">Connect</a></dt>
+            <dd id="connect-summary">App permissions, routing, and optional managed hosting</dd>
+          </div>
+          <div>
+            <dt><a href="/runtime/">Runtime</a></dt>
+            <dd>Optional durable workflows, timers, and recovery</dd>
+          </div>
+        </dl>
         <div class="chapter__actions chapter__actions--intro">
-          <a class="button" href="/beta/">Request beta access</a>
+          <a class="button" href="/beta/" aria-describedby="connect-summary">Request Connect beta access</a>
           <a class="text-link" href="#example">See how it works</a>
         </div>
       </div>
@@ -65,7 +83,8 @@ The new site should make mdbase
 easier to understand.</code></pre>
         <p class="chapter__body">
           The type definition stored beside the records explains what those
-          fields mean, so different apps can use them consistently.
+          fields mean. Queries, links, validation, and safe updates follow the
+          same open specification in every conforming tool.
         </p>
       </div>
     </section>
@@ -78,8 +97,9 @@ easier to understand.</code></pre>
           a hosted mdbase, mdbase keeps the main copy available online.
         </p>
         <p class="chapter__body">
-          The records stay Markdown in both places, and you choose which apps
-          may connect.
+          The open specification and local tools need no account. Connect is
+          the optional service for approving apps, reaching a local collection
+          remotely, or keeping the authoritative copy online.
         </p>
       </div>
     </section>
@@ -91,11 +111,17 @@ easier to understand.</code></pre>
           An app asks for one collection and a specific set of actions. You
           review the request before it can read or change anything.
         </p>
-        <ol class="steps" aria-label="How an app receives access">
-          <li><span>1</span><strong>See which app is asking</strong></li>
-          <li><span>2</span><strong>Choose the collection it may use</strong></li>
-          <li><span>3</span><strong>Approve only the actions you want</strong></li>
-        </ol>
+        <dl class="grant-summary" aria-label="Example Connect access request">
+          <div><dt>App</dt><dd>Project app</dd></div>
+          <div><dt>Collection</dt><dd>Projects · on this computer</dd></div>
+          <div><dt>Allow</dt><dd>View, find, create, and edit records</dd></div>
+          <div><dt>Keep blocked</dt><dd>Delete records</dd></div>
+        </dl>
+        <p class="chapter__body">
+          The local connector enforces grants for local folders. The hosted
+          provider executes approved operations for hosted collections.
+          {" "}<a href="/connect/">See the complete trust boundary</a>.
+        </p>
       </div>
     </section>
 
@@ -108,8 +134,9 @@ easier to understand.</code></pre>
           offline use.
         </p>
         <div class="chapter__actions">
-          <a class="button" href="/beta/">Request beta access</a>
-          <a class="text-link" href="/sdk/quickstart/">Build with the SDK</a>
+          <a class="button" href="/beta/">Request Connect beta access</a>
+          <a class="text-link" href="/spec/">Explore the open specification</a>
+          <a class="text-link" href="/sdk/quickstart/">Try the beta SDK locally</a>
         </div>
       </div>
     </section>

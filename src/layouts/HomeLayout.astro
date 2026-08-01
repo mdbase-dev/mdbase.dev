@@ -22,7 +22,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
@@ -40,8 +40,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <script is:inline src="/theme-bootstrap.js"></script>
   </head>
   <body class="home-body">
-    <a class="home-skip-link" href="#intro">Skip to introduction</a>
-    <SiteHeader current="home" showSceneCount />
+    <a class="home-skip-link" href="#main">Skip to content</a>
+    <SiteHeader current="home" />
     <slot />
     <SiteFooter />
     <ThemeControlScript />

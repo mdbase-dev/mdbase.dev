@@ -55,11 +55,15 @@ cpSync(runtimeSchemaSource, runtimeSchemaDestination, { recursive: true, force: 
 const introductionSource = join(connectDir, "docs", "mdbase-configurations-v2.html");
 required(introductionSource, "Connect introduction prototype");
 const introduction = readFileSync(introductionSource, "utf8");
-const introductionStyles = extract(introduction, /<style>([\s\S]*?)<\/style>/, "prototype styles");
-const introductionScript = extract(
-  introduction,
-  /<script>([\s\S]*?)<\/script>\s*<\/body>/,
-  "prototype murmuration"
+const introductionStyles = removeSceneCounterStyles(
+  extract(introduction, /<style>([\s\S]*?)<\/style>/, "prototype styles")
+);
+const introductionScript = removeSceneCounterScript(
+  extract(
+    introduction,
+    /<script>([\s\S]*?)<\/script>\s*<\/body>/,
+    "prototype murmuration"
+  )
 );
 const themedIntroductionScript = addThemeAwareCanvasPalette(introductionScript);
 writeFileSync(
@@ -194,6 +198,16 @@ function extract(source, pattern, label) {
     throw new Error(`Could not extract ${label}`);
   }
   return match[1];
+}
+
+function removeSceneCounterStyles(source) {
+  return source.replace(/\n\s*\.scene-count\s*\{[^}]*\}/g, "");
+}
+
+function removeSceneCounterScript(source) {
+  return source
+    .replace(/^\s*const sceneCount = document\.querySelector\("#scene-count"\);\n/m, "")
+    .replace(/\n\s*sceneCount\.textContent =\s*\n\s*`[^`]+`;/, "");
 }
 
 function addThemeAwareCanvasPalette(source) {
@@ -388,11 +402,22 @@ function addThemeAwareCanvasPalette(source) {
 
       function draw(now)`
   );
+  const motionPreference =
+    '      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;';
+  if (!withParticles.includes(motionPreference)) {
+    throw new Error("Could not find the prototype motion preference");
+  }
+  const withMobileMotion = withParticles.replace(
+    motionPreference,
+    `      const reduceMotion =
+        matchMedia("(prefers-reduced-motion: reduce)").matches
+        || matchMedia("(max-width: 820px) and (pointer: coarse)").matches;`
+  );
   const initialization = "      resize();\n      updateScrollState();";
-  if (!withParticles.includes(initialization)) {
+  if (!withMobileMotion.includes(initialization)) {
     throw new Error("Could not find the prototype initialization");
   }
-  const withInitialization = withParticles.replace(
+  const withInitialization = withMobileMotion.replace(
     initialization,
     "      syncPalette();\n      resize();\n      updateScrollState();"
   );

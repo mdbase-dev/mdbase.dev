@@ -3,15 +3,14 @@ import BrandMark from "./BrandMark.astro";
 
 interface Props {
   current?: "home" | "connect" | "sdk" | "runtime" | "spec";
-  showSceneCount?: boolean;
 }
 
-const { current, showSceneCount = false } = Astro.props;
+const { current } = Astro.props;
 const links = [
-  { href: "/", label: "Learn", key: "home" },
+  { href: "/", label: "Overview", key: "home" },
   { href: "/connect/", label: "Connect", key: "connect" },
-  { href: "/sdk/quickstart/", label: "Build", key: "sdk" },
-  { href: "/spec/", label: "Spec", key: "spec" }
+  { href: "/sdk/", label: "Developers", key: "sdk" },
+  { href: "/spec/", label: "Specification", key: "spec" }
 ] as const;
 ---
 
@@ -22,11 +21,6 @@ const links = [
         <BrandMark compact />
         <span>mdbase</span>
       </a>
-      {
-        showSceneCount && (
-          <span id="scene-count" class="scene-count" aria-live="polite">01 / 06</span>
-        )
-      }
     </div>
     <div class="header-actions">
       <nav class="desktop-nav" aria-label="Primary navigation">

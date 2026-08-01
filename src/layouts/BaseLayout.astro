@@ -25,7 +25,7 @@ const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
@@ -45,22 +45,33 @@ const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
   <body class="site-body">
     <a class="skip-link" href="#main">Skip to content</a>
     <SiteHeader current={current} />
-    <main id="main">
+    <main id="main" tabindex="-1">
       <slot />
     </main>
     <SiteFooter />
     <ThemeControlScript />
+    <p class="sr-only" id="copy-status" role="status" aria-live="polite"></p>
     <script is:inline>
       document.querySelectorAll("[data-copy-code]").forEach((button) => {
         button.addEventListener("click", async () => {
           const wrapper = button.closest(".code-block");
           const code = wrapper?.querySelector("code")?.textContent ?? "";
-          await navigator.clipboard.writeText(code);
           const previous = button.textContent;
-          button.textContent = "Copied";
+          const status = document.querySelector("#copy-status");
+          try {
+            await navigator.clipboard.writeText(code);
+            button.textContent = "Copied";
+            if (status) status.textContent = "Code copied to the clipboard.";
+          } catch {
+            button.textContent = "Copy failed";
+            if (status) {
+              status.textContent =
+                "Code could not be copied. Select the code and copy it manually.";
+            }
+          }
           window.setTimeout(() => {
             button.textContent = previous;
-          }, 1400);
+          }, 1800);
         });
       });
     </script>

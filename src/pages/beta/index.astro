@@ -10,16 +10,18 @@ const betaAccessEndpoint = new URL(
 ---
 
 <BaseLayout
-  title="Request beta access"
+  title="Request Connect beta access"
   description="Request access to the mdbase Connect private beta."
+  current="connect"
 >
   <section class="beta-opening">
     <header class="beta-opening__copy">
       <p class="eyebrow">Connect private beta</p>
-      <h1>Request beta access.</h1>
+      <h1>Request Connect beta access.</h1>
       <p>
-        mdbase Connect is opening gradually while the remaining release checks
-        are completed.
+        The managed Connect service is opening in small batches while release
+        checks continue. The open mdbase specification and local tools do not
+        require an invitation.
       </p>
     </header>
 
@@ -30,9 +32,11 @@ const betaAccessEndpoint = new URL(
         data-endpoint={betaAccessEndpoint}
         action={betaAccessEndpoint}
         method="post"
-        novalidate
       >
         <label for="beta-email">Email address</label>
+        <p class="beta-form__help" id="beta-email-help">
+          Use the address where you want to receive an invitation.
+        </p>
         <div class="beta-form__entry">
           <input
             id="beta-email"
@@ -43,8 +47,9 @@ const betaAccessEndpoint = new URL(
             maxlength="320"
             required
             spellcheck="false"
+            aria-describedby="beta-email-help beta-status"
           />
-          <button type="submit">Request access</button>
+          <button type="submit">Request Connect access</button>
         </div>
         <div class="beta-honeypot" aria-hidden="true">
           <label for="beta-website">Website</label>
@@ -56,35 +61,110 @@ const betaAccessEndpoint = new URL(
             tabindex="-1"
           />
         </div>
-        <p class="beta-form__status" data-beta-status role="status" aria-live="polite"></p>
+        <p
+          class="beta-form__status"
+          id="beta-status"
+          data-beta-status
+          role="status"
+          aria-live="polite"
+        ></p>
+        <noscript>
+          <p class="beta-form__noscript">
+            This form still submits without JavaScript. Connect will show a
+            plain confirmation response after it receives the request.
+          </p>
+        </noscript>
       </form>
       <p class="beta-intake__privacy">
         We use this address to manage beta access and contact you about the
         beta. Requesting access does not guarantee immediate availability.
-        <a href="/privacy/">Privacy</a>
+        {" "}<a href="/privacy/">Privacy</a>
       </p>
     </div>
   </section>
 
-  <section class="beta-next">
-    <p class="eyebrow">After your request</p>
+  <section class="beta-details" aria-labelledby="beta-includes">
+    <h2 id="beta-includes">What beta access includes.</h2>
+    <dl class="beta-facts">
+      <div>
+        <dt>Managed Connect</dt>
+        <dd>
+          Create an account, pair a supported desktop build, connect local
+          folders, and create hosted collections.
+        </dd>
+      </div>
+      <div>
+        <dt>Approved applications</dt>
+        <dd>
+          Connect compatible web or native apps and MCP clients to one chosen
+          collection with explicit operations.
+        </dd>
+      </div>
+      <div>
+        <dt>Private-beta timing</dt>
+        <dd>
+          Invitations are sent in small batches. There is no published wait
+          time, and a request does not guarantee immediate availability.
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="beta-next" aria-labelledby="after-request">
     <div>
-      <h2>Invitations are sent in small batches.</h2>
+      <h2 id="after-request">After your request.</h2>
       <p>
         If access is available, you will receive a one-time signup link at the
         address you submitted. Connect remains pre-release software, so keep
         independent backups of important collections.
       </p>
     </div>
+    <div>
+      <h2>Use mdbase while you wait.</h2>
+      <p>
+        The specification and local developer path are already open. You can
+        inspect the collection model or run the SDK sandbox without an account.
+      </p>
+      <div class="button-row">
+        <a class="button button--primary" href="/spec/">Read the specification</a>
+        <a class="button" href="/sdk/quickstart/">Try the beta SDK from source</a>
+        <a class="button" href="/connect/">Understand Connect</a>
+      </div>
+    </div>
   </section>
 
   <script>
     const form = document.querySelector("[data-beta-form]");
     if (form instanceof HTMLFormElement) {
+      form.noValidate = true;
       const email = form.elements.namedItem("email");
       const website = form.elements.namedItem("website");
       const button = form.querySelector("button[type='submit']");
       const status = form.querySelector("[data-beta-status]");
+      const submittedKey = "mdbase-connect-beta-requested";
+
+      const showSubmitted = () => {
+        if (
+          !(email instanceof HTMLInputElement)
+          || !(button instanceof HTMLButtonElement)
+          || !(status instanceof HTMLElement)
+        ) return;
+        email.disabled = true;
+        button.disabled = true;
+        button.removeAttribute("aria-busy");
+        button.textContent = "Request received";
+        status.dataset.state = "success";
+        status.textContent =
+          "Request received. We’ll email you when Connect beta access is available.";
+      };
+
+      try {
+        if (window.sessionStorage.getItem(submittedKey) === "true") {
+          showSubmitted();
+        }
+      } catch {
+        // Submission still works when browser storage is unavailable.
+      }
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -123,24 +203,37 @@ const betaAccessEndpoint = new URL(
           });
           if (!response.ok) {
             if (response.status === 429) {
-              throw new Error("rate_limited");
+              const retryAfter = Number.parseInt(
+                response.headers.get("retry-after") ?? "",
+                10
+              );
+              const retryLabel = Number.isFinite(retryAfter)
+                ? retryAfter >= 3600
+                  ? `${Math.ceil(retryAfter / 3600)} hour${retryAfter > 3600 ? "s" : ""}`
+                  : `${Math.max(1, Math.ceil(retryAfter / 60))} minute${retryAfter > 60 ? "s" : ""}`
+                : null;
+              throw new Error(
+                retryLabel ? `rate_limited:${retryLabel}` : "rate_limited"
+              );
             }
             throw new Error("request_failed");
           }
-          email.disabled = true;
-          button.removeAttribute("aria-busy");
-          status.dataset.state = "success";
-          status.textContent =
-            "Request received. We’ll email you when beta access is available.";
-          button.textContent = "Request received";
+          try {
+            window.sessionStorage.setItem(submittedKey, "true");
+          } catch {
+            // The confirmation remains visible for this page view.
+          }
+          showSubmitted();
         } catch (error) {
           button.disabled = false;
           button.removeAttribute("aria-busy");
-          button.textContent = "Request access";
+          button.textContent = "Request Connect access";
           status.dataset.state = "error";
-          status.textContent = error instanceof Error && error.message === "rate_limited"
-            ? "Too many requests have been sent. Please try again later."
-            : "We couldn’t send your request. Please try again.";
+          status.textContent = error instanceof Error && error.message.startsWith("rate_limited")
+            ? error.message.includes(":")
+              ? `Too many requests have been sent. Try again in about ${error.message.split(":")[1]}.`
+              : "Too many requests have been sent. Please try again later."
+            : "We couldn’t send your request. Check your connection and try again; your address is still here.";
         }
       });
     }
@@ -163,7 +256,7 @@ const betaAccessEndpoint = new URL(
     max-width: 11ch;
     margin-top: 1rem;
     font-size: clamp(3rem, 6vw, 5.75rem);
-    letter-spacing: -0.055em;
+    letter-spacing: -0.035em;
   }
 
   .beta-opening__copy > p:last-child {
@@ -189,6 +282,14 @@ const betaAccessEndpoint = new URL(
     display: grid;
     margin-top: 0.55rem;
     grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .beta-form__help,
+  .beta-form__noscript {
+    margin-top: 0.35rem;
+    color: var(--ink-muted);
+    font-size: 0.75rem;
+    line-height: 1.5;
   }
 
   .beta-form input {
@@ -267,25 +368,55 @@ const betaAccessEndpoint = new URL(
     overflow: hidden;
   }
 
+  .beta-details,
   .beta-next {
     display: grid;
     width: min(100% - 2rem, var(--page));
     margin-inline: auto;
     padding-block: clamp(3rem, 6vw, 5rem);
     border-top: 1px solid var(--line);
-    grid-template-columns: minmax(12rem, 0.42fr) minmax(0, 1fr);
+    grid-template-columns: minmax(14rem, 0.48fr) minmax(0, 1fr);
     gap: clamp(2rem, 7vw, 7rem);
   }
 
+  .beta-details h2,
   .beta-next h2 {
     max-width: 18ch;
     font-size: clamp(1.6rem, 3vw, 2.5rem);
   }
 
-  .beta-next div p {
+  .beta-next > div > p {
     max-width: 52ch;
     margin-top: 1rem;
     color: var(--ink-soft);
+  }
+
+  .beta-facts {
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .beta-facts > div {
+    display: grid;
+    padding-block: 1rem;
+    border-bottom: 1px solid var(--line);
+    grid-template-columns: minmax(9rem, 0.42fr) minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  .beta-facts dt {
+    color: var(--ink);
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .beta-facts dd {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+  }
+
+  .beta-next .button-row {
+    margin-top: 1.25rem;
   }
 
   @media (max-width: 48rem) {
@@ -300,6 +431,7 @@ const betaAccessEndpoint = new URL(
       font-size: clamp(3rem, 14vw, 4.6rem);
     }
 
+    .beta-details,
     .beta-next {
       grid-template-columns: 1fr;
       gap: 1rem;
@@ -319,7 +451,12 @@ const betaAccessEndpoint = new URL(
     }
 
     .beta-form button {
-      justify-self: start;
+      width: 100%;
+    }
+
+    .beta-facts > div {
+      grid-template-columns: 1fr;
+      gap: 0.3rem;
     }
   }
 </style>
