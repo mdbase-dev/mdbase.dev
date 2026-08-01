@@ -2,7 +2,7 @@
 import BrandMark from "./BrandMark.astro";
 
 interface Props {
-  current?: "home" | "connect" | "sdk" | "interop" | "testbed" | "runtime" | "implementations" | "spec";
+  current?: "home" | "connect" | "sdk" | "runtime" | "spec";
   showSceneCount?: boolean;
 }
 
@@ -11,9 +11,6 @@ const links = [
   { href: "/", label: "Learn", key: "home" },
   { href: "/connect/", label: "Connect", key: "connect" },
   { href: "/sdk/quickstart/", label: "Build", key: "sdk" },
-  { href: "/interop/", label: "Interop", key: "interop" },
-  { href: "/testbed/", label: "Test", key: "testbed" },
-  { href: "/implementations/", label: "Implement", key: "implementations" },
   { href: "/spec/", label: "Spec", key: "spec" }
 ] as const;
 ---
