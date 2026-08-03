@@ -10,18 +10,19 @@ const betaAccessEndpoint = new URL(
 ---
 
 <BaseLayout
-  title="Request Connect beta access"
-  description="Request access to the mdbase Connect private beta."
+  title="Join the Connect beta waitlist"
+  description="Join the waitlist for the mdbase Connect private beta."
   current="connect"
 >
   <section class="beta-opening">
     <header class="beta-opening__copy">
       <p class="eyebrow">Connect private beta</p>
-      <h1>Request Connect beta access.</h1>
+      <h1>Join the Connect beta waitlist.</h1>
       <p>
-        The managed Connect service is opening in small batches while release
-        checks continue. The open mdbase specification and local tools do not
-        require an invitation.
+        The managed Connect service is not open for general registration.
+        Join the waitlist and we will send invitations in small batches when
+        beta access is available. The open mdbase specification and local
+        tools do not require an invitation.
       </p>
     </header>
 
@@ -49,7 +50,7 @@ const betaAccessEndpoint = new URL(
             spellcheck="false"
             aria-describedby="beta-email-help beta-status"
           />
-          <button type="submit">Request Connect access</button>
+          <button type="submit">Join the waitlist</button>
         </div>
         <div class="beta-honeypot" aria-hidden="true">
           <label for="beta-website">Website</label>
@@ -76,8 +77,9 @@ const betaAccessEndpoint = new URL(
         </noscript>
       </form>
       <p class="beta-intake__privacy">
-        We use this address to manage beta access and contact you about the
-        beta. Requesting access does not guarantee immediate availability.
+        We use this address to manage the waitlist and contact you about beta
+        access. Joining does not guarantee an invitation or immediate
+        availability.
         {" "}<a href="/privacy/">Privacy</a>
       </p>
     </div>
@@ -103,8 +105,8 @@ const betaAccessEndpoint = new URL(
       <div>
         <dt>Private-beta timing</dt>
         <dd>
-          Invitations are sent in small batches. There is no published wait
-          time, and a request does not guarantee immediate availability.
+          We will invite people in small batches when we are ready. There is
+          no published wait time, and joining does not guarantee an invitation.
         </dd>
       </div>
     </dl>
@@ -112,7 +114,7 @@ const betaAccessEndpoint = new URL(
 
   <section class="beta-next" aria-labelledby="after-request">
     <div>
-      <h2 id="after-request">After your request.</h2>
+      <h2 id="after-request">After you join.</h2>
       <p>
         If access is available, you will receive a one-time signup link at the
         address you submitted. Connect remains pre-release software, so keep
@@ -152,10 +154,10 @@ const betaAccessEndpoint = new URL(
         email.disabled = true;
         button.disabled = true;
         button.removeAttribute("aria-busy");
-        button.textContent = "Request received";
+        button.textContent = "You’re on the waitlist";
         status.dataset.state = "success";
         status.textContent =
-          "Request received. We’ll email you when Connect beta access is available.";
+          "You’re on the waitlist. We’ll email you when we’re ready to invite more people.";
       };
 
       try {
@@ -188,9 +190,9 @@ const betaAccessEndpoint = new URL(
 
         button.disabled = true;
         button.setAttribute("aria-busy", "true");
-        button.textContent = "Requesting…";
+        button.textContent = "Joining…";
         status.dataset.state = "pending";
-        status.textContent = "Sending your request.";
+        status.textContent = "Adding your address to the waitlist.";
 
         try {
           const response = await fetch(form.dataset.endpoint ?? "", {
@@ -227,7 +229,7 @@ const betaAccessEndpoint = new URL(
         } catch (error) {
           button.disabled = false;
           button.removeAttribute("aria-busy");
-          button.textContent = "Request Connect access";
+          button.textContent = "Join the waitlist";
           status.dataset.state = "error";
           status.textContent = error instanceof Error && error.message.startsWith("rate_limited")
             ? error.message.includes(":")
