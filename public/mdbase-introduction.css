@@ -113,13 +113,6 @@
       text-underline-offset: 5px;
     }
 
-    .scene-count {
-      min-width: 52px;
-      color: var(--muted);
-      font: 520 10px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      text-align: right;
-    }
-
     .scroll-progress {
       position: fixed;
       z-index: 6;
@@ -438,10 +431,6 @@
 
       .site-nav a {
         font-size: 11px;
-      }
-
-      .scene-count {
-        min-width: auto;
       }
 
       .chapter {

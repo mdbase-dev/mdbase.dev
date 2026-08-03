@@ -3,8 +3,9 @@
       const canvas = document.querySelector("#diagram");
       const context = canvas.getContext("2d", { alpha: true });
       const chapters = [...document.querySelectorAll(".chapter")];
-      const sceneCount = document.querySelector("#scene-count");
-      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const reduceMotion =
+        matchMedia("(prefers-reduced-motion: reduce)").matches
+        || matchMedia("(max-width: 820px) and (pointer: coarse)").matches;
       const particleCount = 361;
       const cellSize = 104;
       const particles = [];
@@ -1058,8 +1059,6 @@
         chapters.forEach((chapter, chapterIndex) => {
           chapter.classList.toggle("is-active", chapterIndex === index);
         });
-        sceneCount.textContent =
-          `${String(index + 1).padStart(2, "0")} / ${String(chapters.length).padStart(2, "0")}`;
         buildScene(scene);
       }
 

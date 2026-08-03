@@ -13,7 +13,7 @@ const docGroups = [
   {
     label: "Start",
     docs: [
-      { href: "/sdk/quickstart/", label: "Try the SDK locally", key: "quickstart" },
+      { href: "/sdk/quickstart/", label: "Run the source-built sandbox", key: "quickstart" },
       { href: "/sdk/connect-quickstart/", label: "Connect a browser app", key: "connect-quickstart" },
       { href: "/sdk/", label: "SDK overview", key: "overview" }
     ]
@@ -45,7 +45,7 @@ const docGroups = [
 <BaseLayout title={title} description={description} current="sdk">
   <div class="docs-shell">
     <aside class="docs-nav">
-      <details open>
+      <details open data-docs-nav>
         <summary>Connect SDK</summary>
         <nav aria-label="SDK documentation">
           {
@@ -93,4 +93,13 @@ const docGroups = [
       )
     }
   </div>
+  <script is:inline>
+    const docsNavigation = document.querySelector("[data-docs-nav]");
+    if (
+      docsNavigation instanceof HTMLDetailsElement
+      && window.matchMedia("(max-width: 60rem)").matches
+    ) {
+      docsNavigation.open = false;
+    }
+  </script>
 </BaseLayout>

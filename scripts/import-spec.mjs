@@ -53,7 +53,8 @@ function rewrite(html, archive) {
     .replaceAll('href="style.css', 'href="/spec/style.css')
     .replaceAll('href="mdbase-favicon.svg"', 'href="/spec/mdbase-favicon.svg"')
     .replaceAll('href="runtime.html"', 'href="/runtime/"')
-    .replaceAll('href="ecosystem.html"', 'href="/implementations/"')
+    .replaceAll('<a href="ecosystem.html">Implementations</a>', '')
+    .replaceAll('href="/testbed/"', 'href="#section-16"')
     .replaceAll('href="spec-v0.2.html"', 'href="/spec/v0.2/"')
     .replaceAll('href="spec.html"', 'href="/spec/"')
     .replaceAll(

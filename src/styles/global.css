@@ -139,6 +139,10 @@ code {
   outline-offset: 3px;
 }
 
+main[tabindex="-1"]:focus {
+  outline: none;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -189,7 +193,7 @@ code {
 
 .button {
   display: inline-flex;
-  min-height: 2.25rem;
+  min-height: 2.75rem;
   padding: 0.4rem 0.8rem;
   align-items: center;
   justify-content: center;
@@ -408,7 +412,7 @@ code {
 
 .code-block figcaption {
   display: flex;
-  min-height: 2.25rem;
+  min-height: 2.75rem;
   padding: 0 0.75rem;
   align-items: center;
   justify-content: space-between;
@@ -418,7 +422,9 @@ code {
 }
 
 .code-block button {
-  padding: 0.25rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0.25rem 0.4rem;
   color: inherit;
   background: transparent;
   border: 0;
@@ -467,7 +473,7 @@ code {
   display: grid;
   margin-top: 1.25rem;
   border-top: 1px solid var(--line-strong);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .start-options > div {
@@ -645,7 +651,7 @@ code {
   color: var(--ink);
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 3px;
+  border-radius: var(--radius);
 }
 
 .docs-toc {
@@ -755,7 +761,10 @@ code {
   }
 
   .docs-nav summary {
-    padding: 0.15rem;
+    display: flex;
+    min-height: 2.75rem;
+    padding: 0.15rem 0.4rem;
+    align-items: center;
     cursor: pointer;
   }
 
@@ -775,6 +784,10 @@ code {
 }
 
 @media (max-width: 42rem) {
+  body {
+    font-size: 1rem;
+  }
+
   .page-shell,
   .page-hero__inner,
   .content-section {

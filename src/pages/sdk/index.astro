@@ -34,12 +34,12 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
   <h2 id="start">Choose the first result you need</h2>
   <div class="start-options">
     <div>
-      <strong>Learn the collection API</strong>
+      <strong>Learn the Connect client boundary</strong>
       <p>
         Run typed reads and revision-safe changes against an in-memory
-        collection. This path needs no account or running service.
+        collection. This source-built sandbox needs no account or service.
       </p>
-      <a href="/sdk/quickstart/">Try the SDK locally</a>
+      <a href="/sdk/quickstart/">Run the source-built sandbox</a>
     </div>
     <div>
       <strong>Connect a real application</strong>
@@ -49,6 +49,14 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
       </p>
       <a href="/sdk/connect-quickstart/">Open the Connect guide</a>
     </div>
+    <div>
+      <strong>Implement the open specification</strong>
+      <p>
+        Build a conforming collection tool or use the versioned TypeScript and
+        Rust implementations without the managed Connect service.
+      </p>
+      <a href="/spec/">Open the specification</a>
+    </div>
   </div>
   <div class="callout">
     <strong>Private-beta release status</strong>
@@ -56,7 +64,15 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
       The production service and protocol 1 are deployed for beta accounts.
       The npm packages await their first public release. Current developers
       build or pack the versioned artifacts from the
-      <a href="https://github.com/mdbase-dev/mdbase-connect">Connect repository</a>.
+      {" "}<a href="https://github.com/mdbase-dev/mdbase-connect">Connect repository</a>.
+    </p>
+  </div>
+  <div class="callout callout--success">
+    <strong>Versioned implementation evidence</strong>
+    <p>
+      The current site records mdbase specification 0.3.0 claims for the
+      TypeScript 0.3.0-rc.4 and Rust 0.4.0-rc.3 implementations, with evidence
+      dated 29 July 2026. <a href="/spec/#section-16">Review conformance resources</a>.
     </p>
   </div>
 
@@ -165,8 +181,8 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
   </table>
 
   <div class="button-row" style="margin-top: 2rem">
-    <a class="button button--primary" href="/sdk/quickstart/">Run the local example</a>
+    <a class="button button--primary" href="/sdk/quickstart/">Run the source-built sandbox</a>
     <a class="button" href="/sdk/connect-quickstart/">Connect a browser app</a>
-    <a class="button" href="/sdk/portable-apps/">Build one HTML file</a>
+    <a class="button" href="/spec/">Implement the specification</a>
   </div>
 </DocsLayout>
