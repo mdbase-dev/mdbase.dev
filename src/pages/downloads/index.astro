@@ -1,0 +1,185 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const version = "0.1.0-beta.46";
+const tag = `v${version}`;
+const releaseBase = `https://github.com/mdbase-dev/mdbase-connect/releases/download/${tag}`;
+const releasePage = `https://github.com/mdbase-dev/mdbase-connect/releases/tag/${tag}`;
+
+const desktopDownloads = [
+  {
+    platform: "macOS",
+    detail: "Apple Silicon",
+    note: "Beta preview · DMG · 131 MB",
+    file: `mdbase-connect-${version}-macos-arm64.dmg`,
+    label: "Download for Apple Silicon"
+  },
+  {
+    platform: "macOS",
+    detail: "Intel",
+    note: "Beta preview · DMG · 135 MB",
+    file: `mdbase-connect-${version}-macos-x64.dmg`,
+    label: "Download for Intel"
+  },
+  {
+    platform: "Windows",
+    detail: "64-bit",
+    note: "Unsigned beta preview · installer · 149 MB",
+    file: `mdbase-connect-${version}-windows-x64-UNSIGNED-Setup.exe`,
+    label: "Download for Windows"
+  },
+  {
+    platform: "Linux",
+    detail: "64-bit Debian or Ubuntu",
+    note: "DEB package · 103 MB",
+    file: `mdbase-connect-${version}-linux-x64.deb`,
+    label: "Download DEB"
+  },
+  {
+    platform: "Linux",
+    detail: "64-bit Fedora, RHEL, or compatible",
+    note: "RPM package · 108 MB",
+    file: `mdbase-connect-${version}-linux-x64.rpm`,
+    label: "Download RPM"
+  }
+];
+
+const cliDownloads = [
+  {
+    platform: "macOS",
+    detail: "Apple Silicon",
+    note: "Beta preview · tar.gz · 12 MB",
+    file: `mdbase-cli-${version}-macos-arm64.tar.gz`,
+    label: "Download CLI for Apple Silicon"
+  },
+  {
+    platform: "macOS",
+    detail: "Intel",
+    note: "Beta preview · tar.gz · 13 MB",
+    file: `mdbase-cli-${version}-macos-x64.tar.gz`,
+    label: "Download CLI for Intel"
+  },
+  {
+    platform: "Windows",
+    detail: "64-bit",
+    note: "Unsigned beta preview · tar.gz · 12 MB",
+    file: `mdbase-cli-${version}-windows-x64-UNSIGNED.tar.gz`,
+    label: "Download CLI for Windows"
+  },
+  {
+    platform: "Linux",
+    detail: "64-bit",
+    note: "tar.gz · 14 MB",
+    file: `mdbase-cli-${version}-linux-x64.tar.gz`,
+    label: "Download CLI for Linux"
+  }
+];
+---
+
+<BaseLayout
+  title="Download"
+  description="Download the mdbase Connect desktop app or standalone command line tools for macOS, Windows, and Linux."
+  current="downloads"
+>
+  <section class="page-hero">
+    <div class="page-hero__inner">
+      <div>
+        <h1>Download mdbase Connect</h1>
+      </div>
+      <div class="page-hero__aside">
+        <p>
+          The desktop app includes the local connector, background service,
+          and command line tools. The mdbase editor is available online. These
+          builds are public beta releases; hosted collections still require a
+          beta account.
+        </p>
+        <div class="download-summary" aria-label="Release details">
+          <span>Version <strong>{version}</strong></span>
+          <span>Published <strong><time datetime="2026-08-08">8 August 2026</time></strong></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section" aria-labelledby="desktop-heading">
+    <h2 id="desktop-heading">Desktop app</h2>
+    <p>
+      Choose the package for your computer. The app can open local mdbase
+      collections immediately; Connect service features require a beta account.
+    </p>
+
+    <div class="callout">
+      <strong>macOS builds are not notarized; Windows builds are unsigned previews.</strong>
+      <p>
+        Windows may show an Unknown Publisher or SmartScreen warning. macOS
+        requires a manual Privacy &amp; Security override and the app has not
+        been notarized. The release includes checksums and Sigstore provenance.
+      </p>
+    </div>
+
+    <div class="download-list">
+      {
+        desktopDownloads.map((download) => (
+          <article class="download-option">
+            <h3>{download.platform}</h3>
+            <div class="download-option__detail">
+              <p>{download.detail}</p>
+              <code>{download.note}</code>
+            </div>
+            <div class="download-option__actions">
+              <a class="button button--primary" href={`${releaseBase}/${download.file}`}>
+                {download.label}
+              </a>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+    <p class="download-note">
+      Portable Windows and macOS ZIP builds are available on the
+      <a href={releasePage}>release page</a>.
+    </p>
+  </section>
+
+  <section id="command-line" class="content-section" aria-labelledby="cli-heading">
+    <h2 id="cli-heading">Command line</h2>
+    <p>
+      The standalone archive contains the unified <code>mdbase</code> CLI and
+      Connect background service. It does not include the desktop interface.
+    </p>
+    <div class="download-list">
+      {
+        cliDownloads.map((download) => (
+          <article class="download-option">
+            <h3>{download.platform}</h3>
+            <div class="download-option__detail">
+              <p>{download.detail}</p>
+              <code>{download.note}</code>
+            </div>
+            <div class="download-option__actions">
+              <a class="button button--primary" href={`${releaseBase}/${download.file}`}>
+                {download.label}
+              </a>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+    <p class="download-note">
+      Follow the <a href={`https://github.com/mdbase-dev/mdbase-connect/blob/${tag}/docs/headless.md`}>headless installation guide</a>
+      to verify, install, and run the service.
+    </p>
+  </section>
+
+  <section class="content-section" aria-labelledby="verify-heading">
+    <h2 id="verify-heading">Release details</h2>
+    <p>
+      The GitHub release contains SHA-256 checksums, Sigstore bundles, portable
+      packages, release notes, and the complete artifact list.
+    </p>
+    <div class="button-row download-release-actions">
+      <a class="button button--primary" href={releasePage}>Open release {tag}</a>
+      <a class="button" href="https://github.com/mdbase-dev/mdbase-connect/releases">All releases</a>
+    </div>
+  </section>
+</BaseLayout>
