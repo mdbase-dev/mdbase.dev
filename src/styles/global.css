@@ -504,6 +504,78 @@ main[tabindex="-1"]:focus {
   font-weight: 700;
 }
 
+.download-summary {
+  display: flex;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+  gap: 0.45rem 1.25rem;
+  color: var(--ink-muted);
+  font: 500 0.64rem/1.5 var(--mono);
+}
+
+.download-summary strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.download-list {
+  margin-top: 2rem;
+  border-top: 1px solid var(--line-strong);
+}
+
+.download-option {
+  display: grid;
+  max-width: none;
+  padding: 1.2rem 0;
+  align-items: start;
+  grid-template-columns: minmax(9rem, 0.28fr) minmax(0, 1fr) auto;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.download-option h3 {
+  font-size: 0.95rem;
+}
+
+.download-option__detail p {
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+}
+
+.download-option__detail code {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--ink-muted);
+  font-size: 0.68rem;
+}
+
+.download-option__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.download-note {
+  margin-top: 1.25rem;
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+}
+
+.download-release-actions {
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 48rem) {
+  .download-option {
+    grid-template-columns: 1fr;
+  }
+
+  .download-option__actions {
+    justify-content: flex-start;
+  }
+}
+
 .docs-shell {
   display: grid;
   width: min(100% - 2rem, 96rem);
