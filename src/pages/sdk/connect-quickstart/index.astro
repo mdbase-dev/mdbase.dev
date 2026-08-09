@@ -64,6 +64,12 @@ pnpm package:consumer -- \\
   --destination ../workouts-app/vendor \\
   --packages connect,protocol`;
 
+const localStack = `# Run in the mdbase-connect checkout.
+pnpm dev:environment:up
+
+# Run in another terminal.
+pnpm dev:desktop:fresh`;
+
 const validate = `mdbase-connect-dev validate-manifest \\
   public/.well-known/mdbase-app.json \\
   --allow-local`;
@@ -79,8 +85,16 @@ export interface Workout extends JsonObject {
   completed?: boolean;
 }
 
+const loopback = new Set([
+  "localhost",
+  "127.0.0.1",
+  "::1"
+]).has(location.hostname);
+
 export const mdbase = new MdbaseConnect<Workout>({
-  serverUrl: "https://connect.mdbase.dev",
+  serverUrl: loopback
+    ? "http://127.0.0.1:8787"
+    : "https://connect.mdbase.dev",
   manifest: new URL(
     "/.well-known/mdbase-app.json",
     location.origin
@@ -177,27 +191,40 @@ if (first) {
     { href: "#authorize", label: "4. Authorize" },
     { href: "#callback", label: "5. Complete callback" },
     { href: "#operate", label: "6. Use operations" },
+    { href: "#production", label: "Production HTTPS" },
     { href: "#success", label: "Expected result" }
   ]}
 >
   <div class="callout">
-    <strong>Private-beta path</strong>
+    <strong>Local and managed Connect are separate environments.</strong>
     <p>
-      The production service currently accepts private-beta accounts. The
-      public SDK packages are also awaiting their first npm release. Start with
-      the <a href="/sdk/quickstart/">local sandbox guide</a> if you do not have
-      beta access.
+      This guide's localhost example uses the repository's local Connect stack.
+      The managed service rejects HTTP application manifests, including
+      localhost. To use <code>https://connect.mdbase.dev</code>, deploy the
+      application at HTTPS URLs and declare those exact URLs in its manifest.
     </p>
   </div>
 
   <h2 id="before">Before you begin</h2>
   <p>This guide expects:</p>
   <ul>
-    <li>a private-beta account or the repository's local Connect stack;</li>
+    <li>the repository's local Connect stack for the runnable localhost example;</li>
     <li>a browser application running at <code>http://localhost:5173</code>;</li>
     <li>Node 24 LTS and the repository's pinned pnpm version;</li>
     <li>a Connect SDK source build or beta artifact.</li>
   </ul>
+  <p>
+    In the Connect checkout, copy <code>.env.example</code> to <code>.env</code>
+    {" "}on first use, then start the local control plane and an isolated desktop
+    profile:
+  </p>
+  <CodeBlock code={localStack} language="sh" label="Local Connect environment" />
+  <p>
+    Enter <code>http://127.0.0.1:8787</code> in the desktop pairing screen,
+    approve the computer in the local portal, and add a collection. This profile
+    is separate from the normal desktop profile: accounts, grants, and
+    collections registered with the managed service do not appear automatically.
+  </p>
   <p>
     The example manifest carries a complete transactional contract/type pack.
     Connect can install it during approval when the chosen collection does not
@@ -207,9 +234,9 @@ if (first) {
   <h2 id="manifest">1. Add a bundled application manifest</h2>
   <p>
     Save this file at
-    {" "}<code>public/.well-known/mdbase-app.json</code>. The local URLs are valid
-    for development and require the validator's
-    {" "}<code>--allow-local</code> option.
+    {" "}<code>public/.well-known/mdbase-app.json</code>. These loopback URLs are
+    accepted by the local Connect stack. Pass <code>--allow-local</code> to the
+    validator when checking this development manifest.
   </p>
   <CodeBlock code={manifest} language="json" label="public/.well-known/mdbase-app.json" />
   <p>
@@ -230,9 +257,11 @@ if (first) {
   <CodeBlock code={betaBuild} language="sh" label="Private-beta source checkout" />
   <p>
     The validator is currently run from the Connect workspace or supplied as a
-    beta artifact:
+    beta artifact. <code>--allow-local</code> affects static validation only; it
+    is not an option on the desktop application and does not change the managed
+    service's HTTPS policy:
   </p>
-  <CodeBlock code={validate} language="sh" label="Terminal" />
+  <CodeBlock code={validate} language="sh" label="Validate a local manifest" />
 
   <h2 id="client">3. Create one stable Connect client</h2>
   <CodeBlock code={client} language="ts" label="src/connect.ts" />
@@ -270,6 +299,21 @@ if (first) {
     Contract-scoped queries expose normalized mapped fields only. They union
     every approved implementation and deliberately leave filtering and sorting
     those normalized values to the application.
+  </p>
+
+  <h2 id="production">Move to the managed service</h2>
+  <p>
+    The production service currently accepts private-beta accounts. Before using
+    it, deploy the application at an HTTPS origin, replace every localhost
+    homepage, icon, and redirect URL in the manifest with the exact deployed
+    URLs, and validate without <code>--allow-local</code>. The non-loopback branch
+    in the client example then uses <code>https://connect.mdbase.dev</code>.
+  </p>
+  <p>
+    A localhost application cannot connect to the managed service. Use the full
+    local environment above for local protocol testing, or use the
+    {" "}<a href="/sdk/quickstart/">in-memory sandbox</a> for feature tests that
+    do not need authorization, routing, or a real connector.
   </p>
 
   <h2 id="success">What success looks like</h2>
