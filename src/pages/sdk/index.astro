@@ -2,7 +2,7 @@
 import DocsLayout from "../../components/DocsLayout.astro";
 import CodeBlock from "../../components/CodeBlock.astro";
 
-const seam = `import type { MdbaseCollectionClient } from "@mdbase/connect";
+const seam = `import type { MdbaseCollectionClient } from "@mdbase-dev/connect";
 
 export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
   return client.queryAll({
@@ -25,7 +25,7 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
   ]}
 >
   <p>
-    <code>@mdbase/connect</code> is the browser and native-shell SDK for
+    <code>@mdbase-dev/connect</code> is the browser and native-shell SDK for
     applications that operate on one user-approved local or hosted mdbase
     collection. The application asks for exact operations. Connect selects the
     route and the collection authority checks the current grant.
@@ -109,12 +109,12 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
       <tr>
         <td><code>createSandbox()</code></td>
         <td>Fast frontend tests for CRUD, revisions, pagination, defaults, and change cursors</td>
-        <td><code>@mdbase/connect-dev</code></td>
+        <td><code>@mdbase-dev/connect-dev</code></td>
       </tr>
       <tr>
         <td><code>OfflineReplica</code></td>
         <td>Offline-first applications backed by any sync-capable authority</td>
-        <td><code>@mdbase/connect-sync</code></td>
+        <td><code>@mdbase-dev/connect-sync</code></td>
       </tr>
     </tbody>
   </table>
@@ -158,23 +158,23 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
     </thead>
     <tbody>
       <tr>
-        <td><code>@mdbase/connect</code></td>
+        <td><code>@mdbase-dev/connect</code></td>
         <td>Authorization, routes, operations, notifications, and authority-neutral sync handoff</td>
       </tr>
       <tr>
-        <td><code>@mdbase/connect-dev</code></td>
+        <td><code>@mdbase-dev/connect-dev</code></td>
         <td>Manifest validation, contract validation, and deterministic sandbox transport</td>
       </tr>
       <tr>
-        <td><code>@mdbase/connect-protocol</code></td>
+        <td><code>@mdbase-dev/connect-protocol</code></td>
         <td>Shared TypeScript types and canonical JSON Schemas</td>
       </tr>
       <tr>
-        <td><code>@mdbase/connect-sync</code></td>
+        <td><code>@mdbase-dev/connect-sync</code></td>
         <td>Authority-neutral replication state machine, IndexedDB replica, conflicts, and offline mutations</td>
       </tr>
       <tr>
-        <td><code>@mdbase/connect-webhooks</code></td>
+        <td><code>@mdbase-dev/connect-webhooks</code></td>
         <td>Server-side verification for signed notification webhooks</td>
       </tr>
     </tbody>

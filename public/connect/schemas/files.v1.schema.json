@@ -1,0 +1,507 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mdbase.dev/connect/schemas/files.v1.json",
+  "title": "mdbase connect collection file protocol 1",
+  "oneOf": [
+    { "$ref": "#/$defs/applicationFileRequirement" },
+    { "$ref": "#/$defs/selectiveSyncPolicy" },
+    { "$ref": "#/$defs/fileCapability" },
+    { "$ref": "#/$defs/fileDescriptor" },
+    { "$ref": "#/$defs/listFilesRequest" },
+    { "$ref": "#/$defs/listFilesPage" },
+    { "$ref": "#/$defs/openUploadRequest" },
+    { "$ref": "#/$defs/openDownloadRequest" },
+    { "$ref": "#/$defs/moveFileRequest" },
+    { "$ref": "#/$defs/moveFileReceipt" },
+    { "$ref": "#/$defs/deleteFileRequest" },
+    { "$ref": "#/$defs/deleteFileReceipt" },
+    { "$ref": "#/$defs/transferSession" },
+    { "$ref": "#/$defs/transferStatus" },
+    { "$ref": "#/$defs/prepareUploadPartRequest" },
+    { "$ref": "#/$defs/preparedPart" },
+    { "$ref": "#/$defs/commitUploadRequest" },
+    { "$ref": "#/$defs/commitUploadReceipt" },
+    { "$ref": "#/$defs/abortTransferRequest" },
+    { "$ref": "#/$defs/getTransferStatusRequest" }
+  ],
+  "$defs": {
+    "uuid": { "type": "string", "format": "uuid" },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^(?!/)(?!\\.)(?!.*//)(?!.*\\\\)(?!.*/\\.)(?!(?:_contracts|_schemas|_types|_views|node_modules)(?:/|$))(?!.*\\/(?:_contracts|_schemas|_types|_views|node_modules)(?:/|$))(?!.*/$).+$"
+    },
+    "mediaClass": {
+      "enum": ["image", "audio", "video", "pdf", "other"]
+    },
+    "selectiveSyncPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file_classes", "excluded_folders"],
+      "properties": {
+        "file_classes": {
+          "type": "array",
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/mediaClass" }
+        },
+        "excluded_folders": {
+          "type": "array",
+          "maxItems": 100,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/path" }
+        }
+      }
+    },
+    "fileDescriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_id",
+        "path",
+        "revision",
+        "content_digest",
+        "size",
+        "media_class",
+        "modified_at"
+      ],
+      "properties": {
+        "file_id": { "$ref": "#/$defs/uuid" },
+        "path": { "$ref": "#/$defs/path" },
+        "revision": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "content_digest": { "$ref": "#/$defs/digest" },
+        "size": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "media_type": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "media_class": { "$ref": "#/$defs/mediaClass" },
+        "modified_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "fileAction": {
+      "enum": ["list", "read", "add", "replace", "move", "delete"]
+    },
+    "fileScope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "folders"],
+          "properties": {
+            "kind": { "const": "selected_folders" },
+            "folders": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 100,
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/path" }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "collection" } }
+        }
+      ]
+    },
+    "applicationFileRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actions", "scope"],
+      "properties": {
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/fileAction" }
+        },
+        "scope": { "$ref": "#/$defs/fileScope" }
+      }
+    },
+    "fileCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "protocol_version", "actions", "scope"],
+      "properties": {
+        "kind": { "const": "files" },
+        "protocol_version": { "const": 1 },
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/fileAction" }
+        },
+        "scope": { "$ref": "#/$defs/fileScope" }
+      }
+    },
+    "listFilesRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "type"],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "list_files" },
+        "folder": { "$ref": "#/$defs/path" },
+        "after": { "type": "string", "minLength": 1 },
+        "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+      }
+    },
+    "listFilesPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "type", "files"],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "files_page" },
+        "files": { "type": "array", "items": { "$ref": "#/$defs/fileDescriptor" } },
+        "next": { "type": "string", "minLength": 1 }
+      }
+    },
+    "openUploadRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "type", "transfer_id", "path", "size", "content_digest"],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "open_file_upload" },
+        "transfer_id": { "$ref": "#/$defs/uuid" },
+        "path": { "$ref": "#/$defs/path" },
+        "size": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "content_digest": { "$ref": "#/$defs/digest" },
+        "media_type": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "if_revision": { "type": "string", "minLength": 1, "maxLength": 255 }
+      }
+    },
+    "openDownloadRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "type", "transfer_id", "file_id"],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "open_file_download" },
+        "transfer_id": { "$ref": "#/$defs/uuid" },
+        "file_id": { "$ref": "#/$defs/uuid" },
+        "revision": { "type": "string", "minLength": 1, "maxLength": 255 }
+      }
+    },
+    "moveFileRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol_version", "type", "mutation_id", "file_id", "if_revision", "from_path", "path", "update_references"
+      ],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "move_file" },
+        "mutation_id": { "$ref": "#/$defs/uuid" },
+        "file_id": { "$ref": "#/$defs/uuid" },
+        "if_revision": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "from_path": { "$ref": "#/$defs/path" },
+        "path": { "$ref": "#/$defs/path" },
+        "update_references": { "type": "boolean" }
+      }
+    },
+    "moveFileReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "type", "mutation_id", "file"],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "file_moved" },
+        "mutation_id": { "$ref": "#/$defs/uuid" },
+        "file": { "$ref": "#/$defs/fileDescriptor" }
+      }
+    },
+    "deleteFileRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "type", "mutation_id", "file_id", "if_revision", "path"],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "delete_file" },
+        "mutation_id": { "$ref": "#/$defs/uuid" },
+        "file_id": { "$ref": "#/$defs/uuid" },
+        "if_revision": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "path": { "$ref": "#/$defs/path" }
+      }
+    },
+    "deleteFileReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "type", "mutation_id", "file_id", "previous_path", "revision"],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "file_deleted" },
+        "mutation_id": { "$ref": "#/$defs/uuid" },
+        "file_id": { "$ref": "#/$defs/uuid" },
+        "previous_path": { "$ref": "#/$defs/path" },
+        "revision": { "type": "string", "minLength": 1, "maxLength": 255 }
+      }
+    },
+    "transferProtection": {
+      "enum": ["grant_aead_v1", "transport_tls"]
+    },
+    "transferStrategy": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "object_put" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "chunk_size"],
+          "properties": {
+            "kind": { "const": "framed_chunks" },
+            "chunk_size": { "type": "integer", "minimum": 65536, "maximum": 4194304 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "part_size"],
+          "properties": {
+            "kind": { "const": "object_multipart" },
+            "part_size": { "type": "integer", "minimum": 5242880, "maximum": 5368709120 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "part_size"],
+          "properties": {
+            "kind": { "const": "object_ranges" },
+            "part_size": { "type": "integer", "minimum": 65536, "maximum": 5368709120 }
+          }
+        }
+      ]
+    },
+    "transferSession": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol_version",
+        "type",
+        "transfer_id",
+        "direction",
+        "protection",
+        "strategy",
+        "total_size",
+        "expires_at",
+        "received"
+      ],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "file_transfer" },
+        "transfer_id": { "$ref": "#/$defs/uuid" },
+        "direction": { "enum": ["upload", "download"] },
+        "protection": { "$ref": "#/$defs/transferProtection" },
+        "strategy": { "$ref": "#/$defs/transferStrategy" },
+        "total_size": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "expires_at": { "type": "string", "format": "date-time" },
+        "received": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 }
+        },
+        "uploaded_parts": {
+          "type": "array",
+          "maxItems": 10000,
+          "items": { "$ref": "#/$defs/uploadedPart" }
+        }
+      }
+    },
+    "transferStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "type", "transfer_id", "state", "received", "received_bytes", "uploaded_parts"],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "file_transfer_status" },
+        "transfer_id": { "$ref": "#/$defs/uuid" },
+        "state": { "enum": ["open", "committed", "aborted", "expired"] },
+        "received": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 }
+        },
+        "received_bytes": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "uploaded_parts": {
+          "type": "array",
+          "maxItems": 10000,
+          "items": { "$ref": "#/$defs/uploadedPart" }
+        }
+      }
+    },
+    "prepareUploadPartRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "type", "transfer_id", "part_number", "content_length"],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "prepare_file_upload_part" },
+        "transfer_id": { "$ref": "#/$defs/uuid" },
+        "part_number": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "content_length": { "type": "integer", "minimum": 0, "maximum": 5368709120 }
+      }
+    },
+    "preparedPart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "type", "transfer_id", "part_index", "offset", "content_length", "method", "url", "headers", "expires_at"],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "file_part" },
+        "transfer_id": { "$ref": "#/$defs/uuid" },
+        "part_index": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "offset": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "content_length": { "type": "integer", "minimum": 0, "maximum": 5368709120 },
+        "method": { "const": "PUT" },
+        "url": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "headers": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "expires_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "uploadedPart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["part_number", "etag"],
+      "properties": {
+        "part_number": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "etag": { "type": "string", "minLength": 1, "maxLength": 255 }
+      }
+    },
+    "commitUploadRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "type", "transfer_id"],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "commit_file_upload" },
+        "transfer_id": { "$ref": "#/$defs/uuid" },
+        "parts": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10000,
+          "items": { "$ref": "#/$defs/uploadedPart" }
+        }
+      }
+    },
+    "commitUploadReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "type", "transfer_id", "file"],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "file_upload_committed" },
+        "transfer_id": { "$ref": "#/$defs/uuid" },
+        "file": { "$ref": "#/$defs/fileDescriptor" }
+      }
+    },
+    "abortTransferRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "type", "transfer_id"],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "abort_file_transfer" },
+        "transfer_id": { "$ref": "#/$defs/uuid" }
+      }
+    },
+    "relayFileHeader": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol_version",
+        "type",
+        "request_id",
+        "grant_id",
+        "transfer_id",
+        "chunk_index"
+      ],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": {
+          "enum": [
+            "upload_chunk",
+            "upload_acknowledged",
+            "download_request",
+            "download_chunk",
+            "rejected"
+          ]
+        },
+        "request_id": { "$ref": "#/$defs/uuid" },
+        "grant_id": { "$ref": "#/$defs/uuid" },
+        "transfer_id": { "$ref": "#/$defs/uuid" },
+        "chunk_index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "frameHeader": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol_version",
+        "protection",
+        "grant_id",
+        "authority_id",
+        "collection_id",
+        "transfer_id",
+        "direction",
+        "chunk_size",
+        "chunk_index",
+        "offset",
+        "plaintext_length",
+        "total_size",
+        "scope_epoch"
+      ],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "protection": { "$ref": "#/$defs/transferProtection" },
+        "grant_id": { "$ref": "#/$defs/uuid" },
+        "authority_id": { "$ref": "#/$defs/uuid" },
+        "collection_id": { "$ref": "#/$defs/uuid" },
+        "transfer_id": { "$ref": "#/$defs/uuid" },
+        "direction": { "enum": ["upload", "download"] },
+        "chunk_size": { "type": "integer", "minimum": 65536, "maximum": 4194304 },
+        "chunk_index": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "offset": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "plaintext_length": { "type": "integer", "minimum": 0, "maximum": 4194304 },
+        "total_size": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "scope_epoch": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+        "key_id": { "type": "string", "minLength": 1, "maxLength": 255 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "protection": { "const": "grant_aead_v1" } } },
+          "then": { "required": ["key_id"] }
+        }
+      ]
+    },
+    "getTransferStatusRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "type", "transfer_id"],
+      "properties": {
+        "protocol_version": { "const": 1 },
+        "type": { "const": "get_file_transfer_status" },
+        "transfer_id": { "$ref": "#/$defs/uuid" }
+      }
+    }
+  }
+}

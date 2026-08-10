@@ -6,7 +6,7 @@ const createReplica = `import {
   IndexedDbReplicaStore,
   OfflineReplica,
   type ReplicaData
-} from "@mdbase/connect-sync";
+} from "@mdbase-dev/connect-sync";
 
 const sync = connection.sync();
 if (!sync) {
@@ -76,7 +76,7 @@ const promote = `mdbase-mirror promote ./worklog-mirror`;
   </p>
   <p>
     Add both packages:
-    <code>@mdbase/connect</code> and <code>@mdbase/connect-sync</code>.
+    <code>@mdbase-dev/connect</code> and <code>@mdbase-dev/connect-sync</code>.
   </p>
 
   <h2 id="replica">Create a persistent replica</h2>
