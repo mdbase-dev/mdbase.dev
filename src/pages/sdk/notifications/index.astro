@@ -33,7 +33,7 @@ await connection.registerNotifications({
   criteria: ["task.changed"]
 });`;
 
-const serviceWorker = `import { showMdbasePushNotification } from "@mdbase/connect";
+const serviceWorker = `import { showMdbasePushNotification } from "@mdbase-dev/connect";
 
 self.addEventListener("push", (event) => {
   event.waitUntil(
@@ -54,7 +54,7 @@ const timers = `await connection.reconcileTimers({
   }]
 });`;
 
-const webhook = `import { verifyNotificationWebhook } from "@mdbase/connect-webhooks";
+const webhook = `import { verifyNotificationWebhook } from "@mdbase-dev/connect-webhooks";
 
 const event = verifyNotificationWebhook({
   body: rawRequestBody,

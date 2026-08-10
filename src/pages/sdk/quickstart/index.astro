@@ -13,8 +13,8 @@ const download = `curl -fsSLo packages/devkit/sandbox-quickstart.mjs \\
 
 node packages/devkit/sandbox-quickstart.mjs`;
 
-const example = `import { unwrapOperation } from "@mdbase/connect";
-import { createSandbox } from "@mdbase/connect-dev";
+const example = `import { unwrapOperation } from "@mdbase-dev/connect";
+import { createSandbox } from "@mdbase-dev/connect-dev";
 
 const { client, transport } = createSandbox({
   records: [{

@@ -15,8 +15,8 @@ const manifest = `{
 }`;
 
 const browserBundle = `<script
-  src="https://cdn.jsdelivr.net/npm/@mdbase/connect@0.1.0-beta.12/dist/browser/mdbase-connect.min.js"
-  integrity="sha384-PD+lazz69NHRGmB9iNPltd6StRK0fJ5hockUI2jyoYwSu3ti0AnRQNrjWMXlHs2D"
+  src="https://cdn.jsdelivr.net/npm/@mdbase-dev/connect@0.1.0-beta.55/dist/browser/mdbase-connect.min.js"
+  integrity="sha384-6M+exMhOm+JESB8xqgBNPFnykP6bx043yY1RbfIP4UidAlareN3dFvCVZDSd1/aj"
   crossorigin="anonymous"></script>`;
 
 const application = `<button id="connect">Connect a collection</button>
@@ -69,13 +69,11 @@ const application = `<button id="connect">Connect a collection</button>
 >
   <h2 id="status">Release status</h2>
   <div class="callout">
-    <strong>Implemented in Connect v1; npm publication is pending.</strong>
+    <strong>Available in the production Connect SDK.</strong>
     <p>
       The production service accepts the portable manifest and device flow.
-      The version-pinned CDN URL below becomes available when
-      {" "}<code>@mdbase/connect</code> and
-      {" "}<code>@mdbase/connect-protocol</code> are published. Until then, build
-      the browser artifact from the Connect repository for development.
+      The version-pinned CDN URL below uses the beta.55 package, matching the
+      production service release.
     </p>
   </div>
   <p>
@@ -151,7 +149,7 @@ const application = `<button id="connect">Connect a collection</button>
 dist/browser/integrity.json
 dist/browser/mdbase-connect.min.js.sha384`}
     language="text"
-    label="@mdbase/connect package"
+    label="@mdbase-dev/connect package"
   />
   <p>
     Use an exact package version and copy the integrity value from that same

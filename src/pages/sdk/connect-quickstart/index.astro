@@ -55,8 +55,8 @@ const manifest = `{
   }
 }`;
 
-const publicInstall = `pnpm add @mdbase/connect
-pnpm add -D @mdbase/connect-dev`;
+const publicInstall = `pnpm add @mdbase-dev/connect
+pnpm add -D @mdbase-dev/connect-dev`;
 
 const betaBuild = `# Run in the mdbase-connect checkout.
 mkdir -p ../workouts-app/vendor
@@ -78,7 +78,7 @@ const client = `import {
   MdbaseBrowserLocation,
   MdbaseConnect,
   type JsonObject
-} from "@mdbase/connect";
+} from "@mdbase-dev/connect";
 
 export interface Workout extends JsonObject {
   title: string;
@@ -147,7 +147,7 @@ if (location.pathname === "/auth/mdbase/callback") {
   await completeMdbaseCallback();
 }`;
 
-const operate = `import { unwrapOperation } from "@mdbase/connect";
+const operate = `import { unwrapOperation } from "@mdbase-dev/connect";
 import { collectionLocation } from "./connect";
 
 const collection = collectionLocation.activeConnection();
