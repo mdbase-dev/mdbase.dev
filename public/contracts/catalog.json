@@ -178,6 +178,16 @@
       "digest": "sha256:7cf8ed016bf6232d9c1abc8d8bb9bb25fd2af1ffa6c6094317aa65baf3c31049",
       "artifact": "./artifacts/contracts/mdbase.runtime.workflow/1.0.0.md",
       "standards": []
+    },
+    {
+      "id": "tasknotes.task",
+      "version": "0.3.0-rc.3",
+      "name": "TaskNotes task",
+      "description": "Portable task data and behavior defined by tasknotes-spec 0.3.0-rc.3.",
+      "contract_type": "record",
+      "digest": "sha256:4761ee78615882170cae6e52590f98917f549bd89d852a0c40568583394d7264",
+      "artifact": "./artifacts/contracts/tasknotes.task/0.3.0-rc.3.md",
+      "standards": []
     }
   ],
   "packs": [
@@ -322,6 +332,43 @@
           {
             "name": "runtime_dead_letter",
             "label": "Runtime dead letter"
+          }
+        ]
+      }
+    },
+    {
+      "id": "tasknotes.task",
+      "version": "0.3.0-rc.12",
+      "name": "TaskNotes task type pack",
+      "description": "The portable TaskNotes task contract and an editable TaskNotes task type.",
+      "digest": "sha256:b1a051354b5af28c2a623f3b01db0d0d463c944605daf2c4c30069fcb99d3ce5",
+      "provision": "./packs/tasknotes.task/0.3.0-rc.12.json",
+      "provides": [
+        {
+          "id": "tasknotes.task",
+          "version": "0.3.0-rc.3"
+        }
+      ],
+      "resource_count": 4,
+      "display": {
+        "name": "TaskNotes tasks",
+        "summary": "Manage portable Markdown tasks with dates, recurrence, reminders, relationships, and time tracking.",
+        "category": "work",
+        "audience": "general",
+        "icon": "square-check-big",
+        "badges": [
+          "TaskNotes compatible"
+        ]
+      },
+      "installation": {
+        "visibility": "default",
+        "recommendation": "integration-managed",
+        "primary_type": "task",
+        "caution": "TaskNotes applications manage the contract and schemas; the installed task type remains editable.",
+        "types": [
+          {
+            "name": "task",
+            "label": "Task"
           }
         ]
       }
