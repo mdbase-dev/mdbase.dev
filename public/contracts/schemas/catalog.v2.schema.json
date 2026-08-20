@@ -59,10 +59,11 @@
     },
     "contractRef": {
       "type": "object",
-      "required": ["id", "version"],
+      "required": ["id", "version", "digest"],
       "properties": {
         "id": { "$ref": "#/$defs/id" },
-        "version": { "$ref": "#/$defs/version" }
+        "version": { "$ref": "#/$defs/version" },
+        "digest": { "$ref": "#/$defs/digest" }
       },
       "additionalProperties": false
     },

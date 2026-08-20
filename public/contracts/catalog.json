@@ -196,12 +196,13 @@
       "version": "1.0.0",
       "name": "Contact type pack",
       "description": "A compact contact contract and a friendly, editable Contact type.",
-      "digest": "sha256:f5be1e7ea7b8dacda628d0cd809eb02cbad965505dc44c98bbd709ffb4847330",
+      "digest": "sha256:70c3ab048da407a56fe265a840c83a2d1df90aa351fde0d50ce1459a155cc4e9",
       "provision": "./packs/mdbase.contact/1.0.0.json",
       "provides": [
         {
           "id": "mdbase.contact",
-          "version": "1.0.0"
+          "version": "1.0.0",
+          "digest": "sha256:49cfe15403dfc741a693e89a2f4d2857de306f391d02cb03e67bfaf0aa1d6b0d"
         }
       ],
       "resource_count": 3,
@@ -232,48 +233,58 @@
       "version": "0.2.0",
       "name": "mdbase durable runtime standard library",
       "description": "Runtime record implementations and inspectable built-in event/action contracts.",
-      "digest": "sha256:998fa577db5ba3ac442f5ae06e721e247b9519613042b744cc4494e72c84e2e6",
+      "digest": "sha256:5d65a140774d673ab9e2e52b493799d4a4db7172e746474ffe45336ef3078577",
       "provision": "./packs/mdbase.runtime.standard/0.2.0.json",
       "provides": [
         {
           "id": "mdbase.runtime.action-attempt",
-          "version": "1.0.0"
+          "version": "1.0.0",
+          "digest": "sha256:06c3c86d3eb742050c26486a637acad8816399c87c7e981114cc3e1836873057"
         },
         {
           "id": "mdbase.runtime.capability-grant",
-          "version": "1.0.0"
+          "version": "1.0.0",
+          "digest": "sha256:409aab0a7341788e1791ee6e47b5ff96b6b280e0f1dc3b6e18d467e5fc4bd971"
         },
         {
           "id": "mdbase.runtime.checkpoint",
-          "version": "1.0.0"
+          "version": "1.0.0",
+          "digest": "sha256:e66aaa1ed134f5951308952cc681a0314c7322b25142a2dbcd2a0e76fffd8ebc"
         },
         {
           "id": "mdbase.runtime.dead-letter",
-          "version": "1.0.0"
+          "version": "1.0.0",
+          "digest": "sha256:75428a52dd283104624b9177c5e90658375c6f6cceb27334af4243dc7b293ce4"
         },
         {
           "id": "mdbase.runtime.diagnostic",
-          "version": "1.0.0"
+          "version": "1.0.0",
+          "digest": "sha256:ac2ad3683005373330b2b95b02a603d329ca4934f9ba5cc3294562e1f66e5004"
         },
         {
           "id": "mdbase.runtime.policy",
-          "version": "1.0.0"
+          "version": "1.0.0",
+          "digest": "sha256:a67936dd3e29d50d85cd7004f350f38f76a773412fb74fca69b578e8f82e23a1"
         },
         {
           "id": "mdbase.runtime.provider-registration",
-          "version": "1.0.0"
+          "version": "1.0.0",
+          "digest": "sha256:560c44fe51baf9357705e46c27d89b13b161f14ebe0b62d2d091048bbcf70587"
         },
         {
           "id": "mdbase.runtime.run",
-          "version": "1.0.0"
+          "version": "1.0.0",
+          "digest": "sha256:1d6f66ae39655bbdd57d800b51493ec49ba81ddfd12f7b07b731cd6cf90eac02"
         },
         {
           "id": "mdbase.runtime.timer",
-          "version": "1.0.0"
+          "version": "1.0.0",
+          "digest": "sha256:22bdd0bcfc4b2c59705526484c9d0d4d0580fb87abd2e9beae93d4464174602f"
         },
         {
           "id": "mdbase.runtime.workflow",
-          "version": "1.0.0"
+          "version": "1.0.0",
+          "digest": "sha256:4ca1095cbe226ac5fc4394af0242fac9e4cb0e3c73a6a8a5f4899fac5d373604"
         }
       ],
       "resource_count": 43,
@@ -346,7 +357,8 @@
       "provides": [
         {
           "id": "tasknotes.task",
-          "version": "0.3.0-rc.3"
+          "version": "0.3.0-rc.3",
+          "digest": "sha256:48b9017ac0896ffbdee4d14fc0325ef86916bf8789da4ac8a4cd246435887155"
         }
       ],
       "resource_count": 4,

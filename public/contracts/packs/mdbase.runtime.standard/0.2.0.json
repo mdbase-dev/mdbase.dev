@@ -443,43 +443,53 @@
   "provides": [
     {
       "id": "mdbase.runtime.action-attempt",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "digest": "sha256:06c3c86d3eb742050c26486a637acad8816399c87c7e981114cc3e1836873057"
     },
     {
       "id": "mdbase.runtime.capability-grant",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "digest": "sha256:409aab0a7341788e1791ee6e47b5ff96b6b280e0f1dc3b6e18d467e5fc4bd971"
     },
     {
       "id": "mdbase.runtime.checkpoint",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "digest": "sha256:e66aaa1ed134f5951308952cc681a0314c7322b25142a2dbcd2a0e76fffd8ebc"
     },
     {
       "id": "mdbase.runtime.dead-letter",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "digest": "sha256:75428a52dd283104624b9177c5e90658375c6f6cceb27334af4243dc7b293ce4"
     },
     {
       "id": "mdbase.runtime.diagnostic",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "digest": "sha256:ac2ad3683005373330b2b95b02a603d329ca4934f9ba5cc3294562e1f66e5004"
     },
     {
       "id": "mdbase.runtime.policy",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "digest": "sha256:a67936dd3e29d50d85cd7004f350f38f76a773412fb74fca69b578e8f82e23a1"
     },
     {
       "id": "mdbase.runtime.provider-registration",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "digest": "sha256:560c44fe51baf9357705e46c27d89b13b161f14ebe0b62d2d091048bbcf70587"
     },
     {
       "id": "mdbase.runtime.run",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "digest": "sha256:1d6f66ae39655bbdd57d800b51493ec49ba81ddfd12f7b07b731cd6cf90eac02"
     },
     {
       "id": "mdbase.runtime.timer",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "digest": "sha256:22bdd0bcfc4b2c59705526484c9d0d4d0580fb87abd2e9beae93d4464174602f"
     },
     {
       "id": "mdbase.runtime.workflow",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "digest": "sha256:4ca1095cbe226ac5fc4394af0242fac9e4cb0e3c73a6a8a5f4899fac5d373604"
     }
   ]
 }

@@ -43,7 +43,8 @@
   "provides": [
     {
       "id": "mdbase.contact",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "digest": "sha256:49cfe15403dfc741a693e89a2f4d2857de306f391d02cb03e67bfaf0aa1d6b0d"
     }
   ]
 }
