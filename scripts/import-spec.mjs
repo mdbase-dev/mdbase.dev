@@ -12,6 +12,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const specDir = resolve(process.env.MDBASE_SPEC_DIR ?? join(root, "..", "mdbase-spec"));
 const source = resolve(process.env.MDBASE_SPEC_SITE_DIST ?? join(specDir, "site", "dist"));
 const destination = join(root, "dist", "spec");
+const siteOrigin = new URL(process.env.MDBASE_SITE_ORIGIN ?? "https://mdbase.dev").origin;
 
 required(join(root, "dist", "index.html"), "Build mdbase.dev before importing the specification");
 required(join(source, "spec.html"), "Build mdbase-spec/site before importing it");
@@ -43,8 +44,8 @@ console.log(`Imported specification pages from ${source}`);
 
 function rewrite(html, archive) {
   const pageUrl = archive
-    ? "https://mdbase.dev/spec/v0.2/"
-    : "https://mdbase.dev/spec/";
+    ? `${siteOrigin}/spec/v0.2/`
+    : `${siteOrigin}/spec/`;
   const pageTitle = archive
     ? "mdbase specification v0.2 archive"
     : "mdbase specification v0.3";
@@ -95,7 +96,7 @@ function addSitemapRoutes() {
   required(path, "Build the Astro sitemap before importing the specification");
   let sitemap = readFileSync(path, "utf8");
   for (const route of ["/spec/", "/spec/v0.2/"]) {
-    const entry = `<url><loc>https://mdbase.dev${route}</loc></url>`;
+    const entry = `<url><loc>${siteOrigin}${route}</loc></url>`;
     if (!sitemap.includes(entry)) {
       sitemap = sitemap.replace("</urlset>", `${entry}</urlset>`);
     }

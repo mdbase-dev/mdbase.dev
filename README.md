@@ -35,3 +35,22 @@ remain traceable to the release artifacts they document.
 
 The first-party contract catalog is built from the commit pinned in
 `site-sources.json`, then published as static files under `/contracts/`.
+
+## Development deployment
+
+```sh
+pnpm dlx wrangler@4.120.0 login # first use only
+pnpm deploy:dev
+```
+
+The command builds the current working tree for
+`https://mdbase-dev.pages.dev`, imports the specification, checks local links,
+and deploys the `main` branch of the standalone `mdbase-dev` Cloudflare Pages
+project. It verifies the live homepage, specification, canonical URLs, and
+indexing controls after deployment. The production GitHub Pages deployment and
+`mdbase.dev` domain are unchanged.
+
+The command uses the existing `mdbase-dev` Cloudflare Pages project, whose
+production branch remains `main`. The sibling `mdbase-spec/site/dist` build is
+required, as it is for a local production build; `MDBASE_SPEC_DIR` and
+`MDBASE_SPEC_SITE_DIST` can point to another prepared checkout or artifact.

@@ -1,0 +1,210 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/apps.css";
+
+type CatalogueEntry = {
+  name: string;
+  description: string;
+  status: "Public beta" | "Development build";
+  runsOn: string;
+  collections: string;
+  links: Array<{ label: string; href: string }>;
+};
+
+const applications: CatalogueEntry[] = [
+  {
+    name: "TaskNotes",
+    description:
+      "Task manager with lists, boards, calendars, recurrence, reminders, attachments, and time tracking.",
+    status: "Public beta",
+    runsOn: "Web, iOS, Android",
+    collections: "Hosted or connected computer",
+    links: [
+      { label: "Open TaskNotes", href: "https://app.tasknotes.dev/" },
+      { label: "Try the demo", href: "https://app.tasknotes.dev/?demo=30" },
+      { label: "Source", href: "https://github.com/callumalpass/tasknotes-app" }
+    ]
+  },
+  {
+    name: "mdbase Editor",
+    description:
+      "General collection editor for Markdown records, frontmatter, links, backlinks, and type definitions.",
+    status: "Public beta",
+    runsOn: "Web",
+    collections: "Hosted or connected computer",
+    links: [
+      { label: "Open Editor", href: "https://editor.mdbase.dev/" },
+      {
+        label: "Source",
+        href: "https://github.com/mdbase-dev/mdbase-connect/tree/main/apps/editor"
+      }
+    ]
+  }
+];
+
+const collectionTools: CatalogueEntry[] = [
+  {
+    name: "mdbase for Obsidian",
+    description:
+      "Obsidian plugin for collection setup, type editing, v0.2 migration, validation, and hosted collection mirrors.",
+    status: "Development build",
+    runsOn: "Obsidian desktop and mobile",
+    collections: "Local; hosted mirror",
+    links: [
+      { label: "Source", href: "https://github.com/callumalpass/mdbase-obsidian" }
+    ]
+  },
+  {
+    name: "mdbase MCP",
+    description:
+      "Remote MCP endpoint for reading and changing approved collections from compatible AI clients.",
+    status: "Public beta",
+    runsOn: "OAuth-capable MCP clients",
+    collections: "Hosted or connected computer",
+    links: [
+      {
+        label: "Setup and tools",
+        href: "https://github.com/mdbase-dev/mdbase-connect/blob/main/docs/mcp-gateway.md"
+      },
+      { label: "Endpoint", href: "https://mcp.mdbase.dev/mcp" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="Applications"
+  description="Applications and collection tools that work with mdbase collections."
+  current="apps"
+>
+  <section class="page-hero">
+    <div class="page-hero__inner">
+      <div>
+        <p class="eyebrow">Applications</p>
+        <h1>Applications for mdbase collections</h1>
+      </div>
+      <dl class="apps-hero__summary">
+        <div>
+          <dt>Collection</dt>
+          <dd>The Markdown records and type definitions remain the shared data.</dd>
+        </div>
+        <div>
+          <dt>Access</dt>
+          <dd>Connect grants each application access to one selected collection.</dd>
+        </div>
+        <div>
+          <dt>Status</dt>
+          <dd>Public beta and development builds are identified below.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="catalogue-section" aria-labelledby="applications-heading">
+    <header class="catalogue-section__header">
+      <div>
+        <h2 id="applications-heading">Applications</h2>
+      </div>
+    </header>
+
+    <div class="app-list">
+      {
+        applications.map((app) => (
+          <article class="app-entry">
+            <div class="app-entry__identity">
+              <h3>{app.name}</h3>
+            </div>
+            <div class="app-entry__description">
+              <p>{app.description}</p>
+              <div class="app-entry__links">
+                {app.links.map((link) => <a href={link.href}>{link.label}</a>)}
+              </div>
+            </div>
+            <dl class="app-meta">
+              <div>
+                <dt>Status</dt>
+                <dd>
+                  <span
+                    class:list={[
+                      "catalogue-status",
+                      { "catalogue-status--development": app.status === "Development build" }
+                    ]}
+                  >
+                    {app.status}
+                  </span>
+                </dd>
+              </div>
+              <div><dt>Runs on</dt><dd>{app.runsOn}</dd></div>
+              <div><dt>Collections</dt><dd>{app.collections}</dd></div>
+            </dl>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="catalogue-section" aria-labelledby="tools-heading">
+    <header class="catalogue-section__header">
+      <div>
+        <p class="catalogue-label">Work with a collection</p>
+        <h2 id="tools-heading">Collection tools</h2>
+      </div>
+      <p>
+        These tools connect mdbase collections to an existing workspace or client.
+      </p>
+    </header>
+
+    <div class="app-list">
+      {
+        collectionTools.map((app) => (
+          <article class="app-entry">
+            <div class="app-entry__identity">
+              <h3>{app.name}</h3>
+            </div>
+            <div class="app-entry__description">
+              <p>{app.description}</p>
+              <div class="app-entry__links">
+                {app.links.map((link) => <a href={link.href}>{link.label}</a>)}
+              </div>
+            </div>
+            <dl class="app-meta">
+              <div>
+                <dt>Status</dt>
+                <dd>
+                  <span
+                    class:list={[
+                      "catalogue-status",
+                      { "catalogue-status--development": app.status === "Development build" }
+                    ]}
+                  >
+                    {app.status}
+                  </span>
+                </dd>
+              </div>
+              <div><dt>Runs on</dt><dd>{app.runsOn}</dd></div>
+              <div><dt>Collections</dt><dd>{app.collections}</dd></div>
+            </dl>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="build-section" aria-labelledby="build-heading">
+    <div>
+      <p class="catalogue-label">Developers</p>
+      <h2 id="build-heading">Build an application</h2>
+    </div>
+    <div class="build-section__body">
+      <p>
+        The Connect SDK handles authorization, collection selection, operations,
+        and change feeds. Application manifests declare required contracts and
+        permissions.
+      </p>
+      <div class="button-row">
+        <a class="button button--primary" href="/sdk/quickstart/">SDK quickstart</a>
+        <a class="button" href="/sdk/portable-apps/">Application guide</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
