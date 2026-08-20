@@ -6,13 +6,15 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "deploy:dev": "node scripts/deploy-pages-dev.mjs",
     "check": "astro check",
     "preview": "astro preview",
     "sync:sources": "node scripts/sync-sources.mjs && node scripts/sync-contracts.mjs",
     "sync:contracts": "node scripts/sync-contracts.mjs",
     "import:spec": "node scripts/import-spec.mjs",
     "check:links": "node scripts/check-links.mjs",
-    "test": "pnpm check && pnpm build && pnpm import:spec && pnpm check:links"
+    "test:deploy:dev": "node --test scripts/deploy-pages-dev.test.mjs",
+    "test": "pnpm test:deploy:dev && pnpm check && pnpm build && pnpm import:spec && pnpm check:links"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

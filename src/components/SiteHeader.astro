@@ -2,14 +2,15 @@
 import BrandMark from "./BrandMark.astro";
 
 interface Props {
-  current?: "home" | "downloads" | "connect" | "sdk" | "runtime" | "spec";
+  current?: "home" | "apps" | "downloads" | "connect" | "sdk" | "runtime" | "spec";
 }
 
 const { current } = Astro.props;
 const links = [
   { href: "/", label: "Overview", key: "home" },
-  { href: "/downloads/", label: "Download", key: "downloads" },
   { href: "/connect/", label: "Connect", key: "connect" },
+  { href: "/apps/", label: "Applications", key: "apps" },
+  { href: "/downloads/", label: "Download", key: "downloads" },
   { href: "/sdk/", label: "Developers", key: "sdk" },
   { href: "/spec/", label: "Specification", key: "spec" }
 ] as const;

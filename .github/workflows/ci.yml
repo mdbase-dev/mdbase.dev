@@ -93,7 +93,7 @@ jobs:
           MDBASE_TS_DIR: .sources/mdbase
 
       - name: Type and content checks
-        run: pnpm check
+        run: pnpm test:deploy:dev && pnpm check
 
       - name: Build website
         run: pnpm build
