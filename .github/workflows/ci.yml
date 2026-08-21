@@ -94,6 +94,8 @@ jobs:
 
       - name: Type and content checks
         run: pnpm test:deploy:dev && pnpm check:release && pnpm check
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Build website
         run: pnpm build
