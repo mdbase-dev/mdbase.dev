@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import release from "../data/connect-release.json";
 
 interface Props {
   title: string;
@@ -66,7 +67,7 @@ const docGroups = [
       </details>
       <div class="docs-nav__meta">
         <span>@mdbase-dev/connect</span>
-        <strong>0.1.0-beta.55</strong>
+        <strong>{release.sdkVersion}</strong>
       </div>
     </aside>
     <article class="docs-article">
