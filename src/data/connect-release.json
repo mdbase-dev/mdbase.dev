@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "channel": "beta",
+  "version": "0.1.0-beta.83",
+  "sdkVersion": "0.1.0-beta.83",
+  "tag": "v0.1.0-beta.83",
+  "sourceRevision": "23a52aeeaa4ddb199c28d2cd1cf3d4fe51720188",
+  "publishedAt": "2026-08-22T07:10:49Z",
+  "releaseUrl": "https://github.com/mdbase-dev/mdbase-connect/releases/tag/v0.1.0-beta.83",
+  "channelManifestUrl": "https://github.com/mdbase-dev/mdbase-connect/releases/download/v0.1.0-beta.83/mdbase-connect-channel-v1.json",
+  "desktop": [
+    { "platform": "macOS", "detail": "Apple Silicon", "trust": "Beta preview · not notarized", "file": "mdbase-connect-0.1.0-beta.83-macos-arm64.dmg", "size": 138297866, "label": "Download for Apple Silicon" },
+    { "platform": "macOS", "detail": "Intel", "trust": "Beta preview · not notarized", "file": "mdbase-connect-0.1.0-beta.83-macos-x64.dmg", "size": 142932362, "label": "Download for Intel" },
+    { "platform": "Windows", "detail": "64-bit", "trust": "Unsigned beta preview", "file": "mdbase-connect-0.1.0-beta.83-windows-x64-UNSIGNED-Setup.exe", "size": 157127168, "label": "Download for Windows" },
+    { "platform": "Linux", "detail": "64-bit Debian or Ubuntu", "trust": "DEB package", "file": "mdbase-connect-0.1.0-beta.83-linux-x64.deb", "size": 108358596, "label": "Download DEB" },
+    { "platform": "Linux", "detail": "64-bit Fedora, RHEL, or compatible", "trust": "RPM package", "file": "mdbase-connect-0.1.0-beta.83-linux-x64.rpm", "size": 114180081, "label": "Download RPM" }
+  ],
+  "cli": [
+    { "platform": "macOS", "detail": "Apple Silicon", "trust": "Beta preview", "file": "mdbase-cli-0.1.0-beta.83-macos-arm64.tar.gz", "size": 14054317, "label": "Download CLI for Apple Silicon" },
+    { "platform": "macOS", "detail": "Intel", "trust": "Beta preview", "file": "mdbase-cli-0.1.0-beta.83-macos-x64.tar.gz", "size": 15227170, "label": "Download CLI for Intel" },
+    { "platform": "Windows", "detail": "64-bit", "trust": "Unsigned beta preview", "file": "mdbase-cli-0.1.0-beta.83-windows-x64-UNSIGNED.tar.gz", "size": 13608434, "label": "Download CLI for Windows" },
+    { "platform": "Linux", "detail": "64-bit", "trust": "tar.gz", "file": "mdbase-cli-0.1.0-beta.83-linux-x64.tar.gz", "size": 15931643, "label": "Download CLI for Linux" }
+  ]
+}

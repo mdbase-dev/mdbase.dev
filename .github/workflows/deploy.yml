@@ -100,7 +100,9 @@ jobs:
           MDBASE_TS_DIR: .sources/mdbase
 
       - name: Check and build website
-        run: pnpm check && pnpm build
+        run: pnpm check:release && pnpm check && pnpm build
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Import specification
         run: pnpm import:spec

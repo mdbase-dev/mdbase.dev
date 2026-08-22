@@ -1,79 +1,13 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import release from "../../data/connect-release.json";
 
-const version = "0.1.0-beta.54";
-const tag = `v${version}`;
+const { version, tag, releaseUrl: releasePage } = release;
 const releaseBase = `https://github.com/mdbase-dev/mdbase-connect/releases/download/${tag}`;
-const releasePage = `https://github.com/mdbase-dev/mdbase-connect/releases/tag/${tag}`;
-
-const desktopDownloads = [
-  {
-    platform: "macOS",
-    detail: "Apple Silicon",
-    note: "Beta preview · DMG · 131 MB",
-    file: `mdbase-connect-${version}-macos-arm64.dmg`,
-    label: "Download for Apple Silicon"
-  },
-  {
-    platform: "macOS",
-    detail: "Intel",
-    note: "Beta preview · DMG · 135 MB",
-    file: `mdbase-connect-${version}-macos-x64.dmg`,
-    label: "Download for Intel"
-  },
-  {
-    platform: "Windows",
-    detail: "64-bit",
-    note: "Unsigned beta preview · installer · 149 MB",
-    file: `mdbase-connect-${version}-windows-x64-UNSIGNED-Setup.exe`,
-    label: "Download for Windows"
-  },
-  {
-    platform: "Linux",
-    detail: "64-bit Debian or Ubuntu",
-    note: "DEB package · 103 MB",
-    file: `mdbase-connect-${version}-linux-x64.deb`,
-    label: "Download DEB"
-  },
-  {
-    platform: "Linux",
-    detail: "64-bit Fedora, RHEL, or compatible",
-    note: "RPM package · 108 MB",
-    file: `mdbase-connect-${version}-linux-x64.rpm`,
-    label: "Download RPM"
-  }
-];
-
-const cliDownloads = [
-  {
-    platform: "macOS",
-    detail: "Apple Silicon",
-    note: "Beta preview · tar.gz · 12 MB",
-    file: `mdbase-cli-${version}-macos-arm64.tar.gz`,
-    label: "Download CLI for Apple Silicon"
-  },
-  {
-    platform: "macOS",
-    detail: "Intel",
-    note: "Beta preview · tar.gz · 13 MB",
-    file: `mdbase-cli-${version}-macos-x64.tar.gz`,
-    label: "Download CLI for Intel"
-  },
-  {
-    platform: "Windows",
-    detail: "64-bit",
-    note: "Unsigned beta preview · tar.gz · 12 MB",
-    file: `mdbase-cli-${version}-windows-x64-UNSIGNED.tar.gz`,
-    label: "Download CLI for Windows"
-  },
-  {
-    platform: "Linux",
-    detail: "64-bit",
-    note: "tar.gz · 14 MB",
-    file: `mdbase-cli-${version}-linux-x64.tar.gz`,
-    label: "Download CLI for Linux"
-  }
-];
+const desktopDownloads = release.desktop;
+const cliDownloads = release.cli;
+const published = new Date(release.publishedAt);
+const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
 ---
 
 <BaseLayout
@@ -95,7 +29,7 @@ const cliDownloads = [
         </p>
         <div class="download-summary" aria-label="Release details">
           <span>Version <strong>{version}</strong></span>
-          <span>Published <strong><time datetime="2026-08-10">10 August 2026</time></strong></span>
+          <span>Published <strong><time datetime={release.publishedAt}>{published.toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })}</time></strong></span>
         </div>
       </div>
     </div>
@@ -124,7 +58,7 @@ const cliDownloads = [
             <h3>{download.platform}</h3>
             <div class="download-option__detail">
               <p>{download.detail}</p>
-              <code>{download.note}</code>
+              <code>{download.trust} · {releaseSize(download.size)}</code>
             </div>
             <div class="download-option__actions">
               <a class="button button--primary" href={`${releaseBase}/${download.file}`}>
@@ -154,7 +88,7 @@ const cliDownloads = [
             <h3>{download.platform}</h3>
             <div class="download-option__detail">
               <p>{download.detail}</p>
-              <code>{download.note}</code>
+              <code>{download.trust} · {releaseSize(download.size)}</code>
             </div>
             <div class="download-option__actions">
               <a class="button button--primary" href={`${releaseBase}/${download.file}`}>
@@ -179,6 +113,7 @@ const cliDownloads = [
     </p>
     <div class="button-row download-release-actions">
       <a class="button button--primary" href={releasePage}>Open release {tag}</a>
+      <a class="button" href={release.channelManifestUrl}>Signed channel manifest</a>
       <a class="button" href="https://github.com/mdbase-dev/mdbase-connect/releases">All releases</a>
     </div>
   </section>
