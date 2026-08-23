@@ -1,0 +1,49 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Incidents"
+  description="Permanent summaries of customer-visible mdbase service incidents."
+>
+  <section class="page-hero">
+    <div class="page-hero__inner">
+      <div>
+        <p class="eyebrow"><i></i> Service history</p>
+        <h1>Incidents</h1>
+      </div>
+      <div class="page-hero__aside">
+        <p>
+          Permanent summaries of customer-visible service incidents and the
+          corrections made during the Connect beta.
+        </p>
+        <div class="button-row">
+          <a class="button button--primary" href="https://status.mdbase.dev">
+            Current service status
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Archive</h2>
+    <div class="steps">
+      <article class="step">
+        <div>
+          <p class="eyebrow">18 August 2026 · Resolved</p>
+          <h3>
+            <a href="/incidents/2026-08-18-candidate-b-production/">
+              Candidate B production availability incident
+            </a>
+          </h3>
+          <p>
+            A production change caused two extended availability interruptions
+            and two shorter hosted-provider interruptions. No canonical encrypted
+            records were lost or rewritten.
+          </p>
+        </div>
+      </article>
+    </div>
+  </section>
+</BaseLayout>
