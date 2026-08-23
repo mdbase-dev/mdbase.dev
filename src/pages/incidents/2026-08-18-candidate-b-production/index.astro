@@ -1,0 +1,64 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Candidate B production availability incident"
+  description="Summary of the resolved 18 August 2026 mdbase Connect production availability incident."
+>
+  <article class="legal">
+    <header>
+      <p class="eyebrow">18 August 2026 · Resolved</p>
+      <h1>Candidate B production availability incident</h1>
+      <p>
+        A production storage upgrade caused customer-visible interruptions while
+        the service was moved to a new release.
+      </p>
+    </header>
+
+    <h2>Customer impact</h2>
+    <p>
+      On 17–18 August, reads and writes through mdbase hosted storage, Connect,
+      and MCP were unavailable during two UTC windows: 23:37:04–23:45:17 on 17
+      August, and 23:51:38 on 17 August–04:15:16 on 18 August. Requests returned
+      503 responses. The first window is conservatively measured through the
+      completed restoration, and the second ends when normal authenticated reads
+      and writes resumed.
+    </p>
+    <p>
+      The release also caused two narrower hosted-storage interruptions on 18
+      August: approximately 09:2x–09:44 UTC (about 20 minutes), and
+      11:49:00–11:49:33 UTC. Hosted collection operations returned 502 responses;
+      Connect and MCP remained available during the second interruption.
+    </p>
+
+    <h2>Data integrity</h2>
+    <p>
+      No canonical encrypted records were lost or rewritten. Exact Markdown
+      remained the authoritative copy throughout recovery. Projection integrity
+      was verified after the upgrade, and authenticated record and file
+      write-read-delete checks passed after service restoration. There was no
+      identified confidentiality impact.
+    </p>
+
+    <h2>Correction</h2>
+    <p>
+      The rollout was completed using durable progress checkpoints and additional
+      verification before traffic reopened. Deployment checks were corrected so
+      a closed service is tested for liveness rather than readiness. The later
+      hosted-storage defect was fixed by keeping unaffected projections current
+      when a saved view changes and by preventing one degraded collection from
+      withdrawing the whole provider. Future storage migrations require measured
+      production-shape rehearsals, a bounded outage decision, resumable recovery
+      testing, and independent post-deployment read/write checks.
+    </p>
+
+    <h2>Beta service</h2>
+    <p>
+      Connect remains a beta service with no availability SLA. This permanent
+      summary records how a beta failure affected customers and what changed; it
+      is not an uptime commitment. Current conditions are published on the
+      <a href="https://status.mdbase.dev">service status page</a>.
+    </p>
+  </article>
+</BaseLayout>
