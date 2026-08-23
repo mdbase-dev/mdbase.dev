@@ -14,19 +14,23 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     <h2>Website</h2>
     <p>
       mdbase.dev is a public static documentation website. It has no account
-      system or advertising trackers. When you join the beta waitlist, mdbase
-      Connect retains the submitted email address and request time so the
-      request can be reviewed and an invitation can be sent. Rate-limit records
-      use keyed digests of the email and network address; the access-request
-      record does not store the network address. The hosting provider may also
-      retain ordinary request logs for security and service operation.
+      system or advertising trackers. The hosting provider may retain ordinary
+      request logs for security and service operation.
     </p>
-    <h2>Connect</h2>
+    <h2>Connect accounts</h2>
     <p>
-      Connect account services retain identity, computer pairing, application
-      declarations, collection identifiers and display names, exact grants,
-      tokens, audit metadata, and routing metadata needed to operate the
-      service.
+      Public signup uses an email address to deliver a one-time verification
+      link. Connect retains the verified address, account name, accepted terms
+      and privacy-policy versions, identity-provider links you add, and
+      security and audit metadata needed to operate the account. Passwords are
+      stored as password hashes, not readable passwords. Abuse controls retain
+      keyed digests and bounded counters for email addresses and source
+      networks.
+    </p>
+    <p>
+      Connect also retains computer pairing, application declarations,
+      collection identifiers and display names, exact grants, tokens, audit
+      metadata, and routing metadata needed to operate the service.
     </p>
     <p>
       Local collection paths and record payloads stay at the connector.

@@ -3,81 +3,95 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout
-  title="Public Connect signup is opening soon"
-  description="Beta access requests are closed while mdbase Connect prepares for public signup."
+  title="Join the mdbase Connect open beta"
+  description="Create an mdbase Connect account with a verified email address and start using local or hosted Markdown collections."
   current="connect"
 >
   <section class="beta-opening">
     <header class="beta-opening__copy">
-      <p class="eyebrow">mdbase Connect</p>
-      <h1>Public signup is opening soon.</h1>
+      <p class="eyebrow">mdbase Connect · open beta</p>
+      <h1>Public signup is open.</h1>
       <p>
-        Beta access requests are now closed while we prepare general
-        registration. Existing accounts can keep signing in, and invitation
-        links already sent will continue to work.
+        Create an account with your email address and a password. Connect will
+        prepare a small hosted Markdown collection so you can open the editor
+        and start exploring.
       </p>
     </header>
 
     <div class="beta-intake">
-      <p class="eyebrow">Access transition</p>
-      <h2>The beta waitlist has closed.</h2>
+      <p class="eyebrow">Create an account</p>
+      <h2>Start with a verified email.</h2>
       <p>
-        We have sent the remaining beta invitations. The next way to create an
-        account will be public signup with an email address and password.
+        We will send a one-time verification link before asking for your name,
+        password, and agreement to the service terms. Verification links expire
+        after one hour.
       </p>
       <div class="button-row">
-        <a class="button button--primary" href="https://connect.mdbase.dev/login">Sign in to Connect</a>
-        <a class="button" href="/connect/">About Connect</a>
+        <a class="button button--primary" href="https://connect.mdbase.dev/signup">Create a Connect account</a>
+        <a class="button" href="https://connect.mdbase.dev/login">Sign in</a>
       </div>
     </div>
   </section>
 
-  <section class="beta-details" aria-labelledby="what-happens-now">
-    <h2 id="what-happens-now">What happens now.</h2>
+  <section class="beta-details" aria-labelledby="what-to-expect">
+    <h2 id="what-to-expect">What to expect.</h2>
     <dl class="beta-facts">
       <div>
-        <dt>Existing accounts</dt>
+        <dt>Open beta</dt>
         <dd>
-          Sign in normally and continue using your collections, connected
-          computers, and approved applications.
+          Connect is pre-release software with no availability guarantee. Keep
+          independent backups of important collections.
         </dd>
       </div>
       <div>
-        <dt>Invitations</dt>
+        <dt>Hosted allowance</dt>
         <dd>
-          One-time signup links already delivered remain valid until the
+          Open-beta accounts include 1 GiB of hosted storage and up to three
+          hosted collections in total. The starter collection uses one of
+          those three slots. Local collections do not use this allowance.
+        </dd>
+      </div>
+      <div>
+        <dt>App permissions</dt>
+        <dd>
+          Applications receive no collection access until you choose a
+          collection and approve their requested operations.
+        </dd>
+      </div>
+      <div>
+        <dt>Existing invitations</dt>
+        <dd>
+          One-time invitation links already delivered remain valid until the
           expiry shown in the invitation email.
-        </dd>
-      </div>
-      <div>
-        <dt>New accounts</dt>
-        <dd>
-          Public email-and-password signup is the next account path. We will
-          replace this notice when registration opens.
         </dd>
       </div>
     </dl>
   </section>
 
-  <section class="beta-next" aria-labelledby="already-invited">
+  <section class="beta-next" aria-labelledby="before-you-start">
     <div>
-      <h2 id="already-invited">Already invited?</h2>
+      <h2 id="before-you-start">Before you start.</h2>
       <p>
-        Open the one-time link in your invitation email to create your account.
-        Connect remains pre-release software, so keep independent backups of
-        important collections.
-      </p>
-    </div>
-    <div>
-      <h2>Explore mdbase in the meantime.</h2>
-      <p>
-        Read the collection specification and Connect integration guides while
-        public registration is being prepared.
+        Read how local and hosted collections differ, including which
+        components can read record contents. The privacy policy and service
+        terms apply when you create an account.
       </p>
       <div class="button-row">
-        <a class="button button--primary" href="/spec/">Read the specification</a>
-        <a class="button" href="/sdk/quickstart/">Try the beta SDK from source</a>
-        <a class="button" href="/connect/">Understand Connect</a>
+        <a class="button" href="/connect/">How Connect works</a>
+        <a class="button" href="/privacy/">Privacy</a>
+        <a class="button" href="/terms/">Terms</a>
+      </div>
+    </div>
+    <div>
+      <h2>Build or work locally.</h2>
+      <p>
+        The mdbase specification and local tools remain open source and do not
+        require a Connect account.
+      </p>
+      <div class="button-row">
+        <a class="button button--primary" href="/downloads/">Download Connect</a>
+        <a class="button" href="/spec/">Read the specification</a>
+        <a class="button" href="/sdk/quickstart/">Try the SDK locally</a>
       </div>
     </div>
   </section>

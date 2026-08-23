@@ -249,12 +249,12 @@ if (first) {
   <p>After the public npm release, installation uses:</p>
   <CodeBlock code={publicInstall} language="sh" label="Public release command" />
   <p>
-    During the private beta, create immutable consumer archives from a clean
-    Connect checkout. The command prints the exact artifact filenames and
+    Until the packages are published to npm, create immutable consumer archives
+    from a clean Connect checkout. The command prints the exact artifact filenames and
     source revision. Add the printed protocol and client archives to the
     application with <code>pnpm add &lt;archive&gt;</code>.
   </p>
-  <CodeBlock code={betaBuild} language="sh" label="Private-beta source checkout" />
+  <CodeBlock code={betaBuild} language="sh" label="Open-beta source checkout" />
   <p>
     The validator is currently run from the Connect workspace or supplied as a
     beta artifact. <code>--allow-local</code> affects static validation only; it
@@ -303,8 +303,8 @@ if (first) {
 
   <h2 id="production">Move to the managed service</h2>
   <p>
-    The production service currently accepts private-beta accounts. Before using
-    it, deploy the application at an HTTPS origin, replace every localhost
+    The production service accepts public beta accounts. Before using it, deploy
+    the application at an HTTPS origin, replace every localhost
     homepage, icon, and redirect URL in the manifest with the exact deployed
     URLs, and validate without <code>--allow-local</code>. The non-loopback branch
     in the client example then uses <code>https://connect.mdbase.dev</code>.
