@@ -59,9 +59,8 @@ mobile text region begins.
 
 Only the homepage particle field moves. Its transformations explain the current
 chapter. Reduced-motion preferences place the particles directly into each
-formation. Coarse-pointer screens up to 820px use the same static formations to
-reduce battery use during the mobile reading journey. Interior pages do not use
-decorative animation.
+formation. The particle field otherwise animates on both pointer and touch
+screens. Interior pages do not use decorative animation.
 
 ## Language
 

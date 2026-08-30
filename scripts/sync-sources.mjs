@@ -402,22 +402,11 @@ function addThemeAwareCanvasPalette(source) {
 
       function draw(now)`
   );
-  const motionPreference =
-    '      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;';
-  if (!withParticles.includes(motionPreference)) {
-    throw new Error("Could not find the prototype motion preference");
-  }
-  const withMobileMotion = withParticles.replace(
-    motionPreference,
-    `      const reduceMotion =
-        matchMedia("(prefers-reduced-motion: reduce)").matches
-        || matchMedia("(max-width: 820px) and (pointer: coarse)").matches;`
-  );
   const initialization = "      resize();\n      updateScrollState();";
-  if (!withMobileMotion.includes(initialization)) {
+  if (!withParticles.includes(initialization)) {
     throw new Error("Could not find the prototype initialization");
   }
-  const withInitialization = withMobileMotion.replace(
+  const withInitialization = withParticles.replace(
     initialization,
     "      syncPalette();\n      resize();\n      updateScrollState();"
   );

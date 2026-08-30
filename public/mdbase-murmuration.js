@@ -3,9 +3,7 @@
       const canvas = document.querySelector("#diagram");
       const context = canvas.getContext("2d", { alpha: true });
       const chapters = [...document.querySelectorAll(".chapter")];
-      const reduceMotion =
-        matchMedia("(prefers-reduced-motion: reduce)").matches
-        || matchMedia("(max-width: 820px) and (pointer: coarse)").matches;
+      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
       const particleCount = 361;
       const cellSize = 104;
       const particles = [];
