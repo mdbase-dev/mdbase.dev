@@ -791,11 +791,13 @@ main[tabindex="-1"]:focus {
 }
 
 .legal p,
-.legal ul {
+.legal ul,
+.legal ol {
   margin-top: 0.8rem;
 }
 
-.legal ul {
+.legal ul,
+.legal ol {
   padding-left: 1.2rem;
 }
 
