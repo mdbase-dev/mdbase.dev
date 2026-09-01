@@ -800,7 +800,7 @@
         particle.vx += accelerationX * step;
         particle.vy += accelerationY * step;
         const speed = Math.hypot(particle.vx, particle.vy);
-        const maximum = 2.5 + index % 5 * 0.08;
+        const maximum = 1.7 + index % 5 * 0.06;
         if (speed > maximum) {
           particle.vx = particle.vx / speed * maximum;
           particle.vy = particle.vy / speed * maximum;
@@ -854,9 +854,9 @@
 
         context.save();
         context.strokeStyle = palette.muted;
-        context.globalAlpha = 0.88;
+        context.globalAlpha = 0.52;
         context.lineWidth = 1;
-        context.setLineDash(edge.dashed ? [4, 5] : []);
+        context.setLineDash(edge.dashed ? [3, 5] : []);
         context.beginPath();
         context.moveTo(points[0].x, points[0].y);
         points.slice(1).forEach((point) => context.lineTo(point.x, point.y));
@@ -867,16 +867,16 @@
         const previousPoint = points[points.length - 2];
         const angle = Math.atan2(finalPoint.y - previousPoint.y, finalPoint.x - previousPoint.x);
         context.fillStyle = palette.muted;
-        context.globalAlpha = 0.95;
+        context.globalAlpha = 0.62;
         context.beginPath();
         context.moveTo(finalPoint.x, finalPoint.y);
         context.lineTo(
-          finalPoint.x - Math.cos(angle - 0.48) * 6,
-          finalPoint.y - Math.sin(angle - 0.48) * 6
+          finalPoint.x - Math.cos(angle - 0.48) * 5,
+          finalPoint.y - Math.sin(angle - 0.48) * 5
         );
         context.lineTo(
-          finalPoint.x - Math.cos(angle + 0.48) * 6,
-          finalPoint.y - Math.sin(angle + 0.48) * 6
+          finalPoint.x - Math.cos(angle + 0.48) * 5,
+          finalPoint.y - Math.sin(angle + 0.48) * 5
         );
         context.closePath();
         context.fill();
@@ -906,26 +906,15 @@
       function drawNodeSurface(node, compact) {
         const { x, y, w, h } = node.box;
         context.save();
-
-        if (node.kind === "boundary") {
-          context.fillStyle = palette.surface;
-          context.strokeStyle = palette.line;
-          context.setLineDash([5, 5]);
-        } else if (node.kind === "authority") {
-          context.fillStyle = palette.surfaceSubtle;
-          context.strokeStyle = palette.accent;
-          context.setLineDash([]);
-        } else {
-          context.fillStyle =
-            node.kind === "service" ? palette.surfaceSubtle : palette.surface;
-          context.strokeStyle =
-            node.kind === "replica" ? palette.muted : palette.line;
-          context.setLineDash(node.kind === "replica" ? [4, 4] : []);
-        }
-
-        context.lineWidth = node.kind === "authority" ? 1.25 : 1;
+        context.fillStyle = palette.surface;
+        context.strokeStyle = node.kind === "authority" ? palette.muted : palette.lineSoft;
+        context.globalAlpha = node.kind === "authority" ? 0.78 : 0.64;
+        context.lineWidth = 1;
+        context.setLineDash(
+          node.kind === "boundary" || node.kind === "replica" ? [3, 5] : []
+        );
         context.beginPath();
-        context.roundRect(x, y, w, h, compact ? 3 : 5);
+        context.rect(x, y, w, h);
         context.fill();
         context.stroke();
         context.setLineDash([]);
@@ -933,31 +922,23 @@
       }
 
       function drawNodeLabel(node, compact) {
-        const { x, y, h } = node.box;
+        const { x, y } = node.box;
         context.save();
         const labelX = x + (compact ? 7 : 10);
-        const labelY = y + (compact ? 12 : 15);
+        const labelY = y + (compact ? 14 : 16);
         context.textAlign = "left";
-        context.fillStyle =
-          node.kind === "authority" ? palette.accent : palette.ink;
-        context.font =
-          `600 ${compact ? 8.5 : 10}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+        context.fillStyle = palette.ink;
+        context.globalAlpha = 0.78;
+        context.font = "bold 11px serif";
         context.fillText(node.label, labelX, labelY);
-
-        if (node.detail && h > (compact ? 42 : 52)) {
-          context.fillStyle = palette.muted;
-          context.font =
-            `${compact ? 7.5 : 8.5}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
-          context.fillText(node.detail, labelX, labelY + (compact ? 10 : 12));
-        }
         context.restore();
       }
 
       function drawNote(note, compact) {
         context.save();
         context.fillStyle = palette.muted;
-        context.font =
-          `600 ${compact ? 9 : 10}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
+        context.globalAlpha = 0.68;
+        context.font = "11px serif";
         context.textAlign = "center";
         context.fillText(note.text, note.x, note.y);
         context.restore();
@@ -986,22 +967,25 @@
       }
 
       function drawParticle(particle, compact) {
-        const baseSize = compact ? 2.5 : 3.25;
+        const baseSize = compact ? 1.8 : 2.25;
         const size =
           particle.role === "packet"
-            ? baseSize * 1.5
+            ? baseSize * 1.35
             : baseSize * particle.scale;
         const x = Math.round(particle.x - size / 2);
         const y = Math.round(particle.y - size / 2);
 
+        context.save();
+        context.globalAlpha = particle.role === "packet" ? 0.82 : 0.62;
         if (particle.role === "replica") {
           context.strokeStyle = palette.replica;
-          context.lineWidth = 0.9;
-          context.strokeRect(x, y, Math.max(1.75, size), Math.max(1.75, size));
+          context.lineWidth = 0.8;
+          context.strokeRect(x, y, Math.max(1.5, size), Math.max(1.5, size));
         } else {
           context.fillStyle = particleFill(particle);
-          context.fillRect(x, y, Math.max(1.75, size), Math.max(1.75, size));
+          context.fillRect(x, y, Math.max(1.5, size), Math.max(1.5, size));
         }
+        context.restore();
       }
 
       function draw(now) {
@@ -1021,7 +1005,6 @@
         if (activeScene !== "intro") {
           context.save();
           context.globalAlpha = diagramAlpha;
-          diagram.edges.forEach((edge) => drawEdgeLabel(edge, compact));
           diagram.nodes.forEach((node) => drawNodeLabel(node, compact));
           diagram.notes.forEach((note) => drawNote(note, compact));
           context.restore();

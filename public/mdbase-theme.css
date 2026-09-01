@@ -1,25 +1,25 @@
 :root {
   color-scheme: light;
-  color: var(--ink);
-  background: var(--paper);
+  color: var(--color-text);
+  background: var(--color-canvas);
   font-family: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
   font-synthesis: none;
-  --color-canvas: oklch(99.5% 0.002 255);
-  --color-surface: oklch(99.5% 0.002 255);
-  --color-surface-subtle: oklch(97.5% 0.004 255);
-  --color-selected: oklch(96.4% 0.016 238);
-  --color-text: oklch(21% 0.018 255);
-  --color-text-soft: oklch(39% 0.016 255);
-  --color-text-muted: oklch(54% 0.014 255);
-  --color-text-faint: oklch(70% 0.009 255);
-  --color-border: oklch(92% 0.006 255);
-  --color-border-strong: oklch(82% 0.008 255);
-  --color-accent: oklch(45% 0.105 238);
-  --color-accent-strong: oklch(35% 0.09 238);
-  --color-success: oklch(43% 0.09 153);
-  --color-warning: oklch(60% 0.09 75);
-  --color-danger: oklch(50% 0.11 28);
-  --color-scrim: oklch(20% 0.006 250 / 0.22);
+  --color-canvas: #faf9f6;
+  --color-surface: #faf9f6;
+  --color-surface-subtle: #f5f4f0;
+  --color-selected: #f1f0ec;
+  --color-text: #171717;
+  --color-text-soft: rgb(23 23 23 / 74%);
+  --color-text-muted: rgb(23 23 23 / 54%);
+  --color-text-faint: rgb(23 23 23 / 30%);
+  --color-border: rgb(23 23 23 / 18%);
+  --color-border-strong: rgb(23 23 23 / 42%);
+  --color-accent: #171717;
+  --color-accent-strong: #171717;
+  --color-success: #171717;
+  --color-warning: #171717;
+  --color-danger: #171717;
+  --color-scrim: rgb(23 23 23 / 22%);
   --paper: var(--color-surface);
   --hover: var(--color-surface-subtle);
   --selected: var(--color-selected);
@@ -41,42 +41,42 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --color-canvas: oklch(17.5% 0.012 255);
-  --color-surface: oklch(19.5% 0.012 255);
-  --color-surface-subtle: oklch(23.5% 0.014 255);
-  --color-selected: oklch(27% 0.035 238);
-  --color-text: oklch(92% 0.008 255);
-  --color-text-soft: oklch(80% 0.01 255);
-  --color-text-muted: oklch(68% 0.012 255);
-  --color-text-faint: oklch(56% 0.011 255);
-  --color-border: oklch(29% 0.012 255);
-  --color-border-strong: oklch(40% 0.014 255);
-  --color-accent: oklch(73% 0.105 238);
-  --color-accent-strong: oklch(79% 0.085 238);
-  --color-success: oklch(72% 0.09 153);
-  --color-warning: oklch(78% 0.09 75);
-  --color-danger: oklch(72% 0.115 28);
-  --color-scrim: oklch(5% 0.006 250 / 0.62);
+  --color-canvas: #121212;
+  --color-surface: #121212;
+  --color-surface-subtle: #181818;
+  --color-selected: #1b1b1b;
+  --color-text: #f0f0ed;
+  --color-text-soft: rgb(240 240 237 / 78%);
+  --color-text-muted: rgb(240 240 237 / 56%);
+  --color-text-faint: rgb(240 240 237 / 30%);
+  --color-border: rgb(240 240 237 / 22%);
+  --color-border-strong: rgb(240 240 237 / 48%);
+  --color-accent: #f0f0ed;
+  --color-accent-strong: #f0f0ed;
+  --color-success: #f0f0ed;
+  --color-warning: #f0f0ed;
+  --color-danger: #f0f0ed;
+  --color-scrim: rgb(0 0 0 / 62%);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
-    --color-canvas: oklch(17.5% 0.012 255);
-    --color-surface: oklch(19.5% 0.012 255);
-    --color-surface-subtle: oklch(23.5% 0.014 255);
-    --color-selected: oklch(27% 0.035 238);
-    --color-text: oklch(92% 0.008 255);
-    --color-text-soft: oklch(80% 0.01 255);
-    --color-text-muted: oklch(68% 0.012 255);
-    --color-text-faint: oklch(56% 0.011 255);
-    --color-border: oklch(29% 0.012 255);
-    --color-border-strong: oklch(40% 0.014 255);
-    --color-accent: oklch(73% 0.105 238);
-    --color-accent-strong: oklch(79% 0.085 238);
-    --color-success: oklch(72% 0.09 153);
-    --color-warning: oklch(78% 0.09 75);
-    --color-danger: oklch(72% 0.115 28);
-    --color-scrim: oklch(5% 0.006 250 / 0.62);
+    --color-canvas: #121212;
+    --color-surface: #121212;
+    --color-surface-subtle: #181818;
+    --color-selected: #1b1b1b;
+    --color-text: #f0f0ed;
+    --color-text-soft: rgb(240 240 237 / 78%);
+    --color-text-muted: rgb(240 240 237 / 56%);
+    --color-text-faint: rgb(240 240 237 / 30%);
+    --color-border: rgb(240 240 237 / 22%);
+    --color-border-strong: rgb(240 240 237 / 48%);
+    --color-accent: #f0f0ed;
+    --color-accent-strong: #f0f0ed;
+    --color-success: #f0f0ed;
+    --color-warning: #f0f0ed;
+    --color-danger: #f0f0ed;
+    --color-scrim: rgb(0 0 0 / 62%);
   }
 }

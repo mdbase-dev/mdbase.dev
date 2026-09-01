@@ -2,65 +2,55 @@
   (() => {
     const root = document.documentElement;
     const media = matchMedia("(prefers-color-scheme: dark)");
-    const options = document.querySelectorAll("[data-theme-option]");
-    const menus = document.querySelectorAll("[data-theme-menu]");
+    const controls = document.querySelectorAll(".theme-toggle");
 
-    const currentPreference = () => {
+    const savedTheme = () => {
       try {
-        const stored = localStorage.getItem("mdbase:theme");
-        return stored === "light" || stored === "dark" ? stored : "system";
+        const saved = localStorage.getItem("mdbase:theme");
+        return saved === "light" || saved === "dark" ? saved : null;
       } catch {
-        return "system";
+        return null;
       }
     };
 
-    const apply = (preference, persist = false) => {
-      if (preference === "system") delete root.dataset.theme;
-      else root.dataset.theme = preference;
+    const currentTheme = () =>
+      root.dataset.theme || (media.matches ? "dark" : "light");
 
+    const updateControls = () => {
+      controls.forEach((control) => {
+        const next = currentTheme() === "dark" ? "Light" : "Dark";
+        control.textContent = next;
+        control.setAttribute("aria-label", `Use ${next.toLowerCase()} mode`);
+        control.hidden = false;
+      });
+    };
+
+    const apply = (theme, persist = false) => {
+      if (theme) root.dataset.theme = theme;
+      else delete root.dataset.theme;
       if (persist) {
         try {
-          if (preference === "system") localStorage.removeItem("mdbase:theme");
-          else localStorage.setItem("mdbase:theme", preference);
+          localStorage.setItem("mdbase:theme", theme);
         } catch {
-          // The selected theme still applies for this page.
+          // The choice still applies for this page.
         }
       }
-
-      const dark = preference === "dark"
-        || (preference === "system" && media.matches);
+      const dark = currentTheme() === "dark";
       document
         .querySelector('meta[name="theme-color"]')
-        ?.setAttribute("content", dark ? "#1c1e24" : "#fcfcfd");
-      options.forEach((option) => {
-        option.setAttribute(
-          "aria-pressed",
-          String(option.dataset.themeOption === preference)
-        );
-      });
+        ?.setAttribute("content", dark ? "#121212" : "#faf9f6");
+      updateControls();
       dispatchEvent(new CustomEvent("mdbase:themechange"));
     };
 
-    const preference = currentPreference();
-    apply(preference);
-    options.forEach((option) => {
-      option.addEventListener("click", () => {
-        apply(option.dataset.themeOption, true);
-        option.closest("[data-theme-menu]")?.removeAttribute("open");
+    apply(savedTheme());
+    controls.forEach((control) => {
+      control.addEventListener("click", () => {
+        apply(currentTheme() === "dark" ? "light" : "dark", true);
       });
     });
     media.addEventListener("change", () => {
-      if (currentPreference() === "system") apply("system");
-    });
-    document.addEventListener("click", (event) => {
-      menus.forEach((menu) => {
-        if (!menu.contains(event.target)) menu.removeAttribute("open");
-      });
-    });
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        menus.forEach((menu) => menu.removeAttribute("open"));
-      }
+      if (!savedTheme()) apply(null);
     });
   })();
 </script>

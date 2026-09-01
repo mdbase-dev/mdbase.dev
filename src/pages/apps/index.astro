@@ -14,8 +14,7 @@ type CatalogueEntry = {
 const applications: CatalogueEntry[] = [
   {
     name: "TaskNotes",
-    description:
-      "Task manager with lists, boards, calendars, recurrence, reminders, attachments, and time tracking.",
+    description: "Task manager with lists, boards, calendars, recurrence, reminders, attachments, and time tracking.",
     status: "Public beta",
     runsOn: "Web, iOS, Android",
     collections: "Hosted or connected computer",
@@ -27,45 +26,31 @@ const applications: CatalogueEntry[] = [
   },
   {
     name: "mdbase Editor",
-    description:
-      "General collection editor for Markdown records, frontmatter, links, backlinks, and type definitions.",
+    description: "General collection editor for Markdown records, frontmatter, links, backlinks, and type definitions.",
     status: "Public beta",
     runsOn: "Web",
     collections: "Hosted or connected computer",
     links: [
       { label: "Open Editor", href: "https://editor.mdbase.dev/" },
-      {
-        label: "Source",
-        href: "https://github.com/mdbase-dev/mdbase-connect/tree/main/apps/editor"
-      }
-    ]
-  }
-];
-
-const collectionTools: CatalogueEntry[] = [
-  {
-    name: "mdbase for Obsidian",
-    description:
-      "Obsidian plugin for collection setup, type editing, v0.2 migration, validation, and hosted collection mirrors.",
-    status: "Development build",
-    runsOn: "Obsidian desktop and mobile",
-    collections: "Local; hosted mirror",
-    links: [
-      { label: "Source", href: "https://github.com/callumalpass/mdbase-obsidian" }
+      { label: "Source", href: "https://github.com/mdbase-dev/mdbase-connect/tree/main/apps/editor" }
     ]
   },
   {
+    name: "mdbase for Obsidian",
+    description: "Obsidian plugin for collection setup, type editing, migration, validation, and hosted collection mirrors.",
+    status: "Development build",
+    runsOn: "Obsidian desktop and mobile",
+    collections: "Local; hosted mirror",
+    links: [{ label: "Source", href: "https://github.com/callumalpass/mdbase-obsidian" }]
+  },
+  {
     name: "mdbase MCP",
-    description:
-      "Remote MCP endpoint for reading and changing approved collections from compatible AI clients.",
+    description: "Remote MCP endpoint for reading and changing approved collections from compatible AI clients.",
     status: "Public beta",
     runsOn: "OAuth-capable MCP clients",
     collections: "Hosted or connected computer",
     links: [
-      {
-        label: "Setup and tools",
-        href: "https://github.com/mdbase-dev/mdbase-connect/blob/main/docs/mcp-gateway.md"
-      },
+      { label: "Setup and tools", href: "https://github.com/mdbase-dev/mdbase-connect/blob/main/docs/mcp-gateway.md" },
       { label: "Endpoint", href: "https://mcp.mdbase.dev/mcp" }
     ]
   }
@@ -77,43 +62,21 @@ const collectionTools: CatalogueEntry[] = [
   description="Applications and collection tools that work with mdbase collections."
   current="apps"
 >
-  <section class="page-hero">
-    <div class="page-hero__inner">
-      <div>
-        <p class="eyebrow">Applications</p>
-        <h1>Applications for mdbase collections</h1>
-      </div>
-      <dl class="apps-hero__summary">
-        <div>
-          <dt>Collection</dt>
-          <dd>The Markdown records and type definitions remain the shared data.</dd>
-        </div>
-        <div>
-          <dt>Access</dt>
-          <dd>Connect grants each application access to one selected collection.</dd>
-        </div>
-        <div>
-          <dt>Status</dt>
-          <dd>Public beta and development builds are identified below.</dd>
-        </div>
-      </dl>
-    </div>
+  <section class="apps-intro">
+    <h1>Applications</h1>
+    <p>
+      An application uses the records and type definitions in a collection
+      rather than moving the data into its own private format. Several
+      applications can present different views of the same files.
+    </p>
   </section>
 
-  <section class="catalogue-section" aria-labelledby="applications-heading">
-    <header class="catalogue-section__header">
-      <div>
-        <h2 id="applications-heading">Applications</h2>
-      </div>
-    </header>
-
+  <section class="catalogue-section" aria-label="Current applications and tools">
     <div class="app-list">
       {
         applications.map((app) => (
           <article class="app-entry">
-            <div class="app-entry__identity">
-              <h3>{app.name}</h3>
-            </div>
+            <h2>{app.name}</h2>
             <div class="app-entry__description">
               <p>{app.description}</p>
               <div class="app-entry__links">
@@ -121,66 +84,7 @@ const collectionTools: CatalogueEntry[] = [
               </div>
             </div>
             <dl class="app-meta">
-              <div>
-                <dt>Status</dt>
-                <dd>
-                  <span
-                    class:list={[
-                      "catalogue-status",
-                      { "catalogue-status--development": app.status === "Development build" }
-                    ]}
-                  >
-                    {app.status}
-                  </span>
-                </dd>
-              </div>
-              <div><dt>Runs on</dt><dd>{app.runsOn}</dd></div>
-              <div><dt>Collections</dt><dd>{app.collections}</dd></div>
-            </dl>
-          </article>
-        ))
-      }
-    </div>
-  </section>
-
-  <section class="catalogue-section" aria-labelledby="tools-heading">
-    <header class="catalogue-section__header">
-      <div>
-        <p class="catalogue-label">Work with a collection</p>
-        <h2 id="tools-heading">Collection tools</h2>
-      </div>
-      <p>
-        These tools connect mdbase collections to an existing workspace or client.
-      </p>
-    </header>
-
-    <div class="app-list">
-      {
-        collectionTools.map((app) => (
-          <article class="app-entry">
-            <div class="app-entry__identity">
-              <h3>{app.name}</h3>
-            </div>
-            <div class="app-entry__description">
-              <p>{app.description}</p>
-              <div class="app-entry__links">
-                {app.links.map((link) => <a href={link.href}>{link.label}</a>)}
-              </div>
-            </div>
-            <dl class="app-meta">
-              <div>
-                <dt>Status</dt>
-                <dd>
-                  <span
-                    class:list={[
-                      "catalogue-status",
-                      { "catalogue-status--development": app.status === "Development build" }
-                    ]}
-                  >
-                    {app.status}
-                  </span>
-                </dd>
-              </div>
+              <div><dt>Status</dt><dd>{app.status}</dd></div>
               <div><dt>Runs on</dt><dd>{app.runsOn}</dd></div>
               <div><dt>Collections</dt><dd>{app.collections}</dd></div>
             </dl>
@@ -191,10 +95,7 @@ const collectionTools: CatalogueEntry[] = [
   </section>
 
   <section class="build-section" aria-labelledby="build-heading">
-    <div>
-      <p class="catalogue-label">Developers</p>
-      <h2 id="build-heading">Build an application</h2>
-    </div>
+    <h2 id="build-heading">Building an application</h2>
     <div class="build-section__body">
       <p>
         The Connect SDK handles authorization, collection selection, operations,
@@ -202,8 +103,8 @@ const collectionTools: CatalogueEntry[] = [
         permissions.
       </p>
       <div class="button-row">
-        <a class="button button--primary" href="/sdk/quickstart/">SDK quickstart</a>
-        <a class="button" href="/sdk/portable-apps/">Application guide</a>
+        <a href="/sdk/quickstart/">SDK quickstart</a>
+        <a href="/sdk/portable-apps/">Application guide</a>
       </div>
     </div>
   </section>
