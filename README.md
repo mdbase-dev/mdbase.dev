@@ -50,7 +50,7 @@ normal pull request. It never deploys or pushes `main` directly. The same
 workflow can be run manually with a tag to recover from a delayed npm
 publication or failed dispatch.
 
-The workflow uses a GitHub App configured as `RELEASE_AUTOMATION_APP_ID` and
+The workflow uses a GitHub App configured as `RELEASE_AUTOMATION_CLIENT_ID` and
 `RELEASE_AUTOMATION_APP_PRIVATE_KEY`. Its installation on this repository needs
 only `contents: write` and `pull requests: write`. The App token ensures the
 resulting pull request triggers the ordinary protected `Site checks` workflow.
