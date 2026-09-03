@@ -14,8 +14,10 @@
     "import:spec": "node scripts/import-spec.mjs",
     "check:links": "node scripts/check-links.mjs",
     "check:release": "node scripts/check-connect-release.mjs",
+    "check:release-order": "node scripts/check-connect-release-order.mjs",
     "test:deploy:dev": "node --test scripts/deploy-pages-dev.test.mjs",
-    "test": "pnpm test:deploy:dev && pnpm check:release && pnpm check && pnpm build && pnpm import:spec && pnpm check:links"
+    "test:release-update": "node --test scripts/connect-release-record.test.mjs",
+    "test": "pnpm test:deploy:dev && pnpm test:release-update && pnpm check:release && pnpm check && pnpm build && pnpm import:spec && pnpm check:links"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

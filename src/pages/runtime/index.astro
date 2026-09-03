@@ -7,28 +7,22 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   description="Understand how Runtime profile 0.2 adds durable workflow execution to ordinary mdbase contracts and shared interoperability."
   current="runtime"
 >
-  <section class="page-hero">
-    <div class="page-hero__inner">
-      <div>
-        <p class="eyebrow"><i></i> Runtime profile 0.2</p>
-        <h1>Durable execution uses the same contracts.</h1>
-      </div>
-      <div class="page-hero__aside">
-        <p>
-          Contracts define meaning. Interoperability connects live
-          applications. The runtime adds admission, persistence, retries,
-          recovery, and honest outcomes when effects cannot be known.
-        </p>
-        <div class="button-row">
-          <a class="button button--primary" href="/spec/#section-13">Read the runtime profile</a>
-          <a class="button" href="/spec/#section-05b">Interoperability profile</a>
-        </div>
-      </div>
+  <section class="content-section" aria-label="Runtime profile 0.2">
+    <h1 class="sr-only">mdbase runtime</h1>
+    <p>
+      Runtime profile 0.2 adds durable workflow execution to the same record,
+      event, and action contracts used by applications. It defines admission,
+      persistence, retries, recovery, and outcomes for effects whose result
+      cannot be known.
+    </p>
+    <div class="button-row">
+      <a class="button button--primary" href="/spec/#section-13">Read the runtime profile</a>
+      <a class="button" href="/spec/#section-05b">Interoperability profile</a>
     </div>
   </section>
 
   <section class="content-section">
-    <h2>Four layers, one contract model</h2>
+    <h2>Runtime model</h2>
     <p>
       An application can consume a record type, publish an event, or provide an
       action without becoming a workflow engine. Each layer has one job.
@@ -36,7 +30,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     <div class="steps">
       <div class="step">
         <div>
-          <h3>1. Contracts define</h3>
+          <h3>1. Contracts</h3>
           <p>
             Record, event, and action artifacts share one identity, SemVer,
             JSON Schema, digest, registry, and conflict model.
@@ -45,7 +39,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       </div>
       <div class="step">
         <div>
-          <h3>2. Applications connect</h3>
+          <h3>2. Application interoperability</h3>
           <p>
             CloudEvents and action envelopes carry exact contract evidence.
             Source and provider declarations bind live implementations to
@@ -55,7 +49,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       </div>
       <div class="step">
         <div>
-          <h3>3. The runtime admits</h3>
+          <h3>3. Workflow admission</h3>
           <p>
             A workflow names compatible contracts. Admission resolves and pins
             the exact event source, action provider, handler, versions, and
@@ -65,7 +59,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       </div>
       <div class="step">
         <div>
-          <h3>4. Durable execution recovers</h3>
+          <h3>4. Execution and recovery</h3>
           <p>
             Runs, attempts, leases, checkpoints, timers, cursors, and outcomes
             survive crashes. The authorization host remains the final boundary
@@ -77,7 +71,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   </section>
 
   <section class="content-section">
-    <h2>Readable requirements become exact evidence</h2>
+    <h2>Workflow requirements and admitted plans</h2>
     <p>
       Authors name behavior and a compatible version. The admitted plan records
       exact immutable bindings before any action runs.
@@ -108,7 +102,7 @@ steps:
         status:
           $expr: event.data.target.value`}</code></pre>
     <div class="callout">
-      <strong>Compatibility is not authority.</strong>
+      <strong>Compatibility and authorization</strong>
       <p>
         A matching schema or SemVer range never grants access. The runtime
         admits exact candidates, and the embedding host still authorizes the

@@ -7,48 +7,37 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   description="Create an mdbase Connect account with a verified email address and start using local or hosted Markdown collections."
   current="connect"
 >
-  <section class="beta-opening">
-    <header class="beta-opening__copy">
-      <p class="eyebrow">mdbase Connect · open beta</p>
-      <h1>Public signup is open.</h1>
-      <p>
-        Create an account with your email address and a password. Connect will
-        prepare a small hosted Markdown collection so you can open the editor
-        and start exploring.
-      </p>
-    </header>
-
-    <div class="beta-intake">
-      <p class="eyebrow">Create an account</p>
-      <h2>Start with a verified email.</h2>
-      <p>
-        We will send a one-time verification link before asking for your name,
-        password, and agreement to the service terms. Verification links expire
-        after one hour.
-      </p>
-      <div class="button-row">
-        <a class="button button--primary" href="https://connect.mdbase.dev/signup">Create a Connect account</a>
-        <a class="button" href="https://connect.mdbase.dev/login">Sign in</a>
-      </div>
-    </div>
+  <section class="content-section" aria-label="Connect open beta">
+    <h1 class="sr-only">Connect open beta</h1>
+    <p>
+      Public signup for the Connect open beta is available. Create an account
+      with your email address and a
+      password. Connect will prepare a small hosted Markdown collection so you
+      can open the editor and start exploring.
+    </p>
+    <p>
+      A one-time verification link is sent before Connect asks for your name,
+      password, and agreement to the service terms. Verification links expire
+      after one hour.
+    </p>
+    <p>
+      <a href="https://connect.mdbase.dev/signup">Create a Connect account</a>
+      {" · "}<a href="https://connect.mdbase.dev/login">Sign in</a>
+    </p>
   </section>
 
-  <section class="beta-details" aria-labelledby="what-to-expect">
-    <h2 id="what-to-expect">What to expect.</h2>
-    <dl class="beta-facts">
-      <div>
-        <dt>Open beta</dt>
-        <dd>
-          Connect is pre-release software with no availability guarantee. Keep
-          independent backups of important collections.
-        </dd>
-      </div>
+  <section class="content-section" aria-label="Beta availability and account limits">
+    <p>
+      Connect has no availability guarantee during the open beta. Keep
+      independent backups of important collections.
+    </p>
+    <dl class="glossary-list">
       <div>
         <dt>Hosted allowance</dt>
         <dd>
           Open-beta accounts include 1 GiB of hosted storage and up to three
-          hosted collections in total. The starter collection uses one of
-          those three slots. Local collections do not use this allowance.
+          hosted collections. The starter collection uses one of those slots.
+          Local collections do not use this allowance.
         </dd>
       </div>
       <div>
@@ -61,164 +50,25 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <div>
         <dt>Existing invitations</dt>
         <dd>
-          One-time invitation links already delivered remain valid until the
-          expiry shown in the invitation email.
+          Invitation links already delivered remain valid until the expiry
+          shown in the invitation email.
         </dd>
       </div>
     </dl>
   </section>
 
-  <section class="beta-next" aria-labelledby="before-you-start">
-    <div>
-      <h2 id="before-you-start">Before you start.</h2>
-      <p>
-        Read how local and hosted collections differ, including which
-        components can read record contents. The privacy policy and service
-        terms apply when you create an account.
-      </p>
-      <div class="button-row">
-        <a class="button" href="/connect/">How Connect works</a>
-        <a class="button" href="/privacy/">Privacy</a>
-        <a class="button" href="/terms/">Terms</a>
-      </div>
-    </div>
-    <div>
-      <h2>Build or work locally.</h2>
-      <p>
-        The mdbase specification and local tools remain open source and do not
-        require a Connect account.
-      </p>
-      <div class="button-row">
-        <a class="button button--primary" href="/downloads/">Download Connect</a>
-        <a class="button" href="/spec/">Read the specification</a>
-        <a class="button" href="/sdk/quickstart/">Try the SDK locally</a>
-      </div>
-    </div>
+  <section class="content-section" aria-label="Further information">
+    <p>
+      Read <a href="/connect/">how local and hosted collections differ</a>,
+      including which components can read record contents. The{" "}
+      <a href="/privacy/">privacy policy</a> and <a href="/terms/">service terms</a>{" "}
+      apply when you create an account.
+    </p>
+    <p>
+      The <a href="/spec/">mdbase specification</a> and local tools remain open
+      source and do not require a Connect account. You can also{" "}
+      <a href="/downloads/">download Connect</a> or{" "}
+      <a href="/sdk/quickstart/">try the SDK locally</a>.
+    </p>
   </section>
-
 </BaseLayout>
-
-<style>
-  .beta-opening {
-    display: grid;
-    width: min(100% - 2rem, var(--page));
-    min-height: min(42rem, calc(100vh - var(--header)));
-    margin-inline: auto;
-    padding-block: clamp(4rem, 9vw, 8rem);
-    align-items: end;
-    grid-template-columns: minmax(0, 0.92fr) minmax(20rem, 0.68fr);
-    gap: clamp(3rem, 9vw, 9rem);
-  }
-
-  .beta-opening__copy h1 {
-    max-width: 11ch;
-    margin-top: 1rem;
-    font-size: clamp(3rem, 6vw, 5.75rem);
-    letter-spacing: -0.035em;
-  }
-
-  .beta-opening__copy > p:last-child {
-    max-width: 34rem;
-    margin-top: 1.5rem;
-    color: var(--ink-soft);
-    font-size: clamp(1rem, 1.5vw, 1.125rem);
-  }
-
-  .beta-intake {
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--line-strong);
-  }
-
-  .beta-intake h2 {
-    max-width: 16ch;
-    margin-top: 0.85rem;
-    font-size: clamp(1.6rem, 3vw, 2.4rem);
-  }
-
-  .beta-intake > p:not(.eyebrow) {
-    max-width: 33rem;
-    margin-top: 1rem;
-    color: var(--ink-soft);
-  }
-
-  .beta-intake .button-row {
-    margin-top: 1.5rem;
-  }
-
-  .beta-details,
-  .beta-next {
-    display: grid;
-    width: min(100% - 2rem, var(--page));
-    margin-inline: auto;
-    padding-block: clamp(3rem, 6vw, 5rem);
-    border-top: 1px solid var(--line);
-    grid-template-columns: minmax(14rem, 0.48fr) minmax(0, 1fr);
-    gap: clamp(2rem, 7vw, 7rem);
-  }
-
-  .beta-details h2,
-  .beta-next h2 {
-    max-width: 18ch;
-    font-size: clamp(1.6rem, 3vw, 2.5rem);
-  }
-
-  .beta-next > div > p {
-    max-width: 52ch;
-    margin-top: 1rem;
-    color: var(--ink-soft);
-  }
-
-  .beta-facts {
-    border-top: 1px solid var(--line-strong);
-  }
-
-  .beta-facts > div {
-    display: grid;
-    padding-block: 1rem;
-    border-bottom: 1px solid var(--line);
-    grid-template-columns: minmax(9rem, 0.42fr) minmax(0, 1fr);
-    gap: 1.5rem;
-  }
-
-  .beta-facts dt {
-    color: var(--ink);
-    font-size: 0.82rem;
-    font-weight: 700;
-  }
-
-  .beta-facts dd {
-    margin: 0;
-    color: var(--ink-soft);
-    font-size: 0.88rem;
-  }
-
-  .beta-next .button-row {
-    margin-top: 1.25rem;
-  }
-
-  @media (max-width: 48rem) {
-    .beta-opening {
-      min-height: 0;
-      align-items: start;
-      grid-template-columns: 1fr;
-      gap: 3.5rem;
-    }
-
-    .beta-opening__copy h1 {
-      font-size: clamp(3rem, 14vw, 4.6rem);
-    }
-
-    .beta-details,
-    .beta-next {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-  }
-
-  @media (max-width: 31rem) {
-    .beta-facts > div {
-      grid-template-columns: 1fr;
-      gap: 0.3rem;
-    }
-  }
-</style>

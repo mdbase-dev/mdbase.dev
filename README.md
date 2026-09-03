@@ -18,6 +18,9 @@ Override their paths with `MDBASE_SPEC_DIR`, `MDBASE_CONNECT_DIR`,
 
 ## Production build
 
+Release checks require `gh` authentication and `cosign`; CI installs the pinned
+Cosign version used by the Connect release workflow.
+
 ```sh
 pnpm sync:sources
 pnpm check
@@ -35,6 +38,22 @@ remain traceable to the release artifacts they document.
 
 The first-party contract catalog is built from the commit pinned in
 `site-sources.json`, then published as static files under `/contracts/`.
+
+## Connect release updates
+
+A published Connect desktop release dispatches its immutable tag to
+`.github/workflows/update-connect-release.yml`. The workflow verifies the
+GitHub release, Sigstore-signed channel manifest, tag commit, matching npm SDK,
+and release assets; regenerates `src/data/connect-release.json` and the Connect
+pin in `site-sources.json`; runs the complete website test suite; and opens a
+normal pull request. It never deploys or pushes `main` directly. The same
+workflow can be run manually with a tag to recover from a delayed npm
+publication or failed dispatch.
+
+The workflow uses a GitHub App configured as `RELEASE_AUTOMATION_APP_ID` and
+`RELEASE_AUTOMATION_APP_PRIVATE_KEY`. Its installation on this repository needs
+only `contents: write` and `pull requests: write`. The App token ensures the
+resulting pull request triggers the ordinary protected `Site checks` workflow.
 
 ## Development deployment
 

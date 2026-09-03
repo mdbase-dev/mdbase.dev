@@ -55,6 +55,24 @@ function rewrite(html, archive) {
     .replaceAll('href="mdbase-favicon.svg"', 'href="/spec/mdbase-favicon.svg"')
     .replaceAll('href="runtime.html"', 'href="/runtime/"')
     .replaceAll('<a href="ecosystem.html">Implementations</a>', '')
+    .replace(
+      /<nav class="landing-nav" aria-label="Spec links">[\s\S]*?<\/nav>/,
+      `<nav class="landing-nav" aria-label="Primary navigation">
+        <a href="/">Home</a>
+        <a href="/connect/">Connect</a>
+        <a href="/downloads/">Downloads</a>
+        <a href="/apps/">Apps</a>
+      </nav>`
+    )
+    .replace(
+      /<div class="spec-mobile-links" aria-label="Site links">[\s\S]*?<\/div>/,
+      `<div class="spec-mobile-links" aria-label="Site links">
+        <a href="/">Home</a>
+        <a href="/connect/">Connect</a>
+        <a href="/downloads/">Downloads</a>
+        <a href="/apps/">Apps</a>
+      </div>`
+    )
     .replaceAll('href="/testbed/"', 'href="#section-16"')
     .replaceAll('href="spec-v0.2.html"', 'href="/spec/v0.2/"')
     .replaceAll('href="spec.html"', 'href="/spec/"')
