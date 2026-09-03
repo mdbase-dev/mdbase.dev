@@ -9,9 +9,9 @@
 .app-entry__links { display: flex; margin-top: 0.35rem; flex-wrap: wrap; gap: 0.25rem 1rem; }
 .app-meta { display: grid; margin-top: 0.6rem; }
 .app-meta > div { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 0.75rem; }
-.app-meta dt { color: var(--ink-muted); font: 400 0.68rem/1.55 var(--mono); }
+.app-meta dt { color: var(--ink-muted); font: 400 0.68rem/1.55 var(--sans); }
 .app-meta dd { color: var(--ink-soft); font-size: 0.82rem; }
-.catalogue-label { color: var(--ink-muted); font: 400 0.68rem/1.4 var(--mono); }
+.catalogue-label { color: var(--ink-muted); font: 400 0.68rem/1.4 var(--sans); }
 .build-section { display: block; }
 .build-section__body p { margin-top: 0.5rem; color: var(--ink-soft); }
 .build-section__body .button-row { margin-top: 0.8rem; }

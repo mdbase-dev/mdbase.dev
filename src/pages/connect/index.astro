@@ -4,58 +4,39 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="mdbase Connect"
-  description="Choose which apps can use a local folder or hosted mdbase collection, review exact permissions, and revoke access at any time."
+  description="Host and synchronize Markdown collections, serve local folders to applications, and control access through explicit permissions."
   current="connect"
 >
-  <section class="content-section">
-    <h1>Connect</h1>
+  <section class="content-section" aria-label="About mdbase Connect">
+    <h1 class="sr-only">mdbase Connect</h1>
     <p>
-      mdbase Connect allows an application to work with one local or hosted
-      collection. The application describes the kinds of records it understands
-      and the operations it needs. You choose the collection and review the
-      request before access is granted.
+      mdbase Connect makes Markdown collections available to applications. It
+      hosts collections online, synchronizes them with local copies, and
+      manages application access.
     </p>
     <p>
-      A grant belongs to a particular application and collection. It might
-      allow the application to view, find, create, and edit records while
-      leaving deletion unavailable. The authority responsible for the
-      collection checks that grant whenever an operation is performed.
+      When a collection is hosted, Connect serves its online copy directly.
+      When a collection remains on your computer, the mdbase Connector serves
+      the folder locally. Connect still manages approval, but the contents of
+      local operations do not pass through the hosted service.
     </p>
     <p>
-      For a local collection, an open-source connector runs on your computer
-      and performs approved operations against the folder. The Connect control
-      plane coordinates authorization and routing but does not receive the
-      operation payloads or results.
+      Connect encrypts hosted collections in transit and at rest. Because the
+      service serves those files to approved applications, it can decrypt
+      hosted records while processing requests. The <a href="/security/"
+        >security documentation</a
+      > explains this boundary in more detail.
     </p>
     <p>
-      For a hosted collection, the provider keeps the authoritative copy online
-      and performs the same operations there. A local Markdown mirror can be
-      retained for offline work.
+      When an application asks for access, you choose a collection and review
+      what it needs to do. The permission applies only to that application and
+      collection and can be narrowed, paused, or revoked later.
     </p>
     <p>
-      Access can be narrowed, paused, or revoked later. This changes what the
-      application may do; it does not alter ownership of the collection or
-      prevent other tools from using it.
-    </p>
-    <p>
-      <a href="/beta/">Join the open beta</a> or
-      <a href="https://connect.mdbase.dev/login">sign in</a>.
-    </p>
-  </section>
-
-  <section class="content-section">
-    <h2>Trust boundary</h2>
-    <p>
-      Connect does not make every component equally trusted. A local connector
-      can read the local folder. A hosted provider can decrypt hosted records in
-      order to process them. Applications receive only the operations in their
-      active grants. The control plane can identify accounts, applications,
-      collections, and grants, but cannot read local collection contents.
-    </p>
-    <p>
-      The <a href="/security/">security documentation</a> describes these
-      boundaries and their limitations in detail. Developers can continue with
-      the <a href="/sdk/connect-quickstart/">Connect application guide</a>.
+      You can <a href="/downloads/">download the Connector</a> to use local
+      folders, <a href="/beta/">create a Connect account</a> for hosted
+      collections, or <a href="https://connect.mdbase.dev/login">sign in</a> to
+      manage an existing account.
     </p>
   </section>
 </BaseLayout>

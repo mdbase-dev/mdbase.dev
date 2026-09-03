@@ -19,8 +19,9 @@
     const updateControls = () => {
       controls.forEach((control) => {
         const next = currentTheme() === "dark" ? "Light" : "Dark";
-        control.textContent = next;
-        control.setAttribute("aria-label", `Use ${next.toLowerCase()} mode`);
+        const label = `Use ${next.toLowerCase()} mode`;
+        control.setAttribute("aria-label", label);
+        control.setAttribute("title", label);
         control.hidden = false;
       });
     };
@@ -38,7 +39,7 @@
       const dark = currentTheme() === "dark";
       document
         .querySelector('meta[name="theme-color"]')
-        ?.setAttribute("content", dark ? "#121212" : "#faf9f6");
+        ?.setAttribute("content", dark ? "#121212" : "#ffffff");
       updateControls();
       dispatchEvent(new CustomEvent("mdbase:themechange"));
     };

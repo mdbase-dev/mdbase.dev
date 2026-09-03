@@ -20,31 +20,23 @@ const advancedPacks = catalog.packs.filter((pack) => pack.installation.visibilit
   description="Browse versioned data contracts and installable starter type packs for mdbase collections."
   current="sdk"
 >
-  <section class="page-hero">
-    <div class="page-hero__inner">
-      <div>
-        <p class="eyebrow"><i></i> Portable collection semantics</p>
-        <h1>Contracts and type packs</h1>
-      </div>
-      <div class="page-hero__aside">
-        <p>
-          Contracts give applications a small, shared vocabulary without
-          forcing every collection to use the same field names or storage
-          format. Type packs install a contract and a friendly editable type
-          together.
-        </p>
-        <div class="button-row">
-          <a class="button button--primary" href="/contracts/catalog.json">Catalog JSON</a>
-          <a class="button" href="https://github.com/mdbase-dev/mdbase-contracts">
-            Source repository
-          </a>
-        </div>
-      </div>
+  <section class="content-section" aria-label="Contracts and type packs">
+    <h1 class="sr-only">Contracts and type packs</h1>
+    <p>
+      Contracts give applications a small shared vocabulary without requiring
+      every collection to use the same field names or storage format. Type
+      packs install a contract together with a local, editable type.
+    </p>
+    <div class="button-row">
+      <a class="button button--primary" href="/contracts/catalog.json">Catalog JSON</a>
+      <a class="button" href="https://github.com/mdbase-dev/mdbase-contracts">
+        Source repository
+      </a>
     </div>
   </section>
 
   <section class="content-section contract-explainer">
-    <h2>Local notes, shared meaning</h2>
+    <h2>How contracts map local fields</h2>
     <p class="section-intro">
       A type remains the source of truth for what your Markdown records store.
       Its <code>implements</code> entries explain how compatible applications

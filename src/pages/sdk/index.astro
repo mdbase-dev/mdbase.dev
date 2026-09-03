@@ -31,10 +31,10 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
     route and the collection authority checks the current grant.
   </p>
 
-  <h2 id="start">Choose the first result you need</h2>
+  <h2 id="start">Starting points</h2>
   <div class="start-options">
     <div>
-      <strong>Learn the Connect client boundary</strong>
+      <strong>Local SDK sandbox</strong>
       <p>
         Run typed reads and revision-safe changes against an in-memory
         collection. This source-built sandbox needs no account or service.
@@ -42,7 +42,7 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
       <a href="/sdk/quickstart/">Run the source-built sandbox</a>
     </div>
     <div>
-      <strong>Connect a real application</strong>
+      <strong>Connect an application</strong>
       <p>
         Add a manifest, authorize one compatible collection, complete the
         browser callback, and use the approved connection.
@@ -50,7 +50,7 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
       <a href="/sdk/connect-quickstart/">Open the Connect guide</a>
     </div>
     <div>
-      <strong>Implement the open specification</strong>
+      <strong>Specification implementations</strong>
       <p>
         Build a conforming collection tool or use the versioned TypeScript and
         Rust implementations without the managed Connect service.
@@ -59,7 +59,7 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
     </div>
   </div>
   <div class="callout">
-    <strong>Open-beta release status</strong>
+    <strong>Release status</strong>
     <p>
       The production service and protocol 1 are deployed for public beta accounts.
       The npm packages await their first public release. Current developers
@@ -68,7 +68,7 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
     </p>
   </div>
   <div class="callout callout--success">
-    <strong>Versioned implementation evidence</strong>
+    <strong>Conformance evidence</strong>
     <p>
       The current site records mdbase specification 0.3.0 claims for the
       TypeScript 0.3.0-rc.4 and Rust 0.4.0-rc.3 implementations, with evidence
@@ -139,7 +139,7 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
   </p>
   <CodeBlock code={seam} language="ts" label="tasks.ts" />
   <div class="callout">
-    <strong>The operation envelope is part of the contract.</strong>
+    <strong>Operation envelopes</strong>
     <p>
       Record operations return <code>{`{ valid, result, diagnostics }`}</code>.
       Use <code>unwrapOperation()</code> when exceptions suit the calling code,

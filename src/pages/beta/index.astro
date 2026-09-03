@@ -7,10 +7,11 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   description="Create an mdbase Connect account with a verified email address and start using local or hosted Markdown collections."
   current="connect"
 >
-  <section class="content-section">
-    <h1>Connect open beta</h1>
+  <section class="content-section" aria-label="Connect open beta">
+    <h1 class="sr-only">Connect open beta</h1>
     <p>
-      Public signup is open. Create an account with your email address and a
+      Public signup for the Connect open beta is available. Create an account
+      with your email address and a
       password. Connect will prepare a small hosted Markdown collection so you
       can open the editor and start exploring.
     </p>
@@ -25,15 +26,11 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     </p>
   </section>
 
-  <section class="content-section" aria-labelledby="what-to-expect">
-    <h2 id="what-to-expect">What to expect</h2>
-    <div class="callout">
-      <strong>Pre-release software</strong>
-      <p>
-        Connect has no availability guarantee during the open beta. Keep
-        independent backups of important collections.
-      </p>
-    </div>
+  <section class="content-section" aria-label="Beta availability and account limits">
+    <p>
+      Connect has no availability guarantee during the open beta. Keep
+      independent backups of important collections.
+    </p>
     <dl class="glossary-list">
       <div>
         <dt>Hosted allowance</dt>
@@ -60,18 +57,17 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     </dl>
   </section>
 
-  <section class="content-section">
-    <h2>Before you start</h2>
+  <section class="content-section" aria-label="Further information">
     <p>
       Read <a href="/connect/">how local and hosted collections differ</a>,
-      including which components can read record contents. The
-      <a href="/privacy/">privacy policy</a> and <a href="/terms/">service terms</a>
+      including which components can read record contents. The{" "}
+      <a href="/privacy/">privacy policy</a> and <a href="/terms/">service terms</a>{" "}
       apply when you create an account.
     </p>
     <p>
       The <a href="/spec/">mdbase specification</a> and local tools remain open
-      source and do not require a Connect account. You can also
-      <a href="/downloads/">download Connect</a> or
+      source and do not require a Connect account. You can also{" "}
+      <a href="/downloads/">download Connect</a> or{" "}
       <a href="/sdk/quickstart/">try the SDK locally</a>.
     </p>
   </section>

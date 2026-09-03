@@ -9,7 +9,7 @@ try {
     || (theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
   document
     .querySelector('meta[name="theme-color"]')
-    ?.setAttribute("content", dark ? "#121212" : "#faf9f6");
+    ?.setAttribute("content", dark ? "#121212" : "#ffffff");
 } catch {
   // The system preference remains available when local storage is unavailable.
 }

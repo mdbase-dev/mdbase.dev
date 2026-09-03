@@ -17,7 +17,7 @@ const applications: CatalogueEntry[] = [
     description: "Task manager with lists, boards, calendars, recurrence, reminders, attachments, and time tracking.",
     status: "Public beta",
     runsOn: "Web, iOS, Android",
-    collections: "Hosted or connected computer",
+    collections: "Hosted by Connect or local through Connector",
     links: [
       { label: "Open TaskNotes", href: "https://app.tasknotes.dev/" },
       { label: "Try the demo", href: "https://app.tasknotes.dev/?demo=30" },
@@ -29,7 +29,7 @@ const applications: CatalogueEntry[] = [
     description: "General collection editor for Markdown records, frontmatter, links, backlinks, and type definitions.",
     status: "Public beta",
     runsOn: "Web",
-    collections: "Hosted or connected computer",
+    collections: "Hosted by Connect or local through Connector",
     links: [
       { label: "Open Editor", href: "https://editor.mdbase.dev/" },
       { label: "Source", href: "https://github.com/mdbase-dev/mdbase-connect/tree/main/apps/editor" }
@@ -40,7 +40,7 @@ const applications: CatalogueEntry[] = [
     description: "Obsidian plugin for collection setup, type editing, migration, validation, and hosted collection mirrors.",
     status: "Development build",
     runsOn: "Obsidian desktop and mobile",
-    collections: "Local; hosted mirror",
+    collections: "Local folder or Connect-hosted mirror",
     links: [{ label: "Source", href: "https://github.com/callumalpass/mdbase-obsidian" }]
   },
   {
@@ -48,7 +48,7 @@ const applications: CatalogueEntry[] = [
     description: "Remote MCP endpoint for reading and changing approved collections from compatible AI clients.",
     status: "Public beta",
     runsOn: "OAuth-capable MCP clients",
-    collections: "Hosted or connected computer",
+    collections: "Hosted by Connect or local through Connector",
     links: [
       { label: "Setup and tools", href: "https://github.com/mdbase-dev/mdbase-connect/blob/main/docs/mcp-gateway.md" },
       { label: "Endpoint", href: "https://mcp.mdbase.dev/mcp" }
@@ -62,12 +62,13 @@ const applications: CatalogueEntry[] = [
   description="Applications and collection tools that work with mdbase collections."
   current="apps"
 >
-  <section class="apps-intro">
-    <h1>Applications</h1>
+  <section class="apps-intro" aria-label="Applications">
+    <h1 class="sr-only">Applications</h1>
     <p>
-      An application uses the records and type definitions in a collection
-      rather than moving the data into its own private format. Several
-      applications can present different views of the same files.
+      Applications are the tools used to view and change an mdbase collection.
+      They access the same Markdown records through mdbase Connect, whether the
+      collection is hosted by Connect or served from your computer by the
+      Connector.
     </p>
   </section>
 
@@ -94,13 +95,12 @@ const applications: CatalogueEntry[] = [
     </div>
   </section>
 
-  <section class="build-section" aria-labelledby="build-heading">
-    <h2 id="build-heading">Building an application</h2>
+  <section class="build-section" aria-label="For application developers">
     <div class="build-section__body">
       <p>
-        The Connect SDK handles authorization, collection selection, operations,
-        and change feeds. Application manifests declare required contracts and
-        permissions.
+        Application developers can use the Connect SDK for authorization,
+        collection selection, operations, and change feeds. Application
+        manifests declare required contracts and permissions.
       </p>
       <div class="button-row">
         <a href="/sdk/quickstart/">SDK quickstart</a>

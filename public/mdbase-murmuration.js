@@ -929,7 +929,7 @@
         context.textAlign = "left";
         context.fillStyle = palette.ink;
         context.globalAlpha = 0.78;
-        context.font = "bold 11px serif";
+        context.font = '17px "Atkinson Hyperlegible", sans-serif';
         context.fillText(node.label, labelX, labelY);
         context.restore();
       }
@@ -938,7 +938,7 @@
         context.save();
         context.fillStyle = palette.muted;
         context.globalAlpha = 0.68;
-        context.font = "11px serif";
+        context.font = '17px "Atkinson Hyperlegible", sans-serif';
         context.textAlign = "center";
         context.fillText(note.text, note.x, note.y);
         context.restore();

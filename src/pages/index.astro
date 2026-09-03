@@ -4,14 +4,14 @@ import HomeLayout from "../layouts/HomeLayout.astro";
 
 <HomeLayout
   title="mdbase"
-  description="Use the same Markdown files in different apps, keep the main copy where you choose, and approve access explicitly."
+  description="Keep structured data in ordinary Markdown files and use the same collection across applications and locations."
 >
   <canvas id="diagram" aria-hidden="true"></canvas>
 
   <main id="main" tabindex="-1">
-    <section id="intro" class="chapter is-active" data-scene="intro">
+    <section id="intro" class="chapter is-active" data-scene="intro" aria-label="Introduction">
       <div class="chapter__inner">
-        <h1>What is mdbase?</h1>
+        <h1 class="sr-only">mdbase</h1>
         <p>
           An mdbase is a folder of Markdown files with enough shared structure
           for applications to understand them. The files remain readable in a
@@ -19,20 +19,21 @@ import HomeLayout from "../layouts/HomeLayout.astro";
           ordinary tools.
         </p>
         <p>
-          The <a href="/spec/">specification</a> defines the common format.
-          Libraries provide validation and queries. <a href="/connect/">Connect</a>
-          lets an application request access to a particular collection.
+          Applications can use these files without importing them into private
+          databases. <a href="/connect/">mdbase Connect</a> can host a
+          collection online, synchronize it with a local copy, and control
+          which applications may use it. If a collection remains on your
+          computer, the mdbase Connector serves the folder locally.
         </p>
       </div>
     </section>
 
-    <section id="example" class="chapter" data-scene="collection">
+    <section id="example" class="chapter" data-scene="collection" aria-label="Example collection">
       <div class="chapter__inner">
-        <h2>A folder is the database.</h2>
         <p>
-          This collection contains project records and the definitions that
-          describe them. A project application and a text editor can work with
-          the same files.
+          A collection is a folder containing Markdown records and the
+          definitions that describe them. In this example, a project
+          application and a text editor can work with the same files.
         </p>
         <pre class="file-tree" aria-label="Example mdbase folder"><code>projects/
 ├── mdbase.yaml
@@ -46,12 +47,12 @@ import HomeLayout from "../layouts/HomeLayout.astro";
       </div>
     </section>
 
-    <section id="meaning" class="chapter" data-scene="structure">
+    <section id="meaning" class="chapter" data-scene="structure" aria-label="Markdown records">
       <div class="chapter__inner">
-        <h2>The records are ordinary Markdown.</h2>
         <p>
-          Frontmatter holds fields that applications can validate and query.
-          The body remains prose.
+          Each record is an ordinary Markdown file. Frontmatter holds fields
+          that applications can validate and query, while the body remains
+          prose.
         </p>
         <pre class="record-example" aria-label="Example project record"><code>---
 type: project
@@ -70,48 +71,45 @@ easier to understand.</code></pre>
       </div>
     </section>
 
-    <section id="storage" class="chapter" data-scene="modes">
+    <section id="storage" class="chapter" data-scene="modes" aria-label="Local and hosted collections">
       <div class="chapter__inner">
-        <h2>A collection can be local or hosted.</h2>
         <p>
-          A local collection is an ordinary folder on your computer. The
-          open-source libraries and command-line tools can use it without an
-          account.
-        </p>
-        <p>
-          A hosted collection keeps its main copy online. It can still have a
-          local Markdown mirror for offline work.
+          A collection can remain as a folder on your computer or be hosted by
+          mdbase Connect. The Connector serves a local folder directly to
+          approved applications. A hosted collection keeps its main copy
+          online and can synchronize with a local Markdown mirror for offline
+          work.
         </p>
       </div>
     </section>
 
-    <section id="permission" class="chapter" data-scene="grant">
+    <section id="permission" class="chapter" data-scene="grant" aria-label="Application access">
       <div class="chapter__inner">
-        <h2>Applications ask for access.</h2>
         <p>
-          Connect shows which collection an application wants to use and which
-          operations it needs. You might allow an application to find, create,
+          Applications use Connect to ask for access to a collection and list
+          the operations they need. You might allow an application to find, create,
           and edit project records while leaving deletion blocked.
         </p>
         <p>
-          The collection authority checks the grant whenever the application
-          performs an operation.
+          Connect checks that permission whenever the application uses the
+          collection.
         </p>
       </div>
     </section>
 
-    <section id="after-approval" class="chapter" data-scene="access">
+    <section id="after-approval" class="chapter" data-scene="access" aria-label="Managing access">
       <div class="chapter__inner">
-        <h2>The collection does not belong to the application.</h2>
         <p>
-          Access can be narrowed, paused, or revoked. Removing an application
+          The application does not own the collection. Access can be narrowed,
+          paused, or revoked. Removing an application
           does not remove the collection, and the files remain usable with
           other conforming tools.
         </p>
         <p>
-          See the <a href="/apps/">current applications</a>, read the
+          See the <a href="/apps/">current applications</a>, read the{" "}
           <a href="/sdk/">developer documentation</a>, or learn about the
-          optional <a href="/runtime/">runtime profile</a>.
+          optional <a href="/runtime/">runtime profile</a>. Connect is also
+          available in <a href="/beta/">open beta</a>.
         </p>
       </div>
     </section>

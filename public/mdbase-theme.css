@@ -4,10 +4,10 @@
   background: var(--color-canvas);
   font-family: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
   font-synthesis: none;
-  --color-canvas: #faf9f6;
-  --color-surface: #faf9f6;
-  --color-surface-subtle: #f5f4f0;
-  --color-selected: #f1f0ec;
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #ffffff;
+  --color-selected: #ffffff;
   --color-text: #171717;
   --color-text-soft: rgb(23 23 23 / 74%);
   --color-text-muted: rgb(23 23 23 / 54%);
@@ -37,6 +37,10 @@
   --danger: var(--color-danger);
   --mono: "Azeret Mono", "SFMono-Regular", "Cascadia Code", monospace;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  font-size: 17px;
 }
 
 :root[data-theme="dark"] {

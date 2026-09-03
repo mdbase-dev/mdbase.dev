@@ -6,10 +6,9 @@ interface Props {
 const { current } = Astro.props;
 const links = [
   { href: "/", label: "Home", key: "home" },
-  { href: "/apps/", label: "Apps", key: "apps" },
   { href: "/connect/", label: "Connect", key: "connect" },
-  { href: "/sdk/", label: "Documentation/SDK", key: "sdk" },
-  { href: "/runtime/", label: "Runtime", key: "runtime" }
+  { href: "/downloads/", label: "Downloads", key: "downloads" },
+  { href: "/apps/", label: "Apps", key: "apps" }
 ] as const;
 ---
 
@@ -24,7 +23,12 @@ const links = [
           </a>
         ))
       }
-      <button class="theme-toggle" type="button" hidden>Dark</button>
+      <button class="theme-toggle" type="button" aria-label="Use dark mode" title="Use dark mode" hidden>
+        <svg class="theme-toggle__icon" viewBox="0 0 16 16" aria-hidden="true">
+          <circle cx="8" cy="8" r="5.5"></circle>
+          <path d="M8 2.5a5.5 5.5 0 0 0 0 11Z"></path>
+        </svg>
+      </button>
     </nav>
   </div>
 </header>

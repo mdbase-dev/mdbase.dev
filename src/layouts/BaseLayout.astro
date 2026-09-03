@@ -1,6 +1,5 @@
 ---
 import "@fontsource/atkinson-hyperlegible/400.css";
-import "@fontsource/atkinson-hyperlegible/700.css";
 import "@fontsource/azeret-mono/400.css";
 import "@fontsource/azeret-mono/500.css";
 import "../styles/shell.css";
@@ -14,9 +13,10 @@ interface Props {
   description: string;
   current?: "home" | "apps" | "downloads" | "connect" | "sdk" | "runtime" | "spec";
   noIndex?: boolean;
+  wide?: boolean;
 }
 
-const { title, description, current, noIndex = false } = Astro.props;
+const { title, description, current, noIndex = false, wide = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
 ---
@@ -32,7 +32,7 @@ const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="stylesheet" href="/mdbase-theme.css" />
-    <meta name="theme-color" content="#faf9f6" />
+    <meta name="theme-color" content="#ffffff" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
@@ -42,7 +42,7 @@ const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
     {noIndex && <meta name="robots" content="noindex" />}
     <script is:inline src="/theme-bootstrap.js"></script>
   </head>
-  <body class="site-body">
+  <body class:list={["site-body", { "site-body--wide": wide }]}>
     <a class="skip-link" href="#main">Skip to content</a>
     <SiteHeader current={current} />
     <main id="main" tabindex="-1">

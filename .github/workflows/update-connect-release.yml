@@ -1,0 +1,150 @@
+name: Update Connect release
+
+on:
+  repository_dispatch:
+    types: [connect-client-release-published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published mdbase Connect release tag
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: connect-release-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Verify release and open pull request
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Select release tag
+        id: release
+        env:
+          DISPATCH_TAG: ${{ github.event.client_payload.tag }}
+          MANUAL_TAG: ${{ inputs.tag }}
+        run: |
+          tag="${DISPATCH_TAG:-$MANUAL_TAG}"
+          if [[ ! "$tag" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+            echo "Invalid Connect release tag." >&2
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "branch=automation/connect-release-$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Check out website
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Read specification source identity
+        id: specification
+        run: |
+          echo "repository=$(jq -r '.specification.repository' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "ref=$(jq -r '.specification.ref' site-sources.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Check out specification
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ steps.specification.outputs.repository }}
+          ref: ${{ steps.specification.outputs.ref }}
+          path: .sources/mdbase-spec
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          version: 10
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Install website dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build specification artifact
+        working-directory: .sources/mdbase-spec/site
+        run: npm ci && npm run build
+
+      - name: Verify public evidence and generate release record
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MDBASE_RELEASE_NPM_ATTEMPTS: "15"
+          MDBASE_RELEASE_NPM_DELAY_MS: "60000"
+        run: node scripts/update-connect-release.mjs '${{ steps.release.outputs.tag }}'
+
+      - name: Validate generated website
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MDBASE_SPEC_DIR: .sources/mdbase-spec
+        run: pnpm test
+
+      - name: Require a release-only change
+        id: changes
+        run: |
+          mapfile -t changed < <(git diff --name-only)
+          if [ "${#changed[@]}" -eq 0 ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          printf '%s\n' "${changed[@]}" | sort > "$RUNNER_TEMP/changed"
+          printf '%s\n' site-sources.json src/data/connect-release.json | sort > "$RUNNER_TEMP/expected"
+          diff -u "$RUNNER_TEMP/expected" "$RUNNER_TEMP/changed"
+          echo "present=true" >> "$GITHUB_OUTPUT"
+
+      - name: Create website automation token
+        if: steps.changes.outputs.present == 'true'
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ vars.RELEASE_AUTOMATION_APP_ID }}
+          private-key: ${{ secrets.RELEASE_AUTOMATION_APP_PRIVATE_KEY }}
+          owner: mdbase-dev
+          repositories: mdbase.dev
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Open release update pull request
+        if: steps.changes.outputs.present == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          BRANCH: ${{ steps.release.outputs.branch }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          existing="$(gh pr list --repo "$GITHUB_REPOSITORY" --state all --head "$BRANCH" --json url,state --jq '.[0] // empty')"
+          if [ -n "$existing" ]; then
+            state="$(jq -r .state <<<"$existing")"
+            url="$(jq -r .url <<<"$existing")"
+            if [ "$state" = "OPEN" ] || [ "$state" = "MERGED" ]; then
+              echo "Release update already represented by $url"
+              exit 0
+            fi
+            echo "The deterministic release PR was closed without merging: $url" >&2
+            exit 1
+          fi
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            echo "Remote branch $BRANCH exists without a pull request; refusing to overwrite it." >&2
+            exit 1
+          fi
+          git switch -c "$BRANCH"
+          git config user.name "mdbase release automation[bot]"
+          git config user.email "mdbase-release-automation[bot]@users.noreply.github.com"
+          git add site-sources.json src/data/connect-release.json
+          git commit -m "Update Connect downloads to $TAG"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --set-upstream origin "$BRANCH"
+          gh pr create \
+            --repo "$GITHUB_REPOSITORY" \
+            --base main \
+            --head "$BRANCH" \
+            --title "Update Connect downloads to $TAG" \
+            --body "Updates the Downloads release record from the published, Sigstore-verified mdbase Connect channel for [$TAG](https://github.com/mdbase-dev/mdbase-connect/releases/tag/$TAG).\n\nThe website release checks and full test suite passed before this PR was opened."

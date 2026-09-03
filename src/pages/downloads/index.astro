@@ -6,6 +6,9 @@ const { version, tag, releaseUrl: releasePage } = release;
 const releaseBase = `https://github.com/mdbase-dev/mdbase-connect/releases/download/${tag}`;
 const desktopDownloads = release.desktop;
 const cliDownloads = release.cli;
+const macDownloadsSigned = desktopDownloads
+  .filter(({ platform }) => platform === "macOS")
+  .every(({ trust }) => trust === "Signed and notarized");
 const published = new Date(release.publishedAt);
 const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
 ---
@@ -15,39 +18,37 @@ const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
   description="Download the mdbase Connect desktop app or standalone command line tools for macOS, Windows, and Linux."
   current="downloads"
 >
-  <section class="page-hero">
-    <div class="page-hero__inner">
-      <div>
-        <h1>Download mdbase Connect</h1>
-      </div>
-      <div class="page-hero__aside">
-        <p>
-          The desktop app includes the local connector, background service,
-          and command line tools. The mdbase editor is available online. These
-          builds are public beta releases; hosted collections require a free
-          Connect account.
-        </p>
-        <div class="download-summary" aria-label="Release details">
-          <span>Version <strong>{version}</strong></span>
-          <span>Published <strong><time datetime={release.publishedAt}>{published.toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })}</time></strong></span>
-        </div>
-      </div>
+  <section class="content-section" aria-label="mdbase Connect downloads">
+    <h1 class="sr-only">mdbase Connect downloads</h1>
+    <p>
+      Install mdbase Connect on your computer to make local Markdown folders
+      available to approved applications. The desktop app includes the mdbase
+      Connector, its background service, and the command-line tools.
+    </p>
+    <p>
+      The mdbase editor is available online. These builds are public beta
+      releases; hosted collections require a free Connect account.
+    </p>
+    <div class="download-summary" aria-label="Release details">
+      <span>Version <strong>{version}</strong></span>
+      <span>Published <strong><time datetime={release.publishedAt}>{published.toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })}</time></strong></span>
     </div>
   </section>
 
   <section class="content-section" aria-labelledby="desktop-heading">
     <h2 id="desktop-heading">Desktop app</h2>
     <p>
-      Choose the package for your computer. The app can open local mdbase
-      collections immediately; managed Connect features require an account.
+      Choose the package for your computer. The app installs the Connector and
+      can open local mdbase collections immediately; hosted Connect features
+      require an account.
     </p>
 
     <div class="callout">
-      <strong>macOS builds are not notarized; Windows builds are unsigned previews.</strong>
+      <strong>Signing and notarization</strong>
       <p>
-        Windows may show an Unknown Publisher or SmartScreen warning. macOS
-        requires a manual Privacy &amp; Security override and the app has not
-        been notarized. The release includes checksums and Sigstore provenance.
+        Windows may show an Unknown Publisher or SmartScreen warning. {macDownloadsSigned
+          ? "The macOS builds are signed and notarized."
+          : "macOS requires a manual Privacy & Security override and the app has not been notarized."} The release includes checksums and Sigstore provenance.
       </p>
     </div>
 
@@ -70,7 +71,7 @@ const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
       }
     </div>
     <p class="download-note">
-      Portable Windows and macOS ZIP builds are available on the
+      Portable Windows and macOS ZIP builds are available on the{" "}
       <a href={releasePage}>release page</a>.
     </p>
   </section>
@@ -100,7 +101,7 @@ const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
       }
     </div>
     <p class="download-note">
-      Follow the <a href={`https://github.com/mdbase-dev/mdbase-connect/blob/${tag}/docs/headless.md`}>headless installation guide</a>
+      Follow the <a href={`https://github.com/mdbase-dev/mdbase-connect/blob/${tag}/docs/headless.md`}>headless installation guide</a>{" "}
       to verify, install, and run the service.
     </p>
   </section>

@@ -9,16 +9,88 @@
   "releaseUrl": "https://github.com/mdbase-dev/mdbase-connect/releases/tag/v0.1.0-beta.83",
   "channelManifestUrl": "https://github.com/mdbase-dev/mdbase-connect/releases/download/v0.1.0-beta.83/mdbase-connect-channel-v1.json",
   "desktop": [
-    { "platform": "macOS", "detail": "Apple Silicon", "trust": "Beta preview · not notarized", "file": "mdbase-connect-0.1.0-beta.83-macos-arm64.dmg", "size": 138297866, "label": "Download for Apple Silicon" },
-    { "platform": "macOS", "detail": "Intel", "trust": "Beta preview · not notarized", "file": "mdbase-connect-0.1.0-beta.83-macos-x64.dmg", "size": 142932362, "label": "Download for Intel" },
-    { "platform": "Windows", "detail": "64-bit", "trust": "Unsigned beta preview", "file": "mdbase-connect-0.1.0-beta.83-windows-x64-UNSIGNED-Setup.exe", "size": 157127168, "label": "Download for Windows" },
-    { "platform": "Linux", "detail": "64-bit Debian or Ubuntu", "trust": "DEB package", "file": "mdbase-connect-0.1.0-beta.83-linux-x64.deb", "size": 108358596, "label": "Download DEB" },
-    { "platform": "Linux", "detail": "64-bit Fedora, RHEL, or compatible", "trust": "RPM package", "file": "mdbase-connect-0.1.0-beta.83-linux-x64.rpm", "size": 114180081, "label": "Download RPM" }
+    {
+      "platform": "macOS",
+      "detail": "Apple Silicon",
+      "trust": "Beta preview · not notarized",
+      "file": "mdbase-connect-0.1.0-beta.83-macos-arm64.dmg",
+      "size": 138297866,
+      "sha256": "90899ee63e9bd1515dad92abf89bd602c4edede855ac9052106f1c0a780e5085",
+      "label": "Download for Apple Silicon"
+    },
+    {
+      "platform": "macOS",
+      "detail": "Intel",
+      "trust": "Beta preview · not notarized",
+      "file": "mdbase-connect-0.1.0-beta.83-macos-x64.dmg",
+      "size": 142932362,
+      "sha256": "6d77a0dfe1e523962a91f3be1da8f561ca6014899a3cfba35c883b6311972939",
+      "label": "Download for Intel"
+    },
+    {
+      "platform": "Windows",
+      "detail": "64-bit",
+      "trust": "Unsigned beta preview",
+      "file": "mdbase-connect-0.1.0-beta.83-windows-x64-UNSIGNED-Setup.exe",
+      "size": 157127168,
+      "sha256": "1536dfd1317f704d5c0de6ea0550ff75b4886155d1e4dc1e2f4068bac67500c3",
+      "label": "Download for Windows"
+    },
+    {
+      "platform": "Linux",
+      "detail": "64-bit Debian or Ubuntu",
+      "trust": "DEB package",
+      "file": "mdbase-connect-0.1.0-beta.83-linux-x64.deb",
+      "size": 108358596,
+      "sha256": "93bd6fd08d2155ff803d2116b5f19168f916135131e15e13bc163fd14ae1f11f",
+      "label": "Download DEB"
+    },
+    {
+      "platform": "Linux",
+      "detail": "64-bit Fedora, RHEL, or compatible",
+      "trust": "RPM package",
+      "file": "mdbase-connect-0.1.0-beta.83-linux-x64.rpm",
+      "size": 114180081,
+      "sha256": "ea7be52483684db0f1d259ecf3e6d64889202a5f5573fae0f1f83517b3472607",
+      "label": "Download RPM"
+    }
   ],
   "cli": [
-    { "platform": "macOS", "detail": "Apple Silicon", "trust": "Beta preview", "file": "mdbase-cli-0.1.0-beta.83-macos-arm64.tar.gz", "size": 14054317, "label": "Download CLI for Apple Silicon" },
-    { "platform": "macOS", "detail": "Intel", "trust": "Beta preview", "file": "mdbase-cli-0.1.0-beta.83-macos-x64.tar.gz", "size": 15227170, "label": "Download CLI for Intel" },
-    { "platform": "Windows", "detail": "64-bit", "trust": "Unsigned beta preview", "file": "mdbase-cli-0.1.0-beta.83-windows-x64-UNSIGNED.tar.gz", "size": 13608434, "label": "Download CLI for Windows" },
-    { "platform": "Linux", "detail": "64-bit", "trust": "tar.gz", "file": "mdbase-cli-0.1.0-beta.83-linux-x64.tar.gz", "size": 15931643, "label": "Download CLI for Linux" }
+    {
+      "platform": "macOS",
+      "detail": "Apple Silicon",
+      "trust": "Beta preview",
+      "file": "mdbase-cli-0.1.0-beta.83-macos-arm64.tar.gz",
+      "size": 14054317,
+      "sha256": "63c9c0e615a2a40a5991c6f75845fe04a450bc2ba11b456509c4fa4ca42676d4",
+      "label": "Download CLI for Apple Silicon"
+    },
+    {
+      "platform": "macOS",
+      "detail": "Intel",
+      "trust": "Beta preview",
+      "file": "mdbase-cli-0.1.0-beta.83-macos-x64.tar.gz",
+      "size": 15227170,
+      "sha256": "cf04a20d62aebdd62fd7ce9f4d670381670b01cc205e169426ee97c38e464c43",
+      "label": "Download CLI for Intel"
+    },
+    {
+      "platform": "Windows",
+      "detail": "64-bit",
+      "trust": "Unsigned beta preview",
+      "file": "mdbase-cli-0.1.0-beta.83-windows-x64-UNSIGNED.tar.gz",
+      "size": 13608434,
+      "sha256": "69df01ff96704b3b1bd8621d9f14f09740a147df3512314b6ef4b971385321c4",
+      "label": "Download CLI for Windows"
+    },
+    {
+      "platform": "Linux",
+      "detail": "64-bit",
+      "trust": "tar.gz",
+      "file": "mdbase-cli-0.1.0-beta.83-linux-x64.tar.gz",
+      "size": 15931643,
+      "sha256": "e09d0734e7aca523edccd80928e8df1bf897a39d93f0bfc017dc7220b34f580a",
+      "label": "Download CLI for Linux"
+    }
   ]
 }
