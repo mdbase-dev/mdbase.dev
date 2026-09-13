@@ -104,7 +104,7 @@ jobs:
           pnpm check:release-order "$BASE_SHA"
 
       - name: Type and content checks
-        run: pnpm test:deploy:dev && pnpm test:release-update && pnpm check:release && pnpm check
+        run: pnpm test:home && pnpm test:deploy:dev && pnpm test:release-update && pnpm check:release && pnpm check
         env:
           GH_TOKEN: ${{ github.token }}
 

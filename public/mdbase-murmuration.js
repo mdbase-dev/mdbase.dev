@@ -82,11 +82,13 @@
 
       function diagramBounds() {
         if (width <= 820) {
+          const headerBottom = document.querySelector(".site-header")?.getBoundingClientRect().bottom || 76;
+          const top = Math.max(headerBottom + 12, height * 0.10);
           return {
             x: width * 0.07,
-            y: Math.max(76, height * 0.10),
+            y: top,
             w: width * 0.86,
-            h: Math.min(height * 0.37, 330)
+            h: Math.max(170, Math.min(height * 0.44 - top, 280))
           };
         }
 
@@ -108,9 +110,50 @@
       }
 
       function addNode(id, label, detail, box, kind = "standard") {
-        const node = { id, label, detail, box, kind };
+        const node = { id, label, detail, box, kind, heading: fitNodeLabel(label, box) };
         diagram.nodes.push(node);
         return node;
+      }
+
+      // Measure once per scene, not on every animation frame. Keep labels inside
+      // their boxes and reserve the same measured space above record particles.
+      function fitNodeLabel(label, box) {
+        const compact = width <= 820;
+        const padding = compact ? 7 : 10;
+        const availableWidth = Math.max(1, box.w - padding * 2);
+        const availableHeight = Math.max(1, box.h - padding * 2);
+        let lines = [];
+        let size = compact ? 14 : 17;
+        for (; size >= 11; size--) {
+          context.font = `${size}px "Atkinson Hyperlegible", sans-serif`;
+          lines = [];
+          let line = "";
+          for (const word of label.split(" ")) {
+            const candidate = line ? `${line} ${word}` : word;
+            if (line && context.measureText(candidate).width > availableWidth) {
+              lines.push(line);
+              line = word;
+            } else line = candidate;
+          }
+          if (line) lines.push(line);
+          if (lines.every((line) => context.measureText(line).width <= availableWidth)
+            && lines.length * Math.ceil(size * 1.15) <= availableHeight) break;
+        }
+        size = Math.max(11, size);
+        const lineHeight = Math.ceil(size * 1.15);
+        const maxLines = Math.max(1, Math.floor(availableHeight / lineHeight));
+        const overflow = lines.length > maxLines;
+        lines = lines.slice(0, maxLines);
+        context.font = `${size}px "Atkinson Hyperlegible", sans-serif`;
+        lines = lines.map((line, index) => {
+          if (context.measureText(line).width <= availableWidth
+            && !(overflow && index === lines.length - 1)) return line;
+          while (line && context.measureText(`${line}…`).width > availableWidth) {
+            line = line.slice(0, -1);
+          }
+          return `${line}…`;
+        });
+        return { lines, size, lineHeight, padding, height: padding + lines.length * lineHeight };
       }
 
       function pointOnNode(node, side, offset = 0.5) {
@@ -132,7 +175,7 @@
       }
 
       function gridParticles(start, count, node, role = "record") {
-        const labelSpace = width <= 820 ? 24 : 31;
+        const labelSpace = node.heading.height + 5;
         const padding = width <= 820 ? 7 : 11;
         const area = {
           x: node.box.x + padding,
@@ -449,6 +492,7 @@
       }
 
       function layoutGrant(bounds) {
+        const compact = bounds.w < 480;
         const collection = addNode(
           "grant-collection",
           "Chosen collection",
@@ -460,20 +504,26 @@
           "grant",
           "Your permission",
           "one app · one collection",
-          rect(bounds, 0.57, 0.35, 0.19, 0.28),
+          compact
+            ? rect(bounds, 0.64, 0.13, 0.35, 0.28)
+            : rect(bounds, 0.57, 0.35, 0.19, 0.28),
           "service"
         );
         const app = addNode(
           "grant-app",
           "The app",
           "approved access",
-          rect(bounds, 0.82, 0.31, 0.17, 0.36),
+          compact
+            ? rect(bounds, 0.64, 0.57, 0.35, 0.28)
+            : rect(bounds, 0.82, 0.31, 0.17, 0.36),
           "app"
         );
-        const askPath = [pointOnNode(app, "left", 0.38), pointOnNode(grant, "right", 0.38)];
+        const askPath = compact
+          ? [pointOnNode(app, "top"), pointOnNode(grant, "bottom")]
+          : [pointOnNode(app, "left", 0.38), pointOnNode(grant, "right", 0.38)];
         const accessPath = [
           pointOnNode(grant, "left", 0.66),
-          pointOnNode(collection, "right", 0.54)
+          pointOnNode(collection, "right", compact ? 0.20 : 0.54)
         ];
 
         addEdge(askPath, null, "asks", true);
@@ -483,7 +533,7 @@
         pathParticles(341, 20, accessPath);
       }
 
-      function layoutAccess(bounds) {
+      function layoutRoutes(bounds) {
         const localBoundary = addNode(
           "access-local",
           "Local collection",
@@ -558,6 +608,47 @@
         pathParticles(331, 10, localPath);
         pathParticles(341, 10, hostedPath);
         pathParticles(351, 10, mirrorPath);
+      }
+
+      function layoutSharing(bounds) {
+        const collection = addNode(
+          "sharing-collection", "Hosted collection", "one shared collection",
+          rect(bounds, 0.01, 0.13, 0.48, 0.72), "authority"
+        );
+        const viewer = addNode(
+          "sharing-viewer", "Viewer", "can read",
+          rect(bounds, 0.64, 0.13, 0.35, 0.28), "service"
+        );
+        const editor = addNode(
+          "sharing-editor", "Editor", "can read and edit",
+          rect(bounds, 0.64, 0.57, 0.35, 0.28), "service"
+        );
+        // These are membership relationships, not directional data transfers.
+        const viewerPath = [pointOnNode(collection, "right", 0.20), pointOnNode(viewer, "left")];
+        const editorPath = [pointOnNode(collection, "right", 0.80), pointOnNode(editor, "left")];
+        addEdge(viewerPath, null, "", false).relationship = true;
+        addEdge(editorPath, null, "", false).relationship = true;
+        gridParticles(0, particleCount, collection);
+      }
+
+      function layoutAccess(bounds) {
+        const collection = addNode(
+          "retained-collection", "Hosted collection", "your records remain",
+          rect(bounds, 0.01, 0.13, 0.48, 0.72), "authority"
+        );
+        addNode(
+          "removed-app", "App removed", "no connection to the collection",
+          rect(bounds, 0.64, 0.13, 0.35, 0.28), "replica"
+        );
+        const app = addNode(
+          "retained-app", "Approved app", "still has access",
+          rect(bounds, 0.64, 0.57, 0.35, 0.28), "app"
+        );
+        const path = [pointOnNode(app, "left"), pointOnNode(collection, "right", 0.80)];
+        addEdge(path, null);
+        // The records do not disappear or become packets when access ends.
+        // Preserve the sharing scene's exact formation in the same collection.
+        gridParticles(0, particleCount, collection);
       }
 
       function layoutLocal(bounds) {
@@ -659,7 +750,9 @@
         else if (name === "request") layoutRequest(bounds);
         else if (name === "actions") layoutActions(bounds);
         else if (name === "grant") layoutGrant(bounds);
+        else if (name === "sharing") layoutSharing(bounds);
         else if (name === "access") layoutAccess(bounds);
+        else if (name === "routes") layoutRoutes(bounds);
         else if (name === "local") layoutLocal(bounds);
         else layoutHosted(bounds);
 
@@ -854,7 +947,7 @@
 
         context.save();
         context.strokeStyle = palette.muted;
-        context.globalAlpha = 0.52;
+        context.globalAlpha *= 0.52;
         context.lineWidth = 1;
         context.setLineDash(edge.dashed ? [3, 5] : []);
         context.beginPath();
@@ -863,11 +956,15 @@
         context.stroke();
         context.setLineDash([]);
 
+        if (edge.relationship) {
+          context.restore();
+          return;
+        }
         const finalPoint = points[points.length - 1];
         const previousPoint = points[points.length - 2];
         const angle = Math.atan2(finalPoint.y - previousPoint.y, finalPoint.x - previousPoint.x);
         context.fillStyle = palette.muted;
-        context.globalAlpha = 0.62;
+        context.globalAlpha *= 0.62 / 0.52;
         context.beginPath();
         context.moveTo(finalPoint.x, finalPoint.y);
         context.lineTo(
@@ -908,7 +1005,7 @@
         context.save();
         context.fillStyle = palette.surface;
         context.strokeStyle = node.kind === "authority" ? palette.muted : palette.lineSoft;
-        context.globalAlpha = node.kind === "authority" ? 0.78 : 0.64;
+        context.globalAlpha *= node.kind === "authority" ? 0.78 : 0.64;
         context.lineWidth = 1;
         context.setLineDash(
           node.kind === "boundary" || node.kind === "replica" ? [3, 5] : []
@@ -922,23 +1019,28 @@
       }
 
       function drawNodeLabel(node, compact) {
-        const { x, y } = node.box;
+        const { x, y, w, h } = node.box;
+        const { lines, size, lineHeight, padding } = node.heading;
         context.save();
-        const labelX = x + (compact ? 7 : 10);
-        const labelY = y + (compact ? 14 : 16);
+        context.beginPath();
+        context.rect(x, y, w, h);
+        context.clip();
         context.textAlign = "left";
+        context.textBaseline = "top";
         context.fillStyle = palette.ink;
-        context.globalAlpha = 0.78;
-        context.font = '17px "Atkinson Hyperlegible", sans-serif';
-        context.fillText(node.label, labelX, labelY);
+        context.globalAlpha *= 0.78;
+        context.font = `${size}px "Atkinson Hyperlegible", sans-serif`;
+        lines.forEach((line, index) => {
+          context.fillText(line, x + padding, y + padding + index * lineHeight);
+        });
         context.restore();
       }
 
       function drawNote(note, compact) {
         context.save();
         context.fillStyle = palette.muted;
-        context.globalAlpha = 0.68;
-        context.font = '17px "Atkinson Hyperlegible", sans-serif';
+        context.globalAlpha *= 0.68;
+        context.font = `${compact ? 14 : 17}px "Atkinson Hyperlegible", sans-serif`;
         context.textAlign = "center";
         context.fillText(note.text, note.x, note.y);
         context.restore();
@@ -957,7 +1059,7 @@
           return palette.accent;
         }
         if (
-          activeScene === "access"
+          activeScene === "routes"
           && particle.index >= 151
           && particle.index < 301
         ) {
@@ -1099,6 +1201,8 @@
         particles.push(new Particle(index));
       }
 
+      // Font loading can change measured line breaks after the first paint.
+      document.fonts.ready.then(() => buildScene(activeScene));
       syncPalette();
       resize();
       updateScrollState();
