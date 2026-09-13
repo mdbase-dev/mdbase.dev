@@ -4,15 +4,15 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="mdbase Connect"
-  description="Host and synchronize Markdown collections, serve local folders to applications, and control access through explicit permissions."
+  description="Host, share, and synchronize Markdown collections, serve local folders to applications, and control access through explicit permissions."
   current="connect"
 >
   <section class="content-section" aria-label="About mdbase Connect">
     <h1 class="sr-only">mdbase Connect</h1>
     <p>
       mdbase Connect makes Markdown collections available to applications. It
-      hosts collections online, synchronizes them with local copies, and
-      manages application access.
+      hosts collections online, lets you share them with other people,
+      synchronizes them with local copies, and manages application access.
     </p>
     <p>
       When a collection is hosted, Connect serves its online copy directly.
@@ -21,16 +21,29 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       local operations do not pass through the hosted service.
     </p>
     <p>
-      Connect encrypts hosted collections in transit and at rest. Because the
-      service serves those files to approved applications, it can decrypt
-      hosted records while processing requests. The <a href="/security/"
-        >security documentation</a
-      > explains this boundary in more detail.
-    </p>
-    <p>
       When an application asks for access, you choose a collection and review
       what it needs to do. The permission applies only to that application and
       collection and can be narrowed, paused, or revoked later.
+    </p>
+    <h2>Share a collection</h2>
+    <p>
+      Owners can invite other people to a hosted collection as viewers or
+      editors. Viewers can read; editors can read and change records but cannot
+      manage membership. Each member’s applications and mirrors stay within
+      that member’s permissions. Owners can change roles or remove access later.
+    </p>
+    <p>
+      To share a collection, open its sharing controls in the
+      <a href="https://editor.mdbase.dev/">mdbase Editor</a> and invite someone
+      by email. The recipient must already have a registered, verified Connect
+      account. After accepting, they can open the collection in compatible
+      applications; applications requiring permissions beyond their role cannot
+      be connected.
+    </p>
+    <p>
+      Sharing applies to hosted collections, not local folders served by the
+      Connector. It provides access to the same records, not simultaneous live
+      co-editing of a note.
     </p>
     <p>
       You can <a href="/downloads/">download the Connector</a> to use local

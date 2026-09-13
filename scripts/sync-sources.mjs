@@ -58,22 +58,12 @@ const introduction = readFileSync(introductionSource, "utf8");
 const introductionStyles = removeSceneCounterStyles(
   extract(introduction, /<style>([\s\S]*?)<\/style>/, "prototype styles")
 );
-const introductionScript = removeSceneCounterScript(
-  extract(
-    introduction,
-    /<script>([\s\S]*?)<\/script>\s*<\/body>/,
-    "prototype murmuration"
-  )
-);
-const themedIntroductionScript = addThemeAwareCanvasPalette(introductionScript);
 writeFileSync(
   join(root, "public", "mdbase-introduction.css"),
   `${introductionStyles.trim()}\n`
 );
-writeFileSync(
-  join(root, "public", "mdbase-murmuration.js"),
-  `// @ts-nocheck\n${themedIntroductionScript.trim()}\n`
-);
+// The homepage animation is maintained by this repository. Do not overwrite
+// its scenes and accessibility fixes with the original Connect prototype.
 
 const connectThemeSource = join(connectDir, "packages", "ui", "styles.css");
 required(connectThemeSource, "Connect theme styles");
@@ -168,7 +158,7 @@ console.log(`Copied Connect schemas from ${schemaSource}`);
 console.log(`Copied interoperability schemas from ${interopSchemaSource}`);
 console.log(`Copied testbed schemas and scenarios from ${testbedSuiteSource}`);
 console.log(`Copied Runtime 0.2 schemas from ${runtimeSchemaSource}`);
-console.log(`Copied the homepage design and murmuration from ${introductionSource}`);
+console.log(`Copied legacy introduction styles from ${introductionSource}`);
 console.log(`Copied shared theme values from ${connectThemeSource}`);
 console.log(`Generated conformance data from ${claims.length + 1} implementation claims`);
 
