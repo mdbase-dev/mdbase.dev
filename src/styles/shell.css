@@ -60,6 +60,28 @@ body {
   width: 100%;
 }
 
+.site-header__identity {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.site-header__signup {
+  color: var(--color-text);
+  white-space: nowrap;
+  text-underline-offset: 0.2em;
+}
+
+.site-header__signup:hover {
+  color: var(--color-text-soft);
+}
+
+.site-header__signup:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
 .wordmark {
   display: inline-block;
   margin-bottom: 18px;

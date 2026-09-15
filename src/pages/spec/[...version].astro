@@ -1,0 +1,45 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/spec.css";
+
+export function getStaticPaths() {
+  return [
+    { params: { version: undefined }, props: { archive: false } },
+    { params: { version: "v0.2" }, props: { archive: true } }
+  ];
+}
+
+const { archive } = Astro.props;
+const title = archive ? "Specification v0.2 archive" : "Specification v0.3";
+---
+
+<BaseLayout title={title} description="The full mdbase specification for typed Markdown collections." current="spec" wide>
+  <div class="docs-shell spec-docs">
+    <aside class="docs-nav">
+      <details open data-spec-nav>
+        <summary>{title} sections</summary>
+        <nav aria-label="Specification sections"><!-- spec-navigation:start --><!-- spec-navigation:end --></nav>
+      </details>
+      <div class="docs-nav__meta">
+        <a href={archive ? "/spec/" : "/spec/v0.2/"}>{archive ? "Current specification" : "v0.2 archive"}</a>
+      </div>
+    </aside>
+    <article class="docs-article spec-article">
+      <header class="docs-title">
+        <p>{archive ? "Archived specification" : "Specification"}</p>
+        <h1>{title}</h1>
+        <span>The full mdbase specification for typed Markdown collections.</span>
+      </header>
+      <!-- spec-content:start --><!-- spec-content:end -->
+      <footer class="docs-edit">
+        <a href="https://github.com/mdbase-dev/mdbase-spec">View the specification source on GitHub</a>
+      </footer>
+    </article>
+  </div>
+  <script is:inline>
+    const specNavigation = document.querySelector("[data-spec-nav]");
+    if (specNavigation && window.matchMedia("(max-width: 68rem)").matches) {
+      specNavigation.open = false;
+    }
+  </script>
+</BaseLayout>

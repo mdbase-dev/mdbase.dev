@@ -1,0 +1,52 @@
+/* The imported normative content uses the SDK shell, not the upstream site theme. */
+.spec-docs {
+  grid-template-columns: 180px minmax(0, 660px);
+}
+
+.spec-docs .sidebar-group + .sidebar-group { margin-top: 1rem; }
+.spec-docs .sidebar-group-label {
+  margin-bottom: 0.2rem;
+  color: var(--ink-muted);
+  font: 400 0.65rem/1.4 var(--mono);
+}
+.spec-docs .sidebar-link { display: block; }
+.spec-docs .num {
+  display: inline-block;
+  min-width: 2.5em;
+  color: var(--ink-muted);
+  font-family: var(--mono);
+  font-size: 0.75em;
+}
+.spec-section { scroll-margin-top: 2rem; }
+.spec-section + .spec-section {
+  margin-top: 3.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+.spec-section h1 { margin-bottom: 1.25rem; }
+.spec-section p, .spec-section ul, .spec-section ol { margin-top: 0.8rem; }
+.spec-section p, .spec-section li { color: var(--ink-soft); }
+.spec-section pre code { font-size: inherit; }
+.spec-section .anchor { margin-right: 0.4em; color: var(--ink-muted); }
+.spec-section table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  margin-top: 1.5rem;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.spec-section th, .spec-section td {
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.spec-section th { color: var(--ink-muted); font-weight: 400; }
+.spec-section blockquote {
+  margin-block: 1.5rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--ink);
+}
+.spec-section hr { margin-block: 2rem; border: 0; border-top: 1px solid var(--line); }
+.spec-section :not(pre) > code { overflow-wrap: anywhere; }
