@@ -7,6 +7,7 @@ import {
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { renderSpecPage } from "./spec-page.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const specDir = resolve(process.env.MDBASE_SPEC_DIR ?? join(root, "..", "mdbase-spec"));
@@ -28,11 +29,6 @@ writeFileSync(
   rewrite(readFileSync(join(source, "spec-v0.2.html"), "utf8"), true)
 );
 
-for (const asset of ["style.css", "theme.js", "mdbase-favicon.svg"]) {
-  const path = join(source, asset);
-  if (existsSync(path)) copyFileSync(path, join(destination, asset));
-}
-
 for (const support of ["IMPLEMENTING.md", "REFERENCE-RUNNER.md", "QUICK-REFERENCE.md"]) {
   const path = join(specDir, "v0.2", support);
   if (existsSync(path)) copyFileSync(path, join(destination, "v0.2", support));
@@ -43,36 +39,10 @@ addSitemapRoutes();
 console.log(`Imported specification pages from ${source}`);
 
 function rewrite(html, archive) {
-  const pageUrl = archive
-    ? `${siteOrigin}/spec/v0.2/`
-    : `${siteOrigin}/spec/`;
-  const pageTitle = archive
-    ? "mdbase specification v0.2 archive"
-    : "mdbase specification v0.3";
-  return html
-    .replaceAll('src="theme.js', 'src="/spec/theme.js')
-    .replaceAll('href="style.css', 'href="/spec/style.css')
-    .replaceAll('href="mdbase-favicon.svg"', 'href="/spec/mdbase-favicon.svg"')
+  const shellPath = join(destination, archive ? "v0.2/index.html" : "index.html");
+  required(shellPath, "Build the shared specification shell before importing");
+  const content = html
     .replaceAll('href="runtime.html"', 'href="/runtime/"')
-    .replaceAll('<a href="ecosystem.html">Implementations</a>', '')
-    .replace(
-      /<nav class="landing-nav" aria-label="Spec links">[\s\S]*?<\/nav>/,
-      `<nav class="landing-nav" aria-label="Primary navigation">
-        <a href="/">Home</a>
-        <a href="/connect/">Connect</a>
-        <a href="/downloads/">Downloads</a>
-        <a href="/apps/">Apps</a>
-      </nav>`
-    )
-    .replace(
-      /<div class="spec-mobile-links" aria-label="Site links">[\s\S]*?<\/div>/,
-      `<div class="spec-mobile-links" aria-label="Site links">
-        <a href="/">Home</a>
-        <a href="/connect/">Connect</a>
-        <a href="/downloads/">Downloads</a>
-        <a href="/apps/">Apps</a>
-      </div>`
-    )
     .replaceAll('href="/testbed/"', 'href="#section-16"')
     .replaceAll('href="spec-v0.2.html"', 'href="/spec/v0.2/"')
     .replaceAll('href="spec.html"', 'href="/spec/"')
@@ -94,19 +64,8 @@ function rewrite(html, archive) {
     )
     .replace(/<a href="\.\/person\.md">([^<]+)<\/a>/g, "<code>$1</code>")
     .replace(/<a href="\.\/project\.md">([^<]+)<\/a>/g, "<code>$1</code>")
-    .replace(/href="\.\/\d{2}-[^"#]+\.md#([^"]+)"/g, 'href="#$1"')
-    .replace(
-      "</head>",
-      `  <link rel="stylesheet" href="/mdbase-theme.css">\n`
-      + `  <link rel="stylesheet" href="/mdbase-shell.css">\n`
-      + `  <link rel="canonical" href="${pageUrl}">\n`
-      + `  <meta property="og:type" content="article">\n`
-      + `  <meta property="og:title" content="${pageTitle}">\n`
-      + `  <meta property="og:description" content="The full mdbase specification for typed Markdown collections.">\n`
-      + `  <meta property="og:url" content="${pageUrl}">\n`
-      + `  <meta name="mdbase-spec-channel" content="${archive ? "v0.2-archive" : "v0.3-current"}">\n`
-      + "</head>"
-    );
+    .replace(/href="\.\/\d{2}-[^"#]+\.md#([^"]+)"/g, 'href="#$1"');
+  return renderSpecPage(readFileSync(shellPath, "utf8"), content, archive);
 }
 
 function addSitemapRoutes() {

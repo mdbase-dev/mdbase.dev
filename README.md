@@ -32,6 +32,12 @@ pnpm check:links
 
 The website repository owns the ecosystem pages and deployment cadence. The
 normative specification is built by `mdbase-spec` and imported under `/spec/`.
+The import preserves its content and section anchors, inserting them into the
+Astro specification shells (current and v0.2 archive). Those shells use the same
+`BaseLayout`, fonts, theme control, and documentation styles as `/sdk/`; the
+upstream site's header, scripts, and stylesheet are deliberately not imported.
+Run `pnpm import:spec` after building to populate these shells; `pnpm dev` alone
+shows the shell without the normative content.
 Connect schemas, theme roles, the homepage particle field, and implementation
 claims are synchronized from their canonical repositories. Generated assets
 remain traceable to the release artifacts they document.
