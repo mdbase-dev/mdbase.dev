@@ -5,7 +5,7 @@
   },
   "connect": {
     "repository": "mdbase-dev/mdbase-connect",
-    "ref": "3397ddf1f127f0a0c74c51b4d4f3cb587428d6f5"
+    "ref": "b3d896f7a8629fc806ef6b8c0cf866329e40f82c"
   },
   "contracts": {
     "repository": "mdbase-dev/mdbase-contracts",
