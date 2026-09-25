@@ -33,6 +33,16 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       metadata, and routing metadata needed to operate the service.
     </p>
     <p>
+      Connect uses these records, never collection contents, to produce
+      aggregate operator reports: how many accounts complete setup, how often
+      authorization and pairing requests are approved, denied, or left
+      unfinished, and which applications are connected and in use. Direct use
+      on the same computer is visible only as per-account counts reported by
+      the connector. Connect does not use third-party analytics. Expired tokens,
+      unfinished authorization and pairing requests, and protocol usage counts
+      are deleted about 13 months after they expire or were last updated.
+    </p>
+    <p>
       Local collection paths and record payloads stay at the connector.
       Encrypted relay traffic exposes routing metadata, operation names, timing,
       and sizes. Request and response bodies remain encrypted between the
