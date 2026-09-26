@@ -103,7 +103,7 @@ const session = new MdbaseRecordSession(note, adapter, { autosave: { idleMs: 650
     <li><code>unsaved</code>: local changes wait for autosave or <code>flush()</code>.</li>
     <li><code>saving</code>: a write is in flight. Typing continues; newer text is saved next.</li>
     <li><code>conflict</code>: the record changed elsewhere in a part edited locally.</li>
-    <li><code>recovery</code>: a save's response was lost. The same save is recovered exactly; nothing new is written until it is.</li>
+    <li><code>recovery</code>: a save's response was lost. The same save is recovered exactly; nothing new is written until it is. This includes a save interrupted by a reload: <code>open()</code> resumes it.</li>
     <li><code>error</code>: the last save failed. Local text is kept, and nothing retries in the background.</li>
     <li><code>deleted</code>: the record no longer exists. Local text is kept.</li>
   </ul>
