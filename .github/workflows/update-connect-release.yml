@@ -142,9 +142,22 @@ jobs:
           git commit -m "Update Connect downloads to $TAG"
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push --set-upstream origin "$BRANCH"
-          gh pr create \
+          url="$(gh pr create \
             --repo "$GITHUB_REPOSITORY" \
             --base main \
             --head "$BRANCH" \
             --title "Update Connect downloads to $TAG" \
-            --body "Updates the Downloads release record from the published, Sigstore-verified mdbase Connect channel for [$TAG](https://github.com/mdbase-dev/mdbase-connect/releases/tag/$TAG).\n\nThe website release checks and full test suite passed before this PR was opened."
+            --body "Updates the Downloads release record from the published, Sigstore-verified mdbase Connect channel for [$TAG](https://github.com/mdbase-dev/mdbase-connect/releases/tag/$TAG).\n\nThe website release checks and full test suite passed before this PR was opened.")"
+          echo "Opened $url"
+
+          # An open update for an older release can only be merged over this
+          # one, so close it. Newer releases' updates are never touched.
+          prefix=automation/connect-release-
+          gh pr list --repo "$GITHUB_REPOSITORY" --state open --json number,headRefName \
+            --jq ".[] | select(.headRefName | startswith(\"$prefix\")) | \"\\(.number) \\(.headRefName)\"" |
+          while read -r number head; do
+            older="${head#"$prefix"}"
+            [ "$older" != "$TAG" ] || continue
+            [ "$(printf '%s\n%s\n' "${older#v}" "${TAG#v}" | sort -V | head -1)" = "${older#v}" ] || continue
+            gh pr close "$number" --repo "$GITHUB_REPOSITORY" --delete-branch --comment "Superseded by $url."
+          done
