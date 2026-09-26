@@ -128,6 +128,12 @@ await connection.renameWithProgress({
     domain logic to resolve the conflict before submitting another write.
   </p>
 
+  <p>
+    For a record people are typing into, use a{" "}
+    <a href="/sdk/editing/">record session</a> instead of issuing updates
+    yourself.
+  </p>
+
   <h2 id="watch">Resume changes by cursor</h2>
   <CodeBlock code={watch} language="ts" label="watch.ts" />
   <p>
