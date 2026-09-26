@@ -3,48 +3,57 @@ import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
 const constructor = `new MdbaseConnect<Frontmatter>({
-  serverUrl: string,
-  manifest?: MdbaseAppManifest | string,
-  redirectUri?: string,
+  serverUrl: string | URL,
+  manifest?: MdbaseAppManifest | string | URL,
+  redirectUri?: string | URL,
   storage?: Storage,
   relayEncryption?: "required" | "disabled",
   keyStore?: GrantKeyStore,
+  identityStore?: ApplicationIdentityStore,
   directAccess?: "auto" | "disabled",
-  loopbackUrl?: string,
-  navigate?: (url: string) => void | Promise<void>
+  loopbackUrl?: string | URL,
+  navigate?: (url: string) => void | Promise<void>,
+  timeouts?: {
+    requestMs?: number | null,
+    watchStartMs?: number | null,
+    fileIndexMs?: number | null,
+    uploadMs?: number | null,
+    syncMs?: number | null
+  }
 })`;
 
-const browserLocation = `const collectionLocation =
-  new MdbaseBrowserLocation(manager, {
+const session = `const session = mdbase.application({
+  selection: new MdbaseBrowserSelection({
     collectionParameter: "collection",
     fallbackPath: "/"
-  });`;
+  })
+});`;
 
-const error = `try {
-  const result = unwrapOperation(await connection.update(input));
-} catch (error) {
-  if (error instanceof MdbaseOperationValidationError) {
-    renderDiagnostics(error.diagnostics);
-  } else if (error instanceof MdbaseConnectError) {
-    renderTransportError(error.code, error.recovery);
+const error = `const updated = await connection.update(input);
+if (!updated.ok) {
+  if (updated.problem.code === "operation_invalid") {
+    renderDiagnostics(updated.problem.details.diagnostics);
+  } else {
+    renderProblem(updated.problem.code, updated.problem.recovery);
   }
 }`;
 ---
 
 <DocsLayout
   title="API reference"
-  description="A compact reference for the public @mdbase-dev/connect browser SDK, transport-neutral collection client, errors, and helper functions."
+  description="A compact reference for the public @mdbase-dev/connect browser SDK: manager, application session, collection operations, record sessions, outcomes, and helpers."
   active="api"
   headings={[
     { href: "#constructor", label: "Constructor" },
     { href: "#environment", label: "Environment" },
     { href: "#authorization", label: "Authorization methods" },
-    { href: "#browser-location", label: "Browser location" },
+    { href: "#session", label: "Application session" },
     { href: "#operations", label: "Operation methods" },
+    { href: "#records", label: "Record sessions" },
     { href: "#notifications", label: "Notifications and timers" },
     { href: "#connection", label: "Connection and sync" },
     { href: "#client", label: "Collection client" },
-    { href: "#errors", label: "Errors and helpers" }
+    { href: "#errors", label: "Outcomes and helpers" }
   ]}
 >
   <h2 id="constructor">MdbaseConnect constructor</h2>
@@ -103,6 +112,16 @@ const error = `try {
         <td><code>location.assign</code></td>
         <td>Open authorization, including in a native system browser</td>
       </tr>
+      <tr>
+        <td><code>identityStore</code></td>
+        <td>IndexedDB</td>
+        <td>Persist the application's signing identity</td>
+      </tr>
+      <tr>
+        <td><code>timeouts</code></td>
+        <td>Per workload</td>
+        <td>Default budgets for requests, watch start-up, file indexing, uploads and sync; <code>null</code> disables one deliberately</td>
+      </tr>
     </tbody>
   </table>
 
@@ -115,7 +134,12 @@ const error = `try {
     storage or key adapter reports <code>custom</code>.
   </p>
 
-  <h2 id="authorization">Registration and authorization</h2>
+  <h2 id="authorization">MdbaseConnect methods</h2>
+  <p>
+    Every asynchronous method accepts a final{" "}
+    <code>ConnectRequestOptions</code> argument, with <code>signal</code> and
+    {" "}<code>timeoutMs</code>, and resolves to a <code>ConnectOutcome</code>.
+  </p>
   <table class="api-table">
     <thead>
       <tr>
@@ -125,46 +149,23 @@ const error = `try {
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td><code>register()</code></td>
-        <td><code>Promise&lt;Application&gt;</code></td>
-        <td>Load, canonicalize, and register the bundled manifest</td>
-      </tr>
-      <tr>
-        <td><code>authorize(options?)</code></td>
-        <td><code>Promise&lt;MdbaseAuthorizationResult&gt;</code></td>
-        <td>Navigate for web/native, or resolve after short-code approval for portable files</td>
-      </tr>
-      <tr>
-        <td><code>completeAuthorization(callbackUrl?)</code></td>
-        <td><code>MdbaseAuthorizationResult</code></td>
-        <td>Complete a web or native callback and return its bound connection</td>
-      </tr>
-      <tr>
-        <td><code>connections()</code></td>
-        <td><code>MdbaseConnectionInfo[]</code></td>
-        <td>List every saved collection authorization for this application</td>
-      </tr>
-      <tr>
-        <td><code>connection(collectionId)</code></td>
-        <td><code>MdbaseConnection | null</code></td>
-        <td>Resolve one permanently collection-bound client</td>
-      </tr>
-      <tr>
-        <td><code>onConnectionsChange(listener)</code></td>
-        <td>Unsubscribe function</td>
-        <td>Observe additions, removal, refresh, and cross-tab storage changes</td>
-      </tr>
-      <tr>
-        <td><code>forgetAll()</code></td>
-        <td><code>void</code></td>
-        <td>Forget every locally retained connection for this application</td>
-      </tr>
+      <tr><td><code>application(options)</code></td><td><code>MdbaseApplicationSession</code></td><td>The ordinary application lifecycle entry point</td></tr>
+      <tr><td><code>register(options?)</code></td><td><code>ConnectOutcome&lt;Application&gt;</code></td><td>Load, canonicalize, and register the bundled manifest</td></tr>
+      <tr><td><code>manifest(options?)</code></td><td><code>ConnectOutcome&lt;MdbaseApplicationManifest&gt;</code></td><td>The loaded, validated manifest</td></tr>
+      <tr><td><code>authorize(options?)</code></td><td><code>ConnectOutcome&lt;MdbaseAuthorizationOutcome&gt;</code></td><td>Registry-level authorization; applications normally use the session</td></tr>
+      <tr><td><code>completeAuthorization(callbackUrl?, options?)</code></td><td><code>ConnectOutcome&lt;MdbaseAuthorizationResult&gt;</code></td><td>Complete a web or native callback</td></tr>
+      <tr><td><code>connections()</code></td><td><code>MdbaseConnectionInfo[]</code></td><td>Every saved collection authorization for this application</td></tr>
+      <tr><td><code>connection(collectionId)</code></td><td><code>MdbaseConnection | null</code></td><td>One permanently collection-bound client</td></tr>
+      <tr><td><code>unavailableReason(collectionId)</code></td><td><code>MdbaseUnavailableReason | null</code></td><td>Why a saved collection cannot be used</td></tr>
+      <tr><td><code>onConnectionsChange(listener)</code></td><td>Unsubscribe function</td><td>Observe additions, removal, refresh, and cross-tab storage changes</td></tr>
+      <tr><td><code>environment()</code></td><td><code>MdbaseConnectEnvironment</code></td><td>Distribution, origin, and credential storage in effect</td></tr>
+      <tr><td><code>forgetAll()</code></td><td><code>void</code></td><td>Forget every locally retained connection for this application</td></tr>
     </tbody>
   </table>
   <h3>Portable authorization options</h3>
   <p>
-    <code>authorize()</code> accepts <code>onDeviceCode</code> to report
+    <code>authorize()</code> on the manager or session accepts
+    {" "}<code>onDeviceCode</code> to report
     {" "}<code>userCode</code>, <code>verificationUri</code>,
     {" "}<code>verificationUriComplete</code>, <code>expiresAt</code>, and
     {" "}<code>intervalSeconds</code>. Supply <code>openVerification</code> to own
@@ -172,27 +173,28 @@ const error = `try {
     discard the unapproved key.
   </p>
 
-  <h2 id="browser-location">MdbaseBrowserLocation</h2>
-  <CodeBlock code={browserLocation} language="ts" label="Browser application boundary" />
+  <h2 id="session">MdbaseApplicationSession</h2>
+  <CodeBlock code={session} language="ts" label="Browser application boundary" />
   <p>
-    Keep one location helper beside the application's stable
-    {" "}<code>MdbaseConnect</code> manager. It treats the explicit URL
-    identity as authoritative and selects a saved fallback only when exactly
-    one connection exists.
+    One session owns collection selection, authorization, setup checks, and a
+    snapshot. <code>MdbaseBrowserSelection</code> keeps the selected
+    collection in the URL and follows back and forward navigation; native
+    shells supply their own selection adapter.
   </p>
   <table class="api-table">
     <thead>
       <tr><th>Method</th><th>Purpose</th></tr>
     </thead>
     <tbody>
-      <tr><td><code>selectedCollectionId()</code></td><td>Read the explicit bookmark identity, including one that is not currently authorized</td></tr>
-      <tr><td><code>activeConnection()</code></td><td>Resolve the bookmarked connection or the sole saved fallback</td></tr>
-      <tr><td><code>selectConnection(id, options?)</code></td><td>Push or replace a cleaned bookmark URL</td></tr>
-      <tr><td><code>authorizationReturnTo()</code></td><td>Return the current app-local path after removing temporary OAuth parameters</td></tr>
-      <tr><td><code>completeAuthorization(callbackUrl?)</code></td><td>Complete PKCE and restore a safe same-origin URL for the approved collection</td></tr>
-      <tr><td><code>isAuthorizationCallback(url)</code></td><td>Recognize browser and native callback URLs with an authorization result</td></tr>
-      <tr><td><code>clearAuthorizationCallback(returnTo?)</code></td><td>Remove callback parameters after denial or failure</td></tr>
-      <tr><td><code>onChange(listener)</code></td><td>Observe saved-connection changes plus browser back and forward navigation</td></tr>
+      <tr><td><code>start(options?)</code></td><td>Load the manifest and restore the selected collection; concurrent callers share the work</td></tr>
+      <tr><td><code>subscribe(listener)</code>, <code>getSnapshot()</code></td><td>External-store state: <code>unselected</code>, <code>authorization_required</code>, <code>checking_setup</code>, <code>setup_review_required</code>, <code>ready</code>, <code>unavailable</code>, <code>blocked</code>, and start-up states</td></tr>
+      <tr><td><code>connection()</code></td><td>The ready collection's <code>MdbaseConnection</code>, or <code>null</code></td></tr>
+      <tr><td><code>authorize(target, options?)</code></td><td>Authorize <code>"choose"</code>, <code>"selected"</code>, or <code>{`{ collectionId }`}</code></td></tr>
+      <tr><td><code>completeAuthorization(callbackUrl?, options?)</code></td><td>Complete the callback; the snapshot becomes <code>ready</code></td></tr>
+      <tr><td><code>ensureCapabilities(capabilities, options?)</code></td><td>Request declared optional capabilities; <code>unchanged</code> when already granted</td></tr>
+      <tr><td><code>applyCollectionSetup(options?)</code></td><td>Apply reviewed collection setup</td></tr>
+      <tr><td><code>select(collectionId)</code>, <code>clearSelection()</code>, <code>forget(collectionId)</code></td><td>Change or forget the selection</td></tr>
+      <tr><td><code>destroy()</code></td><td>End the session</td></tr>
     </tbody>
   </table>
   <div class="callout">
@@ -214,27 +216,27 @@ const error = `try {
     <thead>
       <tr>
         <th>Method</th>
-        <th>Required operation</th>
+        <th>Capability</th>
         <th>Notes</th>
       </tr>
     </thead>
     <tbody>
-      <tr><td><code>describe()</code></td><td><code>describe</code></td><td>Types, contracts, schemas, settings, and supported operations</td></tr>
-      <tr><td><code>changes(input?)</code></td><td><code>changes</code></td><td>One resumable cursor page</td></tr>
-      <tr><td><code>watch(options?)</code></td><td><code>changes</code></td><td>Async iterator with retry and reset status</td></tr>
-      <tr><td><code>read(&#123; path &#125;)</code></td><td><code>read</code></td><td>Effective and raw frontmatter plus revision</td></tr>
-      <tr><td><code>query(input?)</code></td><td><code>query</code></td><td>One query page</td></tr>
-      <tr><td><code>queryPages(input?, options?)</code></td><td><code>query</code></td><td>Snapshot-consistent async pages</td></tr>
-      <tr><td><code>queryAll(input?, options?)</code></td><td><code>query</code></td><td>Load every page into one result</td></tr>
-      <tr><td><code>create(input)</code></td><td><code>create</code></td><td>Typed frontmatter and optional body</td></tr>
-      <tr><td><code>update(input)</code></td><td><code>update</code></td><td>Canonical <code>patch</code> and optional revision</td></tr>
-      <tr><td><code>preflightRename(input)</code></td><td><code>rename</code></td><td>Read-only reference impact</td></tr>
-      <tr><td><code>rename(input)</code></td><td><code>rename</code></td><td>Move with optional reference updates</td></tr>
-      <tr><td><code>renameWithProgress(input, options)</code></td><td><code>rename</code></td><td>Preflight reuse, cancellation, and outcome recovery</td></tr>
-      <tr><td><code>preflightDelete(input)</code></td><td><code>delete</code></td><td>Read-only backlink impact</td></tr>
-      <tr><td><code>delete(input)</code></td><td><code>delete</code></td><td>Delete with optional backlink check</td></tr>
-      <tr><td><code>deleteWithProgress(input, options)</code></td><td><code>delete</code></td><td>Preflight reuse, cancellation, and outcome recovery</td></tr>
-      <tr><td><code>validate(input?)</code></td><td><code>validate</code></td><td>Canonical collection validation envelope</td></tr>
+      <tr><td><code>describe()</code></td><td><code>collection.read</code></td><td>Types, contracts, schemas, settings, and supported operations</td></tr>
+      <tr><td><code>changes(input?)</code></td><td><code>collection.read</code></td><td>One resumable cursor page</td></tr>
+      <tr><td><code>watch(options?)</code></td><td><code>collection.read</code></td><td>Bounded start-up, then a subscription with retry, status, and <code>close()</code></td></tr>
+      <tr><td><code>read(&#123; path &#125;)</code></td><td><code>collection.read</code></td><td>Effective and raw frontmatter plus revision; <code>file_not_found</code> when missing</td></tr>
+      <tr><td><code>query(input?)</code></td><td><code>collection.read</code></td><td>One query page</td></tr>
+      <tr><td><code>queryPages(input?, options?)</code></td><td><code>collection.read</code></td><td>Snapshot-consistent pages, one outcome each</td></tr>
+      <tr><td><code>queryAll(input?, options?)</code></td><td><code>collection.read</code></td><td>Load every page into one result</td></tr>
+      <tr><td><code>create(input)</code></td><td><code>records.create</code></td><td>Typed frontmatter and optional body</td></tr>
+      <tr><td><code>update(input)</code></td><td><code>records.edit</code></td><td>Canonical <code>patch</code>, optional <code>body</code>, and <code>ifRevision</code>; <code>concurrent_modification</code> when stale</td></tr>
+      <tr><td><code>preflightRename(input)</code></td><td><code>records.edit</code></td><td>Read-only reference impact</td></tr>
+      <tr><td><code>rename(input)</code></td><td><code>records.edit</code></td><td>Move with optional reference updates</td></tr>
+      <tr><td><code>renameWithProgress(input, options)</code></td><td><code>records.edit</code></td><td>Preflight reuse, cancellation, and outcome recovery</td></tr>
+      <tr><td><code>preflightDelete(input)</code></td><td><code>records.delete</code></td><td>Read-only backlink impact</td></tr>
+      <tr><td><code>delete(input)</code></td><td><code>records.delete</code></td><td>Delete with optional backlink check</td></tr>
+      <tr><td><code>deleteWithProgress(input, options)</code></td><td><code>records.delete</code></td><td>Preflight reuse, cancellation, and outcome recovery</td></tr>
+      <tr><td><code>validate(input?)</code></td><td><code>collection.read</code></td><td>Canonical collection validation result</td></tr>
     </tbody>
   </table>
 
@@ -246,6 +248,19 @@ const error = `try {
     {" "}<code>deleteViewSource()</code>. Type source methods are{" "}
     <code>readType()</code>, <code>createType()</code>, and{" "}
     <code>updateType()</code>. Updates require the source revision.
+  </p>
+
+  <h2 id="records">Record sessions</h2>
+  <p>
+    <code>connection.records.open(path, options?)</code> returns a lease on
+    the one shared <code>MdbaseRecordSession</code> for that record;
+    {" "}<code>connection.records.follow(watch)</code> keeps open sessions
+    current. Sessions provide <code>setBody()</code>,
+    {" "}<code>patchFrontmatter()</code>, <code>save()</code>,
+    {" "}<code>flush()</code>, <code>refresh()</code>, <code>resolve()</code>,
+    {" "}<code>discard()</code>, <code>subscribe()</code> and
+    {" "}<code>getSnapshot()</code>. See <a href="/sdk/editing/">Editing
+    records</a>.
   </p>
 
   <h2 id="notifications">Notifications and timers</h2>
@@ -272,38 +287,45 @@ const error = `try {
     </thead>
     <tbody>
       <tr><td><code>info()</code></td><td>Read collection ID, display name, operations, scope, route, and direct status</td></tr>
-      <tr><td><code>authorizationCapabilities(required)</code></td><td>Compare required and granted operations for this collection</td></tr>
-      <tr><td><code>hasOperations(required)</code></td><td>Check an operation subset</td></tr>
-      <tr><td><code>requestOperations(required, options?)</code></td><td>Request the least-privilege union for this same collection</td></tr>
+      <tr><td><code>authorizationCapabilities(required)</code></td><td>Compare required and granted operations (legacy v1 grants)</td></tr>
+      <tr><td><code>requestCapabilities(capabilities, options?)</code></td><td>Request more declared capabilities for this same collection</td></tr>
       <tr><td><code>forget()</code></td><td>Forget only this locally retained connection</td></tr>
       <tr><td><code>onConnectionChange(listener)</code></td><td>Subscribe and receive an unsubscribe function</td></tr>
       <tr><td><code>checkDirectAccess()</code></td><td>Read same-computer availability silently</td></tr>
       <tr><td><code>requestDirectAccess()</code></td><td>Prompt from a user gesture where required</td></tr>
       <tr><td><code>disableDirectAccess()</code></td><td>Persist a relay-only preference for this app</td></tr>
       <tr><td><code>sync()</code></td><td>Return one credential-hiding sync transport for a remote, direct, or relayed authority, or null</td></tr>
-      <tr><td><code>pendingMutation()</code></td><td>Inspect an interrupted encrypted mutation</td></tr>
-      <tr><td><code>resumePendingMutation()</code></td><td>Recover its exact durable connector receipt</td></tr>
+      <tr><td><code>pendingMutations()</code>, <code>pendingMutation(requestId)</code></td><td>Durable handles for writes whose outcome is unknown, including after a reload</td></tr>
+      <tr><td><code>pending.recover(options?)</code></td><td>Resend the exact original request; never a new write</td></tr>
+      <tr><td><code>files</code></td><td>Upload, list, download, move, and delete collection files</td></tr>
     </tbody>
   </table>
 
   <h2 id="client">MdbaseCollectionClient</h2>
   <p>
-    Construct with any <code>MdbaseCollectionTransport</code>. It exposes the
+    Import from <code>@mdbase-dev/connect/advanced</code> and construct with
+    any <code>MdbaseCollectionTransport</code>. It exposes the
     record, query, view, type, validation, and timer methods above. Its surface
     is limited to collection behavior. Domain packages should prefer this
     dependency when they use collection operations alone.
   </p>
 
-  <h2 id="errors">Errors and helpers</h2>
-  <CodeBlock code={error} language="ts" label="errors.ts" />
+  <h2 id="errors">Outcomes and helpers</h2>
+  <p>
+    Expected failures are <code>ConnectOutcome</code> data:
+    {" "}<code>{`{ ok: false, problem }`}</code> with a stable
+    {" "}<code>code</code>, a <code>category</code>, a suggested
+    {" "}<code>recovery</code>, and code-specific <code>details</code>.
+  </p>
+  <CodeBlock code={error} language="ts" label="outcomes.ts" />
   <table class="api-table">
     <thead>
       <tr><th>Export</th><th>Purpose</th></tr>
     </thead>
     <tbody>
-      <tr><td><code>unwrapOperation()</code></td><td>Return a valid result or throw validation diagnostics</td></tr>
-      <tr><td><code>MdbaseConnectError</code></td><td>Transport, authorization, routing, and request errors with recovery metadata</td></tr>
-      <tr><td><code>MdbaseOperationValidationError</code></td><td>Invalid canonical operation envelope</td></tr>
+      <tr><td><code>ConnectOutcome</code></td><td>The result type of every asynchronous operation</td></tr>
+      <tr><td><code>externalStore()</code></td><td>Adapt a session to <code>useSyncExternalStore</code></td></tr>
+      <tr><td><code>MdbaseConnectError</code></td><td>Carries a problem through custom transports and adapters</td></tr>
       <tr><td><code>isRetryableConnectError()</code></td><td>Classify transient Connect failures</td></tr>
       <tr><td><code>parseMdbasePushPayload()</code></td><td>Validate a browser push envelope</td></tr>
       <tr><td><code>parseMdbaseNativeNotificationData()</code></td><td>Validate string-valued FCM/APNs data</td></tr>
