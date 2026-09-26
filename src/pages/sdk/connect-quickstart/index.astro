@@ -11,29 +11,41 @@ const manifest = `{
     "http://localhost:5173/auth/mdbase/callback"
   ],
   "requirements": {
+    "access": "full_collection",
     "contracts": [
-      { "id": "workout.record", "version": "1.0.0" }
-    ]
+      {
+        "id": "workout.record",
+        "version": "1.0.0",
+        "digest": "sha256:1b55e89c59ddeb7d6676af6fdc2792aa07cc78b89ea09f8f95001fad8455a180"
+      }
+    ],
+    "capabilities": {
+      "contract_version": 2,
+      "required": [
+        "collection.read",
+        "records.edit"
+      ]
+    }
   },
   "provisions": {
     "type_packs": [
       {
-        "provides": [
-          { "id": "workout.record", "version": "1.0.0" }
-        ],
         "manifest": {
           "kind": "mdbase.type-pack",
           "id": "example.workouts",
           "version": "1.0.0",
+          "name": "Workouts",
           "resources": [
             {
               "kind": "contract",
+              "mode": "managed",
               "source": "contracts/workout.record.md",
               "target": "_contracts/workout.record.md",
-              "digest": "sha256:e0c2f77dd7158ca7e6b52b13da8c306f0a7e1b97582a1024f00ec0cf7fe5f259"
+              "digest": "sha256:0446184b7f36dd77e244cbe3c4ac97871cf9b78e7ff46a1e3686f542cecb32c2"
             },
             {
               "kind": "type",
+              "mode": "seed",
               "source": "types/workout.md",
               "target": "_types/workout.md",
               "digest": "sha256:ff35309cd4598182d2021f698ee85cad4d320d965cd5f7c1bd608ee2eb16505b"
@@ -43,11 +55,18 @@ const manifest = `{
         "resources": [
           {
             "source": "contracts/workout.record.md",
-            "document": "---\\nkind: mdbase.contract\\ncontract_type: record\\nid: workout.record\\nversion: 1.0.0\\nrecord_schema:\\n  dialect: json-schema-2020-12\\n  value:\\n    $schema: https://json-schema.org/draft/2020-12/schema\\n    type: object\\n    additionalProperties: false\\n    properties:\\n      title: { type: string }\\n      completed: { type: boolean, default: false }\\n    required: [title]\\n---\\n"
+            "document": "---\\nkind: mdbase.contract\\ncontract_type: record\\nid: workout.record\\nversion: 1.0.0\\nrecord_schema:\\n  dialect: json-schema-2020-12\\n  value:\\n    type: object\\n    additionalProperties: false\\n    properties:\\n      title: { type: string }\\n      completed: { type: boolean, default: false }\\n    required: [title]\\n---\\n"
           },
           {
             "source": "types/workout.md",
             "document": "---\\nkind: mdbase.type\\nname: workout\\nversion: 1\\nschema:\\n  dialect: json-schema-2020-12\\n  value:\\n    type: object\\n    additionalProperties: true\\n    properties:\\n      title: { type: string }\\n      completed: { type: boolean }\\n    required: [title]\\nimplements:\\n  - contract: workout.record\\n    version: 1.0.0\\n    fields:\\n      title: title\\n      completed: completed\\n---\\n"
+          }
+        ],
+        "provides": [
+          {
+            "id": "workout.record",
+            "version": "1.0.0",
+            "digest": "sha256:1b55e89c59ddeb7d6676af6fdc2792aa07cc78b89ea09f8f95001fad8455a180"
           }
         ]
       }
@@ -75,7 +94,7 @@ const validate = `mdbase-connect-dev validate-manifest \\
   --allow-local`;
 
 const client = `import {
-  MdbaseBrowserLocation,
+  MdbaseBrowserSelection,
   MdbaseConnect,
   type JsonObject
 } from "@mdbase-dev/connect";
@@ -85,97 +104,152 @@ export interface Workout extends JsonObject {
   completed?: boolean;
 }
 
-const loopback = new Set([
-  "localhost",
-  "127.0.0.1",
-  "::1"
-]).has(location.hostname);
+const loopback = new Set(["localhost", "127.0.0.1", "::1"]).has(location.hostname);
 
 export const mdbase = new MdbaseConnect<Workout>({
-  serverUrl: loopback
-    ? "http://127.0.0.1:8787"
-    : "https://connect.mdbase.dev",
-  manifest: new URL(
-    "/.well-known/mdbase-app.json",
-    location.origin
-  ).href,
-  redirectUri: new URL(
-    "/auth/mdbase/callback",
-    location.origin
-  ).href
+  serverUrl: loopback ? "http://127.0.0.1:8787" : "https://connect.mdbase.dev",
+  manifest: new URL("/.well-known/mdbase-app.json", location.origin).href,
+  redirectUri: new URL("/auth/mdbase/callback", location.origin).href
 });
 
-export const collectionLocation =
-  new MdbaseBrowserLocation(mdbase);`;
+// One session owns collection selection, authorization and a reactive snapshot.
+export const session = mdbase.application({
+  selection: new MdbaseBrowserSelection()
+});`;
 
-const connectButton = `import { collectionLocation, mdbase } from "./connect";
+const connectButton = `import { session } from "./connect";
 
-export async function connectCollection() {
-  await mdbase.authorize({
-    operations: ["describe", "read", "query", "create", "update"],
-    collectionId:
-      collectionLocation.selectedCollectionId() ?? undefined,
-    returnTo: collectionLocation.authorizationReturnTo()
-  });
-  // authorize() navigates to Connect and does not return.
+export async function connectCollection(): Promise<void> {
+  // Opens Connect to choose a collection; the manifest declares what is requested.
+  const authorized = await session.authorize("choose");
+  if (!authorized.ok) renderProblem(authorized.problem);
 }`;
 
-const callback = `import { collectionLocation } from "./connect";
+const buildManifest = `import { writeFile } from "node:fs/promises";
+import { defineTypePack } from "@mdbase-dev/connect-dev";
 
-export async function completeMdbaseCallback() {
-  const connection =
-    await collectionLocation.completeAuthorization();
+const origin = "http://localhost:5173";
 
-  console.log(
-    "Connected collection:",
-    connection.collectionId
-  );
+const contract = \`---
+kind: mdbase.contract
+contract_type: record
+id: workout.record
+version: 1.0.0
+record_schema:
+  dialect: json-schema-2020-12
+  value:
+    type: object
+    additionalProperties: false
+    properties:
+      title: { type: string }
+      completed: { type: boolean, default: false }
+    required: [title]
+---
+\`;
 
-  return connection;
-}`;
+const type = \`---
+kind: mdbase.type
+name: workout
+version: 1
+schema:
+  dialect: json-schema-2020-12
+  value:
+    type: object
+    additionalProperties: true
+    properties:
+      title: { type: string }
+      completed: { type: boolean }
+    required: [title]
+implements:
+  - contract: workout.record
+    version: 1.0.0
+    fields:
+      title: title
+      completed: completed
+---
+\`;
 
-const wiring = `import {
-  completeMdbaseCallback
-} from "./mdbase-callback";
-import { connectCollection } from "./connect-button";
+// Digests are computed from the documents, so the manifest stays reviewable.
+const workouts = defineTypePack({
+  id: "example.workouts",
+  version: "1.0.0",
+  name: "Workouts",
+  resources: [
+    { kind: "contract", mode: "managed", source: "contracts/workout.record.md", target: "_contracts/workout.record.md", document: contract },
+    { kind: "type", mode: "seed", source: "types/workout.md", target: "_types/workout.md", document: type }
+  ]
+});
+
+const manifest = {
+  manifest_version: 1,
+  id: "dev.example.workouts",
+  name: "Example Workouts",
+  homepage: origin,
+  redirect_uris: [\`\${origin}/auth/mdbase/callback\`],
+  requirements: {
+    access: "full_collection",
+    contracts: workouts.provides,
+    capabilities: {
+      contract_version: 2,
+      required: ["collection.read", "records.edit"]
+    }
+  },
+  provisions: { type_packs: [workouts] }
+};
+
+await writeFile("public/.well-known/mdbase-app.json", \`\${JSON.stringify(manifest, null, 2)}\\n\`);`;
+
+const wiring = `import { connectCollection } from "./connect-button";
+import { session } from "./connect";
+
+declare function renderProblem(problem: { message: string }): void;
+
+session.subscribe(() => render(session.getSnapshot()));
+
+const started = await session.start({ timeoutMs: 20_000 });
+if (!started.ok) renderProblem(started.problem);
+
+if (location.pathname === "/auth/mdbase/callback") {
+  const completed = await session.completeAuthorization(location.href, { timeoutMs: 15_000 });
+  if (!completed.ok) renderProblem(completed.problem);
+}
 
 document
   .querySelector("[data-connect-mdbase]")
-  ?.addEventListener("click", () => connectCollection());
+  ?.addEventListener("click", () => void connectCollection());`;
 
-if (location.pathname === "/auth/mdbase/callback") {
-  await completeMdbaseCallback();
-}`;
+const operate = `import { session } from "./connect";
 
-const operate = `import { unwrapOperation } from "@mdbase-dev/connect";
-import { collectionLocation } from "./connect";
+const workout = { id: "workout.record", version: "1.0.0" };
 
-const collection = collectionLocation.activeConnection();
-if (!collection) throw new Error("Choose a collection.");
+export async function completeNextWorkout(): Promise<void> {
+  const connection = session.connection();
+  if (!connection) return;
 
-const page = unwrapOperation(await collection.query({
-  contract: {
-    id: "workout.record",
-    version: "1.0.0"
-  },
-  limit: 50
-}));
+  const page = await connection.query({ contract: workout, limit: 50 });
+  if (!page.ok) return renderProblem(page.problem);
 
-const first = page.results
-  .filter((row) => row.completed !== true)
-  .sort((left, right) =>
-    left.title.localeCompare(right.title)
-  )[0];
-if (first) {
-  unwrapOperation(await collection.update({
-    path: first.path,
+  const next = page.value.results
+    .filter((row) => row.effectiveFrontmatter?.completed !== true)
+    .sort((left, right) =>
+      String(left.effectiveFrontmatter?.title).localeCompare(String(right.effectiveFrontmatter?.title))
+    )[0];
+  if (!next) return;
+
+  // Read the record to learn its current revision, then update against it.
+  const current = await connection.read({ path: next.path, contract: workout });
+  if (!current.ok) return renderProblem(current.problem);
+
+  const updated = await connection.update({
+    path: current.value.path,
+    contract: workout,
     patch: { completed: true },
-    contract: {
-      id: "workout.record",
-      version: "1.0.0"
-    },
-    if_revision: first.revision
-  }));
+    ifRevision: current.value.revision
+  });
+  if (!updated.ok && updated.problem.code === "concurrent_modification") {
+    return completeNextWorkout(); // It changed elsewhere: start again from the current record.
+  }
+  if (!updated.ok) renderProblem(updated.problem);
 }`;
 ---
 
@@ -189,7 +263,7 @@ if (first) {
     { href: "#install", label: "2. Add packages" },
     { href: "#client", label: "3. Create the client" },
     { href: "#authorize", label: "4. Authorize" },
-    { href: "#callback", label: "5. Complete callback" },
+    { href: "#callback", label: "5. Start and complete" },
     { href: "#operate", label: "6. Use operations" },
     { href: "#production", label: "Production HTTPS" },
     { href: "#success", label: "Expected result" }
@@ -233,16 +307,24 @@ if (first) {
 
   <h2 id="manifest">1. Add a bundled application manifest</h2>
   <p>
-    Save this file at
-    {" "}<code>public/.well-known/mdbase-app.json</code>. These loopback URLs are
-    accepted by the local Connect stack. Pass <code>--allow-local</code> to the
-    validator when checking this development manifest.
+    Generate the manifest from readable contract and type documents.
+    {" "}<code>defineTypePack()</code> computes every digest, so nothing is
+    copied by hand. Run it with Node after adding the packages in step 2.
+  </p>
+  <CodeBlock code={buildManifest} language="js" label="scripts/build-manifest.mjs" />
+  <p>
+    It writes <code>public/.well-known/mdbase-app.json</code>. These loopback
+    URLs are accepted by the local Connect stack; pass
+    {" "}<code>--allow-local</code> to the validator when checking this
+    development manifest.
   </p>
   <CodeBlock code={manifest} language="json" label="public/.well-known/mdbase-app.json" />
   <p>
-    The contract requirement limits compatible collections. The type pack makes
-    a collection safely provisionable during approval and does not give the
-    application general type-management access.
+    <code>requirements.capabilities</code> declares what the application may
+    do: read the collection and edit records. The contract requirement limits
+    compatible collections. The type pack makes a collection safely
+    provisionable during approval and does not give the application general
+    type-management access.
   </p>
 
   <h2 id="install">2. Add the SDK and validator</h2>
@@ -263,37 +345,43 @@ if (first) {
   </p>
   <CodeBlock code={validate} language="sh" label="Validate a local manifest" />
 
-  <h2 id="client">3. Create one stable Connect client</h2>
+  <h2 id="client">3. Create one client and one application session</h2>
   <CodeBlock code={client} language="ts" label="src/connect.ts" />
   <p>
-    The manager owns saved authorizations. The location helper owns the
-    bookmarkable collection ID, browser history changes, and authorization
-    return cleanup.
+    <code>MdbaseConnect</code> owns saved authorizations. The application
+    session owns the selected collection (kept in the URL by
+    {" "}<code>MdbaseBrowserSelection</code>), authorization, and one snapshot
+    your interface subscribes to.
   </p>
 
   <h2 id="authorize">4. Start authorization from a user action</h2>
   <CodeBlock code={connectButton} language="ts" label="src/connect-button.ts" />
   <p>
     Connect presents ready and provisionable collections, then asks the user
-    to approve the listed operations. Collection records remain private until
-    approval succeeds.
+    to approve the capabilities the manifest declares. Collection records
+    remain private until approval succeeds.
   </p>
 
-  <h2 id="callback">5. Complete the exact callback route</h2>
-  <CodeBlock code={callback} language="ts" label="src/mdbase-callback.ts" />
-  <p>
-    Call this once at the manifest's callback path. PKCE is mandatory. A
-    successful callback stores the grant-bound authorization and returns a
-    collection-bound connection.
-  </p>
+  <h2 id="callback">5. Start the session and complete the callback</h2>
   <CodeBlock code={wiring} language="ts" label="src/main.ts" />
+  <p>
+    Start the session once per page. At the manifest's callback path, complete
+    the authorization with the exact callback URL; PKCE is mandatory. Success
+    stores the grant-bound authorization and the snapshot becomes
+    {" "}<code>ready</code>, with a collection-bound connection. Every call
+    returns a <code>ConnectOutcome</code>: expected failures are data you
+    render, not exceptions.
+  </p>
 
-  <h2 id="operate">6. Query and update with a revision</h2>
+  <h2 id="operate">6. Query, then update against a revision</h2>
   <CodeBlock code={operate} language="ts" label="src/workouts.ts" />
   <p>
-    Query results carry an opaque revision. Passing it as
-    {" "}<code>if_revision</code> prevents one application from silently
-    overwriting a newer change.
+    A record read carries an opaque revision. Passing it as
+    {" "}<code>ifRevision</code> prevents one application from silently
+    overwriting a newer change: the update fails with
+    {" "}<code>concurrent_modification</code> instead. For a record people
+    type into, use a <a href="/sdk/editing/">record session</a>, which handles
+    revisions, autosave and conflicts for you.
   </p>
   <p>
     Contract-scoped queries expose normalized mapped fields only. They union
@@ -320,15 +408,15 @@ if (first) {
   <ol>
     <li>The Connect approval screen names <strong>Example Workouts</strong>.</li>
     <li>The collection chooser marks a matching collection as ready or provisionable.</li>
-    <li>The approval screen lists the five requested operations.</li>
+    <li>The approval screen lists reading the collection and editing records.</li>
     <li>The browser returns to <code>/auth/mdbase/callback</code>.</li>
-    <li>The console prints the stable ID of the approved collection.</li>
+    <li>The session snapshot becomes <code>ready</code> for the approved collection.</li>
     <li>The first incomplete workout receives <code>completed: true</code>.</li>
   </ol>
   <div class="callout">
     <strong>Keep the collection ID in application URLs.</strong>
     <p>
-      <code>MdbaseBrowserLocation</code> writes
+      <code>MdbaseBrowserSelection</code> writes
       {" "}<code>?collection=&lt;id&gt;</code> and follows browser back and forward
       navigation. Collection IDs are opaque locators and can appear in browser
       history and logs. They are not credentials.

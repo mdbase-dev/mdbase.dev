@@ -13,8 +13,7 @@ const download = `curl -fsSLo packages/devkit/sandbox-quickstart.mjs \\
 
 node packages/devkit/sandbox-quickstart.mjs`;
 
-const example = `import { unwrapOperation } from "@mdbase-dev/connect";
-import { createSandbox } from "@mdbase-dev/connect-dev";
+const example = `import { createSandbox } from "@mdbase-dev/connect-dev";
 
 const { client, transport } = createSandbox({
   records: [{
@@ -28,11 +27,15 @@ const { client, transport } = createSandbox({
   }]
 });
 
-const first = unwrapOperation(
-  await client.read({ path: "tasks/first.md" })
-);
+// Every operation returns a ConnectOutcome: check ok, then use value or problem.
+function required(outcome) {
+  if (!outcome.ok) throw new Error(\`\${outcome.problem.code}: \${outcome.problem.message}\`);
+  return outcome.value;
+}
 
-const created = unwrapOperation(await client.create({
+const first = required(await client.read({ path: "tasks/first.md" }));
+
+const created = required(await client.create({
   type: "task",
   path: "tasks/second.md",
   frontmatter: {
@@ -42,30 +45,33 @@ const created = unwrapOperation(await client.create({
   }
 }));
 
-const updated = unwrapOperation(await client.update({
+const updated = required(await client.update({
   path: created.path,
   patch: { completed: true },
-  if_revision: created.revision
+  ifRevision: created.revision
 }));
 
-const tasks = unwrapOperation(await client.query({
+// Reusing the old revision is refused instead of overwriting the update.
+const stale = await client.update({
+  path: created.path,
+  patch: { completed: false },
+  ifRevision: created.revision
+});
+
+const tasks = required(await client.query({
   types: ["task"],
   limit: 20
 }));
 
 console.log(\`Read: \${first.frontmatter.title}\`);
-console.log(
-  \`Updated: \${updated.path} (completed: \${updated.frontmatter.completed})\`
-);
+console.log(\`Updated: \${updated.path} (completed: \${updated.frontmatter.completed})\`);
+console.log(\`Stale revision: \${stale.ok ? "accepted" : stale.problem.code}\`);
 console.log(\`Task records: \${tasks.results.length}\`);
-console.log(
-  \`Markdown paths: \${transport.snapshot()
-    .map((record) => record.path)
-    .join(", ")}\`
-);`;
+console.log(\`Markdown paths: \${transport.snapshot().map((record) => record.path).join(", ")}\`);`;
 
 const output = `Read: Read the collection
 Updated: tasks/second.md (completed: true)
+Stale revision: concurrent_modification
 Task records: 2
 Markdown paths: tasks/first.md, tasks/second.md`;
 ---
@@ -125,14 +131,19 @@ Markdown paths: tasks/first.md, tasks/second.md`;
     <code>createSandbox()</code> returns the same
     {" "}<code>MdbaseCollectionClient</code> boundary used by a connected
     collection. The example reads one seed record, creates a second record,
-    updates it with its revision token, and queries both task records.
+    updates it with its revision token, shows that a stale revision is
+    refused, and queries both task records. Every operation returns a{" "}
+    <code>ConnectOutcome</code>: check <code>ok</code>, then use{" "}
+    <code>value</code> or <code>problem</code>. Expected failures are data,
+    not exceptions.
   </p>
 
   <h2 id="result">4. Check the expected result</h2>
   <CodeBlock code={output} language="text" label="Expected output" />
   <p>
-    A stale revision fails with a
-    {" "}<code>concurrent_modification</code> diagnostic. The sandbox also supports
+    A stale revision fails with the
+    {" "}<code>concurrent_modification</code> problem, the same code a real
+    collection returns. The sandbox also supports
     typed CRUD, pagination, read defaults, and change cursors. CEL expressions,
     authorization, routing, and filesystem behavior belong in real-stack
     integration tests.

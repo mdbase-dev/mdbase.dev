@@ -2,104 +2,111 @@
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
-const readQuery = `const record = unwrapOperation(await connection.read({
-  path: "tasks/release.md"
-}));
+const readQuery = `const record = await connection.read({ path: "tasks/release.md" });
+if (!record.ok) return renderProblem(record.problem);
 
-const open = unwrapOperation(await connection.query({
+const open = await connection.query({
   types: ["task"],
   where: 'status == "open" && due != null',
-  order_by: [
-    { field: "due", direction: "asc" }
-  ],
+  orderBy: [{ field: "due", direction: "asc" }],
   limit: 100
-}));`;
+});
+if (!open.ok) return renderProblem(open.problem);`;
 
-const pageQuery = `for await (const page of connection.queryPages(
+const pageQuery = `let loaded = 0;
+for await (const page of connection.queryPages(
   { types: ["task"], where: 'status != "done"' },
-  {
-    firstPageSize: 100,
-    pageSize: 1000,
-    signal: abortController.signal,
-    onProgress: ({ loaded }) => renderProgress(loaded)
-  }
+  { firstPageSize: 100, pageSize: 1000, signal: abortController.signal }
 )) {
-  appendRows(page.results);
+  if (!page.ok) return renderProblem(page.problem);
+  appendRows(page.value.results);
+  renderProgress(loaded += page.value.results.length);
 }`;
 
-const createUpdate = `const created = unwrapOperation(await connection.create({
+const createUpdate = `const created = await connection.create({
   path: "tasks/release.md",
   type: "task",
-  frontmatter: {
-    type: "task",
-    title: "Prepare release",
-    status: "open"
-  },
+  frontmatter: { type: "task", title: "Prepare release", status: "open" },
   body: "Release checklist."
-}));
+});
+if (!created.ok) return renderProblem(created.problem);
 
-unwrapOperation(await connection.update({
-  path: created.path,
+const updated = await connection.update({
+  path: created.value.path,
   patch: { status: "done" },
-  if_revision: created.revision
-}));`;
-
-const watch = `const controller = new AbortController();
-
-for await (const change of connection.watch({
-  signal: controller.signal,
-  onStatus: (status) => renderWatchStatus(status)
-})) {
-  applyChange(change);
+  ifRevision: created.value.revision
+});
+if (!updated.ok && updated.problem.code === "concurrent_modification") {
+  // Changed since it was read: refresh, then let the user or domain logic decide.
 }`;
 
-const preflight = `const preview = unwrapOperation(await connection.preflightRename({
+const watch = `const lifetime = new AbortController();
+const opened = await connection.watch({ lifetimeSignal: lifetime.signal }, { timeoutMs: 20_000 });
+if (!opened.ok) return renderProblem(opened.problem);
+const unsubscribe = opened.value.subscribe(
+  (change) => applyChange(change.type, change.payload.path),
+  renderWatchStatus,
+  renderProblem
+);
+// Leaving: unsubscribe(); opened.value.close();
+void unsubscribe;`;
+
+const preflight = `const preview = await connection.preflightRename({
   from: "tasks/release.md",
   to: "archive/release.md",
-  update_refs: true,
-  if_revision: current.revision
-}));
+  updateRefs: true,
+  ifRevision: current.revision
+});
+if (!preview.ok) return renderProblem(preview.problem);
+showImpact(preview.value.referencesAffected, preview.value.warnings);
 
-showImpact(preview.references_affected, preview.warnings);
-
-await connection.renameWithProgress({
-  from: preview.from,
-  to: preview.to,
-  update_refs: true,
-  if_revision: current.revision
+const renamed = await connection.renameWithProgress({
+  from: preview.value.from,
+  to: preview.value.to,
+  updateRefs: true,
+  ifRevision: current.revision
 }, {
-  preflight: preview,
-  signal: controller.signal,
+  preflight: preview.value,
+  signal: abortController.signal,
   onProgress: renderMutationProgress
-});`;
+});
+if (!renamed.ok) renderProblem(renamed.problem);`;
+
+const recover = `for (const pending of connection.pendingMutations()) {
+  const recovered = await pending.recover({ timeoutMs: 30_000 });
+  if (!recovered.ok) renderProblem(recovered.problem);
+}`;
 ---
 
 <DocsLayout
   title="Records and operations"
-  description="Read, query, watch, create, update, move, and delete records through canonical mdbase envelopes and revision preconditions."
+  description="Read, query, watch, create, update, move, and delete records with typed outcomes and revision preconditions."
   active="operations"
   headings={[
-    { href: "#envelopes", label: "Envelopes" },
+    { href: "#outcomes", label: "Typed outcomes" },
     { href: "#read-query", label: "Read and query" },
     { href: "#pagination", label: "Pagination" },
     { href: "#write", label: "Write safely" },
     { href: "#watch", label: "Watch changes" },
-    { href: "#preflight", label: "Preflight mutations" }
+    { href: "#preflight", label: "Preflight mutations" },
+    { href: "#recovery", label: "Interrupted writes" }
   ]}
 >
-  <h2 id="envelopes">Operation envelopes</h2>
+  <h2 id="outcomes">Typed outcomes</h2>
   <p>
-    Record-facing operations return{" "}
-    <code>{`MdbaseOperationEnvelope<Result>`}</code>. A successful envelope
-    contains <code>valid: true</code>, the typed result, and any non-fatal
-    diagnostics. Validation failures return diagnostics in the same envelope.
-    Transport failures use exceptions.
+    Every operation returns a <code>ConnectOutcome</code>. Check{" "}
+    <code>ok</code>: a success has the typed <code>value</code> and any
+    non-fatal <code>diagnostics</code>; a failure has a <code>problem</code>{" "}
+    with a stable <code>code</code>, a <code>category</code>, a suggested{" "}
+    <code>recovery</code>, and, for mutations, whether the write was sent,
+    rejected or has an unknown outcome. Expected failures are data, not
+    exceptions; exceptions mean a programming error.
   </p>
   <p>
-    <code>unwrapOperation(envelope)</code> returns the result or throws{" "}
-    <code>MdbaseOperationValidationError</code>. Use it when the calling layer
-    uses exceptions. Keep the raw envelope when diagnostics are part of the
-    interface.
+    Record conditions have one code whichever authority holds the collection:
+    a stale revision is <code>concurrent_modification</code>, a missing record
+    is <code>file_not_found</code>, and invalid input is{" "}
+    <code>operation_invalid</code> with the mdbase diagnostics in its details.
   </p>
 
   <h2 id="read-query">Read one path or query a collection</h2>
@@ -114,8 +121,9 @@ await connection.renameWithProgress({
   <h2 id="pagination">Page large result sets against one snapshot</h2>
   <CodeBlock code={pageQuery} language="ts" label="large-query.ts" />
   <p>
-    <code>queryPages()</code> preserves the snapshot token returned by the
-    first page and rejects a changed token. <code>queryAll()</code> provides the
+    <code>queryPages()</code> yields one outcome per page. It preserves the
+    snapshot token returned by the first page and reports a changed token as
+    {" "}<code>query_snapshot_changed</code>. <code>queryAll()</code> provides the
     same behavior when holding the complete result set in memory is acceptable.
   </p>
 
@@ -123,7 +131,7 @@ await connection.renameWithProgress({
   <CodeBlock code={createUpdate} language="ts" label="write.ts" />
   <p>
     <code>patch</code> is the canonical v0.3 partial-frontmatter update. A
-    mismatched <code>if_revision</code> produces{" "}
+    mismatched <code>ifRevision</code> produces{" "}
     <code>concurrent_modification</code>. Refresh the record and ask the user or
     domain logic to resolve the conflict before submitting another write.
   </p>
@@ -137,10 +145,13 @@ await connection.renameWithProgress({
   <h2 id="watch">Resume changes by cursor</h2>
   <CodeBlock code={watch} language="ts" label="watch.ts" />
   <p>
-    <code>watch()</code> uses the collection authority's resumable change
-    cursor. The local change feed remains at the collection authority. The
-    iterator reconnects transient routes by default and reports{" "}
-    <code>reset_required</code> when the consumer must refresh a complete view.
+    <code>watch()</code> starts within a bounded budget and returns a
+    subscription that lasts until <code>close()</code> or its lifetime signal.
+    It resumes from the collection authority's change cursor, reconnects
+    transient routes by default, and reports a <code>reset_required</code>{" "}
+    status when the consumer must refresh a complete view. To keep open
+    records current, pass the subscription to{" "}
+    <a href="/sdk/editing/#follow"><code>connection.records.follow()</code></a>.
   </p>
 
   <h2 id="preflight">Show authoritative impact before destructive work</h2>
@@ -151,13 +162,14 @@ await connection.renameWithProgress({
     <code>renameWithProgress()</code> or <code>deleteWithProgress()</code> so
     the confirmation shown to the user matches the operation that will run.
   </p>
-  <div class="callout">
-    <strong>Encrypted local mutations have durable outcomes.</strong>
-    <p>
-      If the caller stops waiting after dispatch, inspect{" "}
-      <code>pendingMutation()</code> and recover the exact connector receipt
-      with <code>resumePendingMutation()</code>. Wait for that outcome before
-      submitting a different mutation.
-    </p>
-  </div>
+  <h2 id="recovery">Recover interrupted writes exactly</h2>
+  <CodeBlock code={recover} language="ts" label="recover.ts" />
+  <p>
+    The SDK stores each mutation's exact encrypted request before sending it.
+    If the response is lost, the write fails with{" "}
+    <code>operation_outcome_unknown</code> and a durable handle appears in{" "}
+    <code>pendingMutations()</code>, including after a reload.{" "}
+    <code>recover()</code> resends the original request identity; never repeat
+    the write as a new mutation. Record sessions do this for you.
+  </p>
 </DocsLayout>

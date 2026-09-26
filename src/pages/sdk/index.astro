@@ -2,13 +2,13 @@
 import DocsLayout from "../../components/DocsLayout.astro";
 import CodeBlock from "../../components/CodeBlock.astro";
 
-const seam = `import type { MdbaseCollectionClient } from "@mdbase-dev/connect";
+const seam = `import type { MdbaseCollectionClient } from "@mdbase-dev/connect/advanced";
 
 export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
   return client.queryAll({
     types: ["task"],
     where: 'status == "open"',
-    order_by: [{ field: "due", direction: "asc" }]
+    orderBy: [{ field: "due", direction: "asc" }]
   });
 }`;
 ---
@@ -27,8 +27,9 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
   <p>
     <code>@mdbase-dev/connect</code> is the browser and native-shell SDK for
     applications that operate on one user-approved local or hosted mdbase
-    collection. The application asks for exact operations. Connect selects the
-    route and the collection authority checks the current grant.
+    collection. The application declares the capabilities it needs in its
+    manifest. Connect selects the route and the collection authority checks
+    the current grant.
   </p>
 
   <h2 id="start">Starting points</h2>
@@ -97,12 +98,17 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
         <td>Browser APIs or adapters supplied by a native shell</td>
       </tr>
       <tr>
-        <td><code>MdbaseBrowserLocation</code></td>
-        <td>Bookmarkable collection selection, authorization return URLs, and browser navigation</td>
-        <td>A stable <code>MdbaseConnect</code> manager and browser history APIs</td>
+        <td><code>MdbaseApplicationSession</code></td>
+        <td>One application's collection selection, authorization, setup checks, and reactive snapshot</td>
+        <td>An <code>MdbaseConnect</code> manager and a selection adapter such as <code>MdbaseBrowserSelection</code></td>
       </tr>
       <tr>
-        <td><code>MdbaseCollectionClient</code></td>
+        <td><code>connection.records</code></td>
+        <td>Records people type into: autosave, conflicts, exact recovery, live updates</td>
+        <td>An <code>MdbaseConnection</code></td>
+      </tr>
+      <tr>
+        <td><code>MdbaseCollectionClient</code> (<code>/advanced</code>)</td>
         <td>Domain and feature logic that should be independent of OAuth and hosting</td>
         <td>A small <code>MdbaseCollectionTransport</code></td>
       </tr>
@@ -121,11 +127,10 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
 
   <h2 id="application-shape">Application structure</h2>
   <p>
-    Create one <code>MdbaseConnect</code> manager at the application boundary.
-    Pair it with one <code>MdbaseBrowserLocation</code> at the browser
-    application boundary. Resolve its active connection, then pass that
-    {" "}<code>MdbaseConnection</code> into feature code. The location helper owns
-    bookmark selection and OAuth return cleanup; the manager owns saved
+    Create one <code>MdbaseConnect</code> manager and one application session
+    at the application boundary. Read the session's active connection, then
+    pass that <code>MdbaseConnection</code> into feature code. The session owns
+    collection selection and authorization; the manager owns saved
     authorizations. A bound connection never changes collections underneath a
     repository, and feature code written against
     {" "}<code>MdbaseCollectionClient</code> can also run against the developer
@@ -139,12 +144,13 @@ export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
   </p>
   <CodeBlock code={seam} language="ts" label="tasks.ts" />
   <div class="callout">
-    <strong>Operation envelopes</strong>
+    <strong>Typed outcomes</strong>
     <p>
-      Record operations return <code>{`{ valid, result, diagnostics }`}</code>.
-      Use <code>unwrapOperation()</code> when exceptions suit the calling code,
-      or inspect the envelope when the interface should present validation
-      diagnostics inline.
+      Every operation returns a <code>ConnectOutcome</code>:
+      {" "}<code>{`{ ok: true, value, diagnostics }`}</code> or
+      {" "}<code>{`{ ok: false, problem }`}</code>. Expected failures are data
+      with a stable code and a suggested recovery; exceptions mean a
+      programming error.
     </p>
   </div>
 
