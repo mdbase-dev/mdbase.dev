@@ -1,0 +1,143 @@
+---
+import BaseLayout from "../../../../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="mdbase Reader extension privacy"
+  description="How the mdbase Reader browser extension handles page content, annotations, browsing addresses, and Connect authorization."
+>
+  <article class="legal">
+    <header>
+      <h1>mdbase Reader browser extension privacy</h1>
+      <p>
+        This page covers the mdbase Reader browser extension. The
+        <a href="/privacy/">mdbase website and Connect privacy page</a> covers the
+        related website and Connect service.
+      </p>
+    </header>
+
+    <h2>What the extension does</h2>
+    <p>
+      Reader lets you save supported web articles and PDFs, add highlights and
+      notes, and revisit them in a collection you authorize through mdbase
+      Connect. The extension is not a standalone storage service.
+    </p>
+
+    <h2>Pages and information you choose to save</h2>
+    <p>
+      When you open Reader on a supported page, it reads the page address,
+      title, content, available citation metadata and selected text to prepare
+      a capture. Saving is a separate action. When you save, Reader transfers
+      the source content and any tags, notes, comments or highlights you enter
+      through Connect to your selected collection.
+    </p>
+    <p>
+      For articles, new captures include a readable copy and a minimized
+      text-and-structure HTML archive. The archive leaves out scripts, forms,
+      embedded application state, arbitrary attributes and resource or link
+      addresses from the document markup. Explicitly hidden elements are
+      removed. This is not anonymization: visible text, titles, citation
+      metadata and the separately saved source address, including any query
+      parameters, may still contain private information. Existing captures are
+      not rewritten. Only save pages you intend to keep in that collection.
+    </p>
+    <p>
+      For supported PDFs, Reader downloads the document for saving. Where
+      Chrome permits, the download uses your existing access to the original
+      website. The extension does not copy the website's login cookies into
+      the saved PDF as part of that operation.
+    </p>
+
+    <h2>Citation lookups</h2>
+    <p>
+      If a DOI is available, citation preparation may send that DOI to{" "}
+      <code>doi.org</code> and the registry it redirects to, such as Crossref
+      or DataCite. This can happen before you save. The lookup does not
+      intentionally send your notes, highlights or full article content.
+      Those services also receive ordinary network information such as your IP
+      address. Extension DOI requests omit cookies.
+    </p>
+
+    <h2>Optional saved-page recognition</h2>
+    <p>
+      “Mark pages I've saved and show my highlights on them” is optional. If
+      enabled, Chrome requests access to HTTPS websites. Reader then sends the
+      addresses of HTTPS pages you visit, including pages you have not saved,
+      through your configured Connect route to query your selected collection.
+      It retrieves matching saved highlights and may read page text to display
+      them. This is not merely an on-device browser comparison. Turning the
+      feature off stops these background lookups and requests removal of the
+      optional website permission.
+    </p>
+
+    <h2>Connection and local browser data</h2>
+    <p>
+      The extension keeps Connect authorization state, the selected collection,
+      preferences and interrupted-write recovery information in Chrome's
+      extension-local storage. Signing keys and application identity are held
+      in the extension's IndexedDB databases. Recovery data can include
+      identifiers, addresses and pending changes. Draft text and selected
+      passages are kept in extension session storage and cleaned up when their
+      tab closes. This implementation does not use Chrome's synchronized
+      storage for those drafts.
+    </p>
+    <p>
+      Connect grants are sensitive credentials used to access only collections
+      you authorize. Extension API requests do not use ambient Connect portal
+      cookies. The separate Connect approval website handles its own sign-in.
+    </p>
+
+    <h2>Where data goes</h2>
+    <p>
+      The production extension contacts <code>connect.mdbase.dev</code> for
+      authorization and collection operations. Depending on your collection,
+      records and files are handled by a hosted collection service or your own
+      connector, with a cloud relay where applicable. Not all traffic remains
+      on your computer. The <a href="/privacy/">Connect privacy page</a>
+      describes account, routing and hosted-collection handling.
+    </p>
+    <p>
+      For a collection served from your computer, you may separately allow
+      direct access to the connector on your own device. This is optional;
+      Chrome controls the localhost and local-network permissions. Websites
+      you capture and DOI registries have their own privacy practices.
+    </p>
+
+    <h2>Retention and controls</h2>
+    <ul>
+      <li>
+        Saved sources, files and annotations remain in the selected collection
+        until removed using the collection's controls. Removing the extension
+        does not delete them.
+      </li>
+      <li>
+        Session drafts are temporary. Local preferences, authorization and
+        recovery state can persist across browser restarts.
+      </li>
+      <li>
+        Turn off saved-page recognition in extension Settings to stop
+        background address lookups and request removal of website access.
+      </li>
+      <li>
+        Settings → Disconnect this browser → Disconnect and clear local data
+        removes extension-local state, session drafts and IndexedDB credentials
+        after confirmation. It also requests removal of optional website and
+        local-connector permissions. Finish pending saves first: a write already
+        sent may still complete, and recovery information is discarded.
+      </li>
+      <li>
+        Clearing this browser does not revoke server-side grants or delete
+        collection content, and does not affect other browsers. Highlights
+        already drawn on an open page may remain until it is reloaded. Manage
+        grants in Connect and remove records/files in your collection.
+      </li>
+    </ul>
+
+    <h2>Contact and changes</h2>
+    <p>
+      <!-- Publication gate: replace this with the publisher-approved, publicly reachable privacy contact and confirm the operator's legal identity, service providers, logs, backups and deletion procedures before merging. -->
+      Privacy contact and effective date are pending publisher confirmation.
+      Changes to this policy will be posted at this address.
+    </p>
+  </article>
+</BaseLayout>
