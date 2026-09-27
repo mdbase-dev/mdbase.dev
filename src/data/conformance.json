@@ -1,21 +1,23 @@
 {
-  "generated_at": "2026-08-10",
+  "generated_at": "2026-09-27",
   "spec_version": "0.3.0",
   "implementations": [
     {
       "name": "mdbase-rs",
       "language": "Rust",
-      "version": "0.4.0-rc.3",
+      "version": "0.4.0-rc.5",
       "repository": "https://github.com/callumalpass/mdbase-rs",
-      "evidence_date": "2026-07-29",
+      "evidence_date": "2026-09-27",
       "profiles": [
         "core_read",
         "collection_semantics",
+        "data_contracts",
         "cel",
         "cel_match",
         "cel_query",
         "links",
         "core_write",
+        "type_packs",
         "lifecycle",
         "watch"
       ],
@@ -26,17 +28,19 @@
     {
       "name": "mdbase",
       "language": "TypeScript",
-      "version": "0.3.0-rc.4",
+      "version": "0.3.0-rc.7",
       "repository": "https://github.com/callumalpass/mdbase",
-      "evidence_date": "2026-07-29",
+      "evidence_date": "2026-09-27",
       "profiles": [
         "core_read",
         "collection_semantics",
+        "data_contracts",
         "cel",
         "cel_match",
         "cel_query",
         "links",
         "core_write",
+        "type_packs",
         "lifecycle"
       ],
       "optional_features": [
@@ -78,7 +82,8 @@
   "coverage": {
     "coverage_complete": [
       "core_read",
-      "collection_semantics"
+      "collection_semantics",
+      "data_contracts"
     ],
     "draft": [
       "cel",
@@ -86,6 +91,7 @@
       "cel_query",
       "links",
       "core_write",
+      "type_packs",
       "lifecycle",
       "event_action_interop/0.1",
       "runtime/0.2",

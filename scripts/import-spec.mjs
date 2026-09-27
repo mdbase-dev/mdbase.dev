@@ -43,7 +43,7 @@ function rewrite(html, archive) {
   required(shellPath, "Build the shared specification shell before importing");
   const content = html
     .replaceAll('href="runtime.html"', 'href="/runtime/"')
-    .replaceAll('href="/testbed/"', 'href="#section-16"')
+    .replaceAll('href="/testbed/"', 'href="#section-14"')
     .replaceAll('href="spec-v0.2.html"', 'href="/spec/v0.2/"')
     .replaceAll('href="spec.html"', 'href="/spec/"')
     .replaceAll(
