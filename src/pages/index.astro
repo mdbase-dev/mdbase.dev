@@ -11,7 +11,7 @@ import HomeLayout from "../layouts/HomeLayout.astro";
   <main id="main" tabindex="-1">
     <section id="intro" class="chapter is-active" data-scene="intro" aria-label="Introduction">
       <div class="chapter__inner">
-        <h1 class="sr-only">mdbase</h1>
+        <h1 class="home-title">Structured data in ordinary Markdown files</h1>
         <p>
           An mdbase is a folder of Markdown files with enough shared structure
           for applications to understand them. The files remain readable in a
@@ -25,6 +25,10 @@ import HomeLayout from "../layouts/HomeLayout.astro";
           which applications may use it. If a collection remains on your
           computer, the mdbase Connector serves the folder locally.
         </p>
+        <div class="chapter__actions home-actions">
+          <a class="home-action home-action--primary" href="https://editor.mdbase.dev/">Open the Editor</a>
+          <a class="home-action" href="/spec/">Read the specification</a>
+        </div>
       </div>
     </section>
 
