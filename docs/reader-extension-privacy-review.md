@@ -1,8 +1,8 @@
-# Reader extension privacy page — publication gate
+# Reader extension privacy page — evidence and Store handoff
 
-Proposed URL: `https://mdbase.dev/apps/reader/extension/privacy/`.
+URL: `https://mdbase.dev/apps/reader/extension/privacy/`.
 
-This page is a **draft**, not an approved policy. Do not merge/deploy or enter the URL in the Chrome Web Store until the publisher approves the final wording. It describes the 0.2.0 candidate uploaded from `mdbase-reader` commit `adc9d27f86d0040320f5f26f2d96c176c33aa92b`; if the submitted ZIP changes, re-audit it. The source audit, data-category mapping and candidate hash are in `mdbase-reader/docs/chrome-web-store/` on `fix/extension-store-hardening`.
+This page describes the 0.2.0 candidate uploaded from `mdbase-reader` commit `adc9d27f86d0040320f5f26f2d96c176c33aa92b`; if the submitted ZIP changes, re-audit it. The source audit, data-category mapping and candidate hash are in `mdbase-reader/docs/chrome-web-store/` on `fix/extension-store-hardening`.
 
 ## Repository findings used in the draft
 
@@ -13,14 +13,14 @@ This page is a **draft**, not an approved policy. Do not merge/deploy or enter t
 - **Revocation/deletion:** `mdbase-connect/apps/editor/src/ConnectApp.tsx` has application-grant revocation controls; local/hosted authority confirmation may be pending. `apps/editor/src/AccountManagement.tsx` conditionally disables account deletion when the service reports it unavailable. The ops desired `render.yaml` enables it, but a live check is required before claiming it is currently available. Browser-local extension reset is not server-side revocation. Hosted record/file deletion can leave retained versions or backups.
 - **Email:** `mdbase-cloud-ops/docs/account-and-service-inventory.md` identifies Resend for account-related delivery. DOI lookups and original-site PDF requests are documented in the extension-store-hardening audit, not Connect.
 
-## Confirm before publication
+## Store handoff and follow-up
 
-- Test delivery to `callum@mdbase.dev`, set the effective date to the actual publication date and confirm a handling process for privacy/deletion requests.
-- Check live production settings for Render log/PITR retention and account deletion. The repositories provide desired state and implementation but cannot prove all live provider settings or data already retained there. Recheck the GitHub recovery variable at publication.
+- The owner confirmed `callum@mdbase.dev` as the public contact and the page uses 27 September 2026 as its effective date. Test actual delivery and define the operational handling path for privacy/deletion requests.
+- The page does not promise an exact Render log/PITR retention interval or instant erasure. The repositories provide desired state and implementation but cannot prove all live provider settings or data already retained there. Check live retention and account-deletion availability as an operational follow-up. Recheck the GitHub recovery variable before making a future archive claim.
 - On 2026-09-27 the publisher confirmed the three Web Store data-use commitments: no sale/impermissible transfer apart from approved uses, no unrelated use or transfer, and no creditworthiness/lending use or transfer. The policy now states those commitments. The exact dashboard category mapping still needs reconciliation with the final ZIP and service behaviour before certification. Chrome Limited Use is a separate policy review, not automatically proven by these three statements.
 - Reconcile Web Store data categories with the actual submitted build and backend: website content, visited URLs, authorization credentials, account identifiers, IP/location and activity/usage reporting. Recheck optional HTTPS permission and DOI traffic before claiming they stop or omit data.
 - Check the published page against the production ZIP and the other Reader/Connect pages. The site's in-progress Reader documentation currently exists as untracked work in the canonical `mdbase.dev` checkout, not on this branch; coordinate separately rather than copying or overwriting it.
-- After approval and deployment, fetch the public URL without authentication and verify its content, canonical URL and links before entering it in the Chrome Web Store. Save the draft, re-open “Why can't I submit?”, and submit only with explicit publisher approval.
+- After deployment, fetch the public URL without authentication and verify its content, canonical URL and links before entering it in the Chrome Web Store. Save the draft, re-open “Why can't I submit?”, and submit only with explicit publisher approval.
 
 ## Validation
 
