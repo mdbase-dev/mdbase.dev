@@ -89,8 +89,8 @@ cpSync(
 
 const manifest = yaml(join(specDir, "tests", "v0.3", "manifest.yaml"));
 const claims = [
-  yaml(join(rustDir, "conformance", "v0.4.0-rc.3.yml")),
-  yaml(join(typescriptDir, "conformance", "v0.3.0-rc.4.yml"))
+  yaml(join(rustDir, "conformance", "v0.4.0-rc.5.yml")),
+  yaml(join(typescriptDir, "conformance", "v0.3.0-rc.7.yml"))
 ];
 const runtimeClaim = yaml(
   join(rustDir, "crates", "mdbase-runtime", "conformance", "v0.3.0-rc.1.yml"),
