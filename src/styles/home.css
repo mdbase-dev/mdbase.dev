@@ -37,7 +37,8 @@
   align-items: center;
   scroll-margin-top: 120px;
 }
-.chapter:first-child { min-height: 126vh; }
+/* A full viewport keeps the headline above the fold beside the intro diagram. */
+.chapter:first-child { min-height: 100vh; }
 .chapter:last-child { min-height: 120vh; }
 
 .chapter__inner {
@@ -57,6 +58,38 @@
   letter-spacing: 0;
 }
 .home-body p { margin: 0 0 20px; }
+
+/* global.css is not loaded here, so homepage links need their own rule. */
+.home-body a {
+  color: var(--color-text);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+.home-body a:hover { color: var(--color-text-soft); }
+
+.home-body .home-title {
+  max-width: 18ch;
+  margin-bottom: 28px;
+  font-size: clamp(1.7rem, 3.2vw, 2.4rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+}
+
+.chapter__actions.home-actions {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+}
+.home-body .home-action--primary {
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--color-text);
+  text-decoration: none;
+}
+.home-body .home-action--primary:hover {
+  color: var(--color-canvas);
+  background: var(--color-text);
+}
 .chapter__lead, .chapter__body { color: var(--color-text); }
 
 .file-tree,
