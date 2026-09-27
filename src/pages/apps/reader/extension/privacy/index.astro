@@ -10,9 +10,9 @@ import BaseLayout from "../../../../../layouts/BaseLayout.astro";
     <header>
       <h1>mdbase Reader browser extension privacy</h1>
       <p>
-        This page covers the mdbase Reader browser extension. The
-        <a href="/privacy/">mdbase website and Connect privacy page</a> covers the
-        related website and Connect service.
+        This page covers the mdbase Reader browser extension, operated by
+        Callum Alpass. The <a href="/privacy/">mdbase website and Connect privacy page</a>
+        covers the related website and Connect service.
       </p>
     </header>
 
@@ -103,6 +103,28 @@ import BaseLayout from "../../../../../layouts/BaseLayout.astro";
       you capture and DOI registries have their own privacy practices.
     </p>
 
+    <h2>Purposes, service providers and sharing</h2>
+    <p>
+      Reader uses this information to prepare and save sources, look up citation
+      metadata, store annotations, access an authorized collection, recover
+      interrupted writes and, if enabled, recognize saved pages. Connect
+      processes account and grant details, routing metadata and bounded usage
+      counts needed to operate the service; its operator report uses aggregate
+      counts rather than returning individual records or page contents.
+    </p>
+    <p>
+      Production Connect and its hosted provider run on Render with managed
+      PostgreSQL. Hosted files are stored as opaque objects in Cloudflare R2;
+      the hosted provider handles authorized record and file operations.
+      Render provides database recovery, and encrypted logical database
+      backup artifacts are retained through GitHub Actions. Account email may
+      be delivered through Resend. DOI registries receive a DOI when
+      a lookup is made, and the original website serves content or a PDF when
+      you choose to capture it. These providers may process the network and
+      operational information necessary to provide those services. The
+      extension does not contain an advertising or third-party analytics SDK.
+    </p>
+
     <h2>Retention and controls</h2>
     <ul>
       <li>
@@ -128,16 +150,31 @@ import BaseLayout from "../../../../../layouts/BaseLayout.astro";
       <li>
         Clearing this browser does not revoke server-side grants or delete
         collection content, and does not affect other browsers. Highlights
-        already drawn on an open page may remain until it is reloaded. Manage
-        grants in Connect and remove records/files in your collection.
+        already drawn on an open page may remain until it is reloaded. Revoke
+        Reader's application access in Connect and remove records/files in
+        your collection using its controls. Revocation for a connector-backed
+        collection can remain pending until that connector confirms it.
       </li>
     </ul>
+    <p>
+      Connect deletes expired authorization and usage rows that are no longer
+      needed, generally after about 13 months. Other account, grant and audit
+      information can be retained while needed for service, security or legal
+      purposes. Hosted file deletion may first leave retained versions and
+      backups that are removed through maintenance or backup expiry; deletion
+      from all recovery copies is not immediate. The provider and Render may
+      retain operational logs. The <a href="/account-deletion/">Connect account-deletion page</a>
+      explains account-level controls and exceptions; local collection files
+      on your own computers are not removed by deleting an account.
+    </p>
 
     <h2>Contact and changes</h2>
     <p>
-      <!-- Publication gate: replace this with the publisher-approved, publicly reachable privacy contact and confirm the operator's legal identity, service providers, logs, backups and deletion procedures before merging. -->
-      Privacy contact and effective date are pending publisher confirmation.
-      Changes to this policy will be posted at this address.
+      For privacy questions or requests, contact
+      <a href="mailto:callum@mdbase.dev">Callum Alpass at callum@mdbase.dev</a>.
+      Changes to this policy will be posted at this address with an updated
+      effective date.
     </p>
+    <p>Effective date: pending publication approval.</p>
   </article>
 </BaseLayout>
