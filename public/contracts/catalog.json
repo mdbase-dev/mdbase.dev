@@ -20,6 +20,26 @@
       "standards": []
     },
     {
+      "id": "mdbase.person",
+      "version": "1.0.0",
+      "name": "Person",
+      "description": "A portable person reference with editable account identity associations.",
+      "contract_type": "record",
+      "digest": "sha256:e2a9435ad01a2c06c151bf6af62a9d04aa30faa8e6128e4b5fe39378c767465c",
+      "artifact": "./artifacts/contracts/mdbase.person/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "mdbase.person",
+      "version": "2.0.0",
+      "name": "Person",
+      "description": "A person record, referenced by links, with editable account identity associations.",
+      "contract_type": "record",
+      "digest": "sha256:2899b149b1602bd4e51ff8e87c82dc92da3f690f4e89b1a6caf5b2b555540fe5",
+      "artifact": "./artifacts/contracts/mdbase.person/2.0.0.md",
+      "standards": []
+    },
+    {
       "id": "mdbase.record.created",
       "version": "1.0.0",
       "name": "Record created",
@@ -188,6 +208,16 @@
       "digest": "sha256:4761ee78615882170cae6e52590f98917f549bd89d852a0c40568583394d7264",
       "artifact": "./artifacts/contracts/tasknotes.task/0.3.0-rc.3.md",
       "standards": []
+    },
+    {
+      "id": "tasknotes.task",
+      "version": "0.3.0-rc.5",
+      "name": "TaskNotes task",
+      "description": "Portable task data and behavior defined by tasknotes-spec 0.3.0-rc.5.",
+      "contract_type": "record",
+      "digest": "sha256:ecadd00700e249940f4244aaa5b5985a96557d13340463ec491dfa5e89b032a4",
+      "artifact": "./artifacts/contracts/tasknotes.task/0.3.0-rc.5.md",
+      "standards": []
     }
   ],
   "packs": [
@@ -217,13 +247,101 @@
         ]
       },
       "installation": {
-        "visibility": "default",
+        "visibility": "hidden",
         "recommendation": "user",
         "primary_type": "contact",
         "types": [
           {
             "name": "contact",
             "label": "Contact"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mdbase.contact",
+      "version": "1.1.0",
+      "name": "People and contacts type pack",
+      "description": "Portable people, editable account identity associations, and familiar contact fields.",
+      "digest": "sha256:14bba55df0574401b46ae08e5ef1e41e615d1477f70c3cc202eb9ff179287864",
+      "provision": "./packs/mdbase.contact/1.1.0.json",
+      "provides": [
+        {
+          "id": "mdbase.person",
+          "version": "1.0.0",
+          "digest": "sha256:cda32ead27eaf70440efe3fadd8b5334df9af82f378b2af1bc786f7ab0bd0fc3"
+        },
+        {
+          "id": "mdbase.contact",
+          "version": "1.0.0",
+          "digest": "sha256:49cfe15403dfc741a693e89a2f4d2857de306f391d02cb03e67bfaf0aa1d6b0d"
+        }
+      ],
+      "resource_count": 6,
+      "display": {
+        "name": "People and contacts",
+        "summary": "Reference people across apps and collections without tying records to account membership.",
+        "category": "people",
+        "audience": "general",
+        "icon": "user",
+        "badges": [
+          "Portable person references"
+        ]
+      },
+      "installation": {
+        "visibility": "hidden",
+        "recommendation": "user",
+        "primary_type": "contact",
+        "types": [
+          {
+            "name": "contact",
+            "label": "Contact"
+          },
+          {
+            "name": "person",
+            "label": "Person"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mdbase.contact",
+      "version": "1.2.0",
+      "name": "People type pack",
+      "description": "Portable people, editable account identity associations, and familiar contact fields.",
+      "digest": "sha256:dbbb3a874cfc5d69a2a5793c86dab801c16438d58a270b48bc7376fc8bbdfa2d",
+      "provision": "./packs/mdbase.contact/1.2.0.json",
+      "provides": [
+        {
+          "id": "mdbase.person",
+          "version": "2.0.0",
+          "digest": "sha256:f16c462a1fd422f44ed055002f8476ec53c164107647fec782aeb74adeab2f9d"
+        },
+        {
+          "id": "mdbase.contact",
+          "version": "1.0.0",
+          "digest": "sha256:49cfe15403dfc741a693e89a2f4d2857de306f391d02cb03e67bfaf0aa1d6b0d"
+        }
+      ],
+      "resource_count": 7,
+      "display": {
+        "name": "People",
+        "summary": "Reference people across apps and collections without tying records to account membership.",
+        "category": "people",
+        "audience": "general",
+        "icon": "user",
+        "badges": [
+          "Portable person references"
+        ]
+      },
+      "installation": {
+        "visibility": "default",
+        "recommendation": "user",
+        "primary_type": "person",
+        "types": [
+          {
+            "name": "person",
+            "label": "Person"
           }
         ]
       }
@@ -377,6 +495,44 @@
         "recommendation": "integration-managed",
         "primary_type": "task",
         "caution": "TaskNotes applications manage the contract and schemas; the installed task type remains editable.",
+        "types": [
+          {
+            "name": "task",
+            "label": "Task"
+          }
+        ]
+      }
+    },
+    {
+      "id": "tasknotes.task",
+      "version": "0.3.0-rc.15",
+      "name": "TaskNotes task type pack",
+      "description": "Portable tasks whose assignments link to person records, with a reviewed, atomic starter upgrade.",
+      "digest": "sha256:db3b0b28c6fb286bc8c7bbbee9f4b01f567078c208187d17ce049d1e62a9a8cb",
+      "provision": "./packs/tasknotes.task/0.3.0-rc.15.json",
+      "provides": [
+        {
+          "id": "tasknotes.task",
+          "version": "0.3.0-rc.5",
+          "digest": "sha256:dde71d0d776aa0069ee627fe3c10b1a20f87ba36929a16790598ebfb4e8ebf04"
+        }
+      ],
+      "resource_count": 4,
+      "display": {
+        "name": "TaskNotes tasks",
+        "summary": "Manage portable Markdown tasks, assignments, dates, recurrence, reminders, and time tracking.",
+        "category": "work",
+        "audience": "general",
+        "icon": "square-check-big",
+        "badges": [
+          "TaskNotes compatible"
+        ]
+      },
+      "installation": {
+        "visibility": "default",
+        "recommendation": "integration-managed",
+        "primary_type": "task",
+        "caution": "Upgrades the previous starter type while preserving independent customizations. Conflicts or other references to the previous contract block the whole upgrade.",
         "types": [
           {
             "name": "task",
