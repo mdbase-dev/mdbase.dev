@@ -505,11 +505,11 @@
     },
     {
       "id": "tasknotes.task",
-      "version": "0.3.0-rc.15",
+      "version": "0.3.0-rc.16",
       "name": "TaskNotes task type pack",
       "description": "Portable tasks whose assignments link to person records, with a reviewed, atomic starter upgrade.",
-      "digest": "sha256:db3b0b28c6fb286bc8c7bbbee9f4b01f567078c208187d17ce049d1e62a9a8cb",
-      "provision": "./packs/tasknotes.task/0.3.0-rc.15.json",
+      "digest": "sha256:02aa8b3b033dc8144eea4860541ef2d4e32036def264da0c6c19536090843fd6",
+      "provision": "./packs/tasknotes.task/0.3.0-rc.16.json",
       "provides": [
         {
           "id": "tasknotes.task",
