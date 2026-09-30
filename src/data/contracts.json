@@ -10,6 +10,16 @@
   },
   "contracts": [
     {
+      "id": "mdbase.comment",
+      "version": "1.0.0",
+      "name": "Comment",
+      "description": "Comments, replies and suggested edits anchored to text in Markdown records.",
+      "contract_type": "record",
+      "digest": "sha256:c85663fbb339d33e8e67825c81fc160fbac00285a1687cbe99187bad7f58878d",
+      "artifact": "./artifacts/contracts/mdbase.comment/1.0.0.md",
+      "standards": []
+    },
+    {
       "id": "mdbase.contact",
       "version": "1.0.0",
       "name": "Contact",
@@ -200,6 +210,26 @@
       "standards": []
     },
     {
+      "id": "mdbase.view",
+      "version": "1.0.0",
+      "name": "Saved view",
+      "description": "Shared query scope and stable named views executable through the Query profile.",
+      "contract_type": "record",
+      "digest": "sha256:91eae42371c2d411b20d3c976aece3071bbd753963b77b6bcdc26137a8fdcded",
+      "artifact": "./artifacts/contracts/mdbase.view/1.0.0.md",
+      "standards": []
+    },
+    {
+      "id": "obsidian.base",
+      "version": "1.0.0",
+      "name": "Obsidian Base",
+      "description": "An Obsidian Bases saved-view source stored as a YAML document record.",
+      "contract_type": "record",
+      "digest": "sha256:fca77a9c845223784d4af7f5e13e2f149295621ad1b794ea9bb4d99f604467e8",
+      "artifact": "./artifacts/contracts/obsidian.base/1.0.0.md",
+      "standards": []
+    },
+    {
       "id": "tasknotes.task",
       "version": "0.3.0-rc.3",
       "name": "TaskNotes task",
@@ -221,6 +251,44 @@
     }
   ],
   "packs": [
+    {
+      "id": "mdbase.comment",
+      "version": "1.0.0",
+      "name": "Comments type pack",
+      "description": "Comments, replies and suggested edits anchored to text in Markdown records.",
+      "digest": "sha256:37729ce8eca79ed52b669b191350056cbd23d2fe1453d38b56805979ce0d9e29",
+      "provision": "./packs/mdbase.comment/1.0.0.json",
+      "provides": [
+        {
+          "id": "mdbase.comment",
+          "version": "1.0.0",
+          "digest": "sha256:c2c5b3f3013d10625310401e9f9149ffa2d09c5b7d91b4fc97688d3ac010bec5"
+        }
+      ],
+      "resource_count": 3,
+      "display": {
+        "name": "Comments",
+        "summary": "Discuss and suggest edits to notes without changing their text, in any app that reads comments.",
+        "category": "work",
+        "audience": "general",
+        "icon": "chat-circle",
+        "badges": [
+          "Portable comments",
+          "Suggested edits"
+        ]
+      },
+      "installation": {
+        "visibility": "default",
+        "recommendation": "optional",
+        "primary_type": "comment",
+        "types": [
+          {
+            "name": "comment",
+            "label": "Comment"
+          }
+        ]
+      }
+    },
     {
       "id": "mdbase.contact",
       "version": "1.0.0",
@@ -461,6 +529,80 @@
           {
             "name": "runtime_dead_letter",
             "label": "Runtime dead letter"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mdbase.view",
+      "version": "1.0.0",
+      "name": "Saved views",
+      "description": "The mdbase.view contract and an editable View type for saved, reusable queries.",
+      "digest": "sha256:d2a3ff8629699b183bb8117d7499697fecc7685ed8558cae6d9a87311d7cfd05",
+      "provision": "./packs/mdbase.view/1.0.0.json",
+      "provides": [
+        {
+          "id": "mdbase.view",
+          "version": "1.0.0",
+          "digest": "sha256:0918acefce08cddd778fab768fe4f2e4615d263a0eec3e5330b6897c686d744e"
+        }
+      ],
+      "resource_count": 3,
+      "display": {
+        "name": "Saved views",
+        "summary": "Save reusable queries that any view-aware app can list and run.",
+        "category": "work",
+        "audience": "general",
+        "icon": "table",
+        "badges": [
+          "Portable views"
+        ]
+      },
+      "installation": {
+        "visibility": "default",
+        "recommendation": "optional",
+        "primary_type": "view",
+        "types": [
+          {
+            "name": "view",
+            "label": "View"
+          }
+        ]
+      }
+    },
+    {
+      "id": "obsidian.base",
+      "version": "1.0.0",
+      "name": "Obsidian Bases",
+      "description": "The obsidian.base contract and an editable type that stores Obsidian Bases as records.",
+      "digest": "sha256:8251b351a4b00c4ea3f4d49988ae45ab52ceaf2420f57ce8105ca4cfe5eafd50",
+      "provision": "./packs/obsidian.base/1.0.0.json",
+      "provides": [
+        {
+          "id": "obsidian.base",
+          "version": "1.0.0",
+          "digest": "sha256:37e8a0bfb32bb4795c1b3c5dec613c32429aaa765dc33e4adc0c627a48f5c1ff"
+        }
+      ],
+      "resource_count": 2,
+      "display": {
+        "name": "Obsidian Bases",
+        "summary": "Use Obsidian Bases files as saved views that any view-aware app can list and run.",
+        "category": "work",
+        "audience": "general",
+        "icon": "table",
+        "badges": [
+          "Obsidian compatible"
+        ]
+      },
+      "installation": {
+        "visibility": "default",
+        "recommendation": "optional",
+        "primary_type": "obsidian_base",
+        "types": [
+          {
+            "name": "obsidian_base",
+            "label": "Obsidian base"
           }
         ]
       }
