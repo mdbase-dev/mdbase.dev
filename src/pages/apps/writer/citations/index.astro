@@ -1,0 +1,88 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+import CodeBlock from "../../../../components/CodeBlock.astro";
+
+const citations = `A parenthetical citation [@smith2024].
+
+A specific passage [@smith2024, p. 12].
+
+Several sources [@smith2024; @jones2023].`;
+---
+
+<DocsLayout
+  section="writer"
+  title="Sources and citations"
+  description="Cite the sources in your Reader library and insert highlighted quotations into a manuscript."
+  active="citations"
+  headings={[
+    { href: "#library", label: "Use your Reader library" },
+    { href: "#insert", label: "Insert a citation" },
+    { href: "#quotations", label: "Reader quotations" },
+    { href: "#style", label: "Style and language" },
+    { href: "#missing", label: "Missing or unknown sources" }
+  ]}
+>
+  <h2 id="library">Use your Reader library</h2>
+  <p>
+    Connect Writer to the collection containing your
+    <a href="/apps/reader/">Reader library</a>. Each citable source has CSL-JSON
+    citation metadata with a citekey in <code>csl.id</code>. The manuscript uses
+    that citekey; the source record and its metadata remain in the collection.
+  </p>
+  <p>
+    Add sources and review their citation data in
+    <a href="/apps/reader/notes/#citation">Reader's citation editor</a>.
+    Citekeys must be unique. If a source has no citation data, add it before
+    trying to cite the source in Writer.
+  </p>
+
+  <h2 id="insert">Insert a citation</h2>
+  <ol>
+    <li>Open <strong>Sources</strong>, or press <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>E</kbd> (<kbd>⌘</kbd> on a Mac).</li>
+    <li>Search by author, title, year or citekey.</li>
+    <li>Select a source, add a page number if needed, and insert its citation.</li>
+  </ol>
+  <p>
+    Sources already cited in the manuscript appear before the rest of the
+    library. The panel marks the source under your cursor and can step through
+    its citations. You can also type <code>@</code> or <code>[@</code> in the
+    editor to open source completion suggestions.
+  </p>
+  <CodeBlock code={citations} language="markdown" label="Pandoc citations" />
+  <p>Replace the example citekeys with your own. Hover a citation to inspect its bibliography entry.</p>
+
+  <h2 id="quotations">Reader quotations</h2>
+  <p>
+    Sources can show quotations from Reader annotations. Insert one to bring
+    the highlighted text into the manuscript with its citation and available
+    page information. Check the quotation and page against the original source
+    before using it in submitted work.
+  </p>
+  <p>
+    <a href="/apps/writer/chapters/#annotations">Embedding an annotation record</a>
+    is another way to use a quotation. Quoted text and commentary stay separate;
+    commentary is not part of the source's words.
+  </p>
+
+  <h2 id="style">Style and language</h2>
+  <p>
+    Choose <strong>Citation style</strong> and <strong>Language</strong> in
+    Manuscript settings. Six citation styles and eight locales are bundled.
+    A <code>.csl</code> file in the collection can provide another citation style.
+    The selected style controls author/date or note-style formatting, bibliography
+    entries and repeated citations across all included chapters.
+  </p>
+  <p>
+    Preview and Word export use the same citation metadata and style, with
+    separate rendering engines. Review both the citation text and bibliography
+    in the final export.
+  </p>
+
+  <h2 id="missing">Missing or unknown sources</h2>
+  <p>
+    An unknown citekey appears in Problems and may offer a similar known key.
+    Check its spelling, the selected collection and the source's citation data.
+    Editing a source citekey can leave older manuscript citations unresolved;
+    update those references as well.
+  </p>
+</DocsLayout>

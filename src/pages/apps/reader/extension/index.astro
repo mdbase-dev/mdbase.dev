@@ -1,0 +1,134 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+import DocVideo from "../../../../components/DocVideo.astro";
+---
+
+<DocsLayout
+  section="reader"
+  title="Browser extension"
+  description="Save the page you are reading, with highlights and notes, from Chrome's side panel."
+  active="extension"
+  headings={[
+    { href: "#watch", label: "Capture and highlight" },
+    { href: "#install", label: "Install" },
+    { href: "#connect", label: "Connect a collection" },
+    { href: "#save", label: "Save a page" },
+    { href: "#highlights", label: "Highlight as you read" },
+    { href: "#citations", label: "Citation details" },
+    { href: "#marks", label: "Mark pages you have saved" },
+    { href: "#permissions", label: "Permissions" }
+  ]}
+>
+  <h2 id="watch">Capture and highlight</h2>
+  <DocVideo name="extension-capture" />
+
+  <h2 id="install">Install</h2>
+  <p>
+    Install <a href="https://chromewebstore.google.com/detail/mdbase-reader/kimdfjefhbfgfecconmaiaaindjccidp">mdbase Reader from the Chrome Web Store</a>
+    in Chrome 123 or newer. Store-installed copies receive Chrome's automatic
+    updates. Pin Reader from Chrome's extensions menu so its button is easy to reach.
+  </p>
+  <p>
+    If you used an unpacked development copy, disable it to avoid duplicate
+    capture actions. The store copy has its own identity and needs a fresh
+    Connect approval; settings and grants do not migrate automatically.
+  </p>
+  <p>
+    If you have an unpacked development build, open <code>chrome://extensions</code>,
+    enable <strong>Developer mode</strong> and choose <strong>Load unpacked</strong>.
+    Select the folder containing <code>manifest.json</code>. Unpacked copies
+    need manual updates; use the store version for ordinary reading.
+  </p>
+  <p>
+    The extension saves the page you are viewing in your browser. Because it
+    reads the page you already have open, it works for pages that Reader's own
+    capture service cannot fetch, such as articles behind a sign-in.
+  </p>
+
+  <h2 id="connect">Connect a collection</h2>
+  <p>
+    Open the extension and choose <strong>Connect</strong>. It opens an mdbase
+    Connect approval for a collection, like any other app. Choose the
+    destination collection. The extension remembers it for next time.
+  </p>
+
+  <h2 id="save">Save a page</h2>
+  <p>
+    Click the toolbar button or press <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>S</kbd>.
+    Reader opens in Chrome's side panel for that tab. Check the title, add tags
+    and a note if you like, then choose <strong>Save page</strong> or
+    <strong>Save PDF</strong>. Opening the panel or changing collections does
+    not save a page. Once saved, <strong>Open in Reader</strong> takes you to the source.
+  </p>
+  <ul>
+    <li>
+      For an article, Reader extracts the main text and saves a readable copy,
+      plus an archive of the page without any form values you typed.
+    </li>
+    <li>
+      For a PDF open in Chrome's viewer, it saves the PDF. The file is
+      downloaded from the page itself, so your own access applies.
+    </li>
+  </ul>
+  <p>
+    If the page is already in the collection, the panel finds the existing
+    source instead of creating a duplicate. Addresses are compared without
+    tracking parameters, <code>www.</code>, AMP variants or trailing slashes.
+  </p>
+
+  <h2 id="highlights">Highlight as you read</h2>
+  <p>
+    The panel stays open while you read. Each new text selection appears in it,
+    so you can highlight several passages in a row. Add a comment or tags if
+    you like, then choose a colour to save the passage. <kbd>Ctrl</kbd>
+    <kbd>Enter</kbd> (<kbd>⌘</kbd> <kbd>Enter</kbd> on a Mac) also saves the
+    selected passage, or the unsaved page if no passage is selected. You can also
+    press <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>H</kbd>, or right-click and
+    choose <strong>Save highlight to mdbase Reader</strong> or{" "}
+    <strong>Add a note in mdbase Reader</strong>.
+  </p>
+  <p>
+    Highlights are anchored to the saved copy of the page. When a passage
+    appears more than once, Reader uses the occurrence whose surrounding text
+    matches best, and only if one clearly does. Otherwise the highlight is not
+    saved, and your note stays in the panel so you can try again.
+  </p>
+  <p>
+    Unsaved capture drafts are kept per tab and page for the browser session,
+    so closing the side panel does not discard them. They are not collection
+    backups. For PDF highlighting, save the file and choose
+    <strong>Open in Reader to highlight</strong>.
+  </p>
+
+  <h2 id="citations">Citation details</h2>
+  <p>
+    When a page carries a DOI or scholarly metadata, the panel shows the
+    citation it will store. With a DOI, the citation comes from the DOI
+    registry, and only the DOI is sent. Otherwise it comes from the page's own
+    metadata tags.
+  </p>
+
+  <h2 id="marks">Mark pages you have saved</h2>
+  <p>
+    <strong>Settings → Mark pages I've saved</strong> is off by default. When
+    you turn it on, the extension asks for permission to read the pages you
+    visit. It then checks each HTTPS page against your collection, shows a
+    badge with a highlight count or a saved-page check mark, and displays saved
+    highlights. Opening the side panel can also show highlights for that page.
+    Turning saved-page marking off removes its optional HTTPS permission.
+  </p>
+
+  <h2 id="permissions">Permissions</h2>
+  <ul>
+    <li>
+      Without <strong>Mark pages I've saved</strong>, the extension can only
+      read a page when you open the panel on it.
+    </li>
+    <li>
+      Its only permanent site access is the mdbase Connect API, which it uses
+      to reach your collection. That access cannot read the pages you browse.
+    </li>
+    <li>Its access to your collection comes from the Connect approval, which you can revoke in Connect.</li>
+    <li>See the <a href="/apps/reader/extension/privacy/">extension privacy policy</a> for capture data, permissions and third-party lookups.</li>
+  </ul>
+</DocsLayout>

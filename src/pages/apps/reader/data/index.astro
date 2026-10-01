@@ -1,0 +1,173 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+import CodeBlock from "../../../../components/CodeBlock.astro";
+
+const layout = `sources/
+  src_7d7c62fd-….md          one record per source
+annotations/
+  ann_fa4cdc4f-….md          one record per annotation
+files/
+  reader/src_7d7c62fd-…/
+    distant-reading.pdf      the source's original file
+  annotation-9b21….png       an area capture
+views/
+  reading-this-month.md      a saved library view
+_types/
+  reader-source.md
+  reader-annotation.md`;
+
+const source = `---
+type: reader-source
+id: src_7d7c62fd-…
+title: Distant Reading
+kind: document
+authors: [Franco Moretti]
+saved_at: 2026-08-10T06:17:37.487Z
+reading:
+  status: reading
+documents:
+  - file: '[[files/reader/src_7d7c62fd-…/distant-reading.pdf]]'
+    file_id: 019fea51-…
+    role: primary
+    format: pdf
+    media_type: application/pdf
+    revision: sha256:c8b2e7…
+csl:
+  id: morettiDistant13
+  type: book
+  title: Distant Reading
+---
+Argues that close reading scales poorly to large corpora. [@morettiDistant13]
+
+![[annotations/ann_fa4cdc4f-…]]`;
+
+const annotation = `---
+type: reader-annotation
+id: ann_fa4cdc4f-…
+source: '[[sources/src_7d7c62fd-…|Distant Reading]]'
+annotation_type: highlight
+motivation: commenting
+color: yellow
+document:
+  file: '[[files/reader/src_7d7c62fd-…/distant-reading.pdf]]'
+  file_id: 019fea51-…
+  revision: sha256:c8b2e7…
+target:
+  quote:
+    exact: the trouble with close reading
+    prefix: 'And '
+  pdf: { … }
+created_at: 2026-08-11T09:02:14.120Z
+created_by: dev.mdbase.reader
+tags: []
+---
+> the trouble with close reading
+
+This is the claim to test against the sampling chapter.`;
+---
+
+<DocsLayout
+  section="reader"
+  title="How Reader stores data"
+  description="The folders, records and fields Reader writes, so other tools can read and change them."
+  active="data"
+  headings={[
+    { href: "#layout", label: "Collection layout" },
+    { href: "#sources", label: "Source records" },
+    { href: "#annotations", label: "Annotation records" },
+    { href: "#types", label: "Types and contracts" },
+    { href: "#device", label: "What stays on the device" }
+  ]}
+>
+  <p>
+    Everything Reader saves is an ordinary Markdown record or file in your
+    collection. There is no separate Reader database. You can read, edit, back
+    up or move the records with any tool.
+  </p>
+
+  <h2 id="layout">Collection layout</h2>
+  <CodeBlock code={layout} language="text" label="collection" />
+  <p>
+    This is an illustrative layout for the starter types; names and type folders
+    follow the collection's configuration. Imported files go under{" "}
+    <code>files/reader/imports</code>. Record links point to source paths, so tools
+    such as Obsidian can resolve them.
+  </p>
+
+  <h2 id="sources">Source records</h2>
+  <p>
+    A source record describes one work. Its body is your literature note.
+  </p>
+  <CodeBlock code={source} language="markdown" label="sources/src_7d7c62fd-….md" />
+  <table class="api-table">
+    <thead>
+      <tr><th>Field</th><th>Holds</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>id</code>, <code>title</code>, <code>kind</code>, <code>saved_at</code></td><td>Required. The source's stable identity, title, kind and when it was added.</td></tr>
+      <tr><td><code>authors</code>, <code>published</code>, <code>url</code>, <code>description</code>, <code>language</code>, <code>tags</code></td><td>Optional details shown in the library.</td></tr>
+      <tr><td><code>documents</code></td><td>The source's files. Each entry links to a file and records its format and the SHA-256 revision that was saved.</td></tr>
+      <tr><td><code>reading</code></td><td>Reading status, progress from 0 to 1, and the saved position associated with a document file.</td></tr>
+      <tr><td><code>relations</code></td><td>Links to related sources.</td></tr>
+      <tr><td><code>csl</code></td><td>One CSL-JSON item. Its <code>id</code> is the citation key.</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Unknown fields are kept, so you can add your own.
+  </p>
+
+  <h2 id="annotations">Annotation records</h2>
+  <p>
+    Each highlight, comment, bookmark or area capture is its own record. Its
+    body holds the quoted passage, your comment, or both.
+  </p>
+  <CodeBlock code={annotation} language="markdown" label="annotations/ann_fa4cdc4f-….md" />
+  <table class="api-table">
+    <thead>
+      <tr><th>Field</th><th>Holds</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>source</code></td><td>A link to the source record.</td></tr>
+      <tr><td><code>annotation_type</code></td><td><code>highlight</code>, <code>note</code> (a comment on the source), <code>bookmark</code> or <code>area</code>.</td></tr>
+      <tr><td><code>document</code></td><td>The file and the exact revision the annotation was made on.</td></tr>
+      <tr><td><code>target</code></td><td>Where the annotation points: the quoted text with its surrounding context, plus a PDF position, EPUB CFI or web page selector.</td></tr>
+      <tr><td><code>locator</code></td><td>A readable position label, such as a page.</td></tr>
+      <tr><td><code>motivation</code>, <code>color</code>, <code>tags</code></td><td>Why it was made, its colour and its tags.</td></tr>
+      <tr><td><code>created_at</code>, <code>modified_at</code>, <code>created_by</code></td><td>When and by which app it was made.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="types">Types and contracts</h2>
+  <p>
+    Reader reads and writes through two application contracts,{" "}
+    <code>dev.mdbase.reader.source</code> and{" "}
+    <code>dev.mdbase.reader.annotation</code>. The starter types{" "}
+    <code>reader-source</code> and <code>reader-annotation</code> implement
+    them with the field names shown above. A collection can use its own types
+    and field names instead, as long as they implement the contracts. See{" "}
+    <a href="/sdk/contracts/">Contracts and adapters</a>.
+  </p>
+  <p>
+    The starter types assign records by folder and fields: records in{" "}
+    <code>sources</code> with <code>id</code>, <code>title</code> and{" "}
+    <code>kind</code> are sources, and records in <code>annotations</code> with{" "}
+    <code>id</code>, <code>source</code> and <code>annotation_type</code> are
+    annotations.
+  </p>
+
+  <h2 id="device">What stays on the device</h2>
+  <ul>
+    <li>Pane arrangement and display preferences.</li>
+    <li>Literature note drafts that have not reached the collection yet.</li>
+    <li>Connect access grants used by this browser, subject to your collection approval.</li>
+  </ul>
+  <p>
+    Pending annotation comments and new PDF crops are held in memory and can be
+    lost on reload. Local source-note drafts are best-effort browser recovery,
+    not backups. Reader no longer provides the former offline-document copy feature.
+  </p>
+  <p>
+    Open <a href="/apps/writer/">mdbase writer</a> with the same collection to
+    reuse citation metadata and Reader quotations in manuscripts.
+  </p>
+</DocsLayout>

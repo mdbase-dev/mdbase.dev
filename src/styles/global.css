@@ -284,6 +284,7 @@ main[tabindex="-1"]:focus { outline: none; }
 .docs-article ul, .docs-article ol { padding-left: 1.2rem; }
 .docs-article li + li { margin-top: 0.3rem; }
 .docs-article :not(pre) > code { padding: 0; color: var(--ink); background: transparent; border: 0; }
+.docs-article kbd { padding: 0.05rem 0.3rem; color: var(--ink); font: 400 0.78em/1.4 var(--mono); border: 1px solid var(--line); border-radius: 2px; white-space: nowrap; }
 .docs-toc { padding-left: 1rem; border-left: 1px solid var(--ink); }
 .docs-toc > strong { color: var(--ink); }
 .docs-toc nav { margin-top: 0.5rem; }

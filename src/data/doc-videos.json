@@ -1,0 +1,69 @@
+{
+  "reader-markdown": {
+    "title": "Highlight a passage, get a Markdown file",
+    "duration": "0:43",
+    "width": 1600,
+    "height": 900,
+    "description": "Create a highlight with commentary, inspect its Markdown record, and embed it in a literature note.",
+    "steps": [
+      "The sample library opens The Principles of Psychology beside a view of its Markdown source record.",
+      "A passage in the section on voluntary attention is selected. The comment field opens and a note is added before Save highlight is chosen.",
+      "The passage becomes a yellow highlight. A new annotation file appears with its source link, document revision, quoted text, target and commentary.",
+      "The annotation panel lists the passage and comment. Add to literature note inserts an ordinary annotation embed into the source note."
+    ]
+  },
+  "extension-capture": {
+    "title": "Save from the web with the extension",
+    "duration": "1:02",
+    "width": 1440,
+    "height": 900,
+    "description": "Save a sample article and several highlighted passages from Chrome's side panel, then open the saved copy in Reader.",
+    "steps": [
+      "A fictional article, The marginalia problem, is open in Chrome. Reader's side panel identifies the page and the destination sample collection.",
+      "Text is selected on the page. A comment is typed in the panel and a colour is chosen to save the page and highlight.",
+      "The saved passage is highlighted on the live page. Further selections are saved in other colours and appear in Saved highlights.",
+      "Selecting a saved highlight finds it on the page. Open in Reader opens the source's readable saved copy.",
+      "Reader shows the same highlights and comments on the saved copy, with a Markdown file for each annotation."
+    ]
+  },
+  "reader-library": {
+    "title": "Views, annotations and panes",
+    "duration": "0:46",
+    "width": 1440,
+    "height": 900,
+    "description": "Browse table and shelf views, search annotations across sources, and open two reading panes.",
+    "steps": [
+      "The sample library switches between All sources, a Bookshelf view and a Currently reading view.",
+      "Annotations replaces the source list with a table of passages. A search for attention narrows the table to a matching highlight.",
+      "The command palette opens The Principles of Psychology. Another source, Walden, is opened beside it.",
+      "The two documents remain visible together. Tabs can be docked and split; the arrangement is saved per collection."
+    ]
+  },
+  "writer-paper": {
+    "title": "Write, cite and typeset a paper",
+    "duration": "0:55",
+    "width": 1600,
+    "height": 900,
+    "description": "Complete a citation, correct an unknown citekey and insert a Reader quotation while the paper preview updates.",
+    "steps": [
+      "A sample paper about Darwin is open with Outline, its Markdown editor and the typeset article preview side by side.",
+      "A citation is typed in the introduction. Completion finds a source in the Reader library and inserts its citekey with a page locator.",
+      "A deliberately misspelled citekey is marked on its Markdown line. The suggested matching source corrects it, and the preview updates.",
+      "Sources is searched for vegetation. A highlighted quotation is inserted from the matching Reader source, including its citation and page.",
+      "The inserted text appears in the editor and the typeset paper. The manuscript remains an ordinary collection record."
+    ]
+  },
+  "writer-book": {
+    "title": "Build a book from chapter records",
+    "duration": "0:49",
+    "width": 1600,
+    "height": 900,
+    "description": "Open and edit a chapter, reorder chapters and add a new chapter in a thesis-layout manuscript.",
+    "steps": [
+      "The sample book Patient Observation embeds Coral reefs and Earthworms as separate chapter records. The thesis preview shows a title page and chapters.",
+      "Coral reefs is opened from its chapter card. Text is added to that record, and the whole-book preview updates.",
+      "The chapters are reordered in Outline; their order and chapter numbering change in the preview.",
+      "Add chapter creates Afterlives and embeds it after the existing chapters. Writing in the new record produces another typeset chapter."
+    ]
+  }
+}

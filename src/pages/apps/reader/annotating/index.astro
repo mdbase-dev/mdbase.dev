@@ -1,0 +1,135 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+---
+
+<DocsLayout
+  section="reader"
+  title="Reading and annotating"
+  description="Highlight passages, comment on them, capture areas of a PDF, and bookmark your place."
+  active="annotating"
+  headings={[
+    { href: "#reading", label: "Reading" },
+    { href: "#highlight", label: "Highlight a passage" },
+    { href: "#area", label: "Capture a PDF area" },
+    { href: "#comment", label: "Comment on the source" },
+    { href: "#bookmark", label: "Bookmarks" },
+    { href: "#list", label: "The annotation list" },
+    { href: "#edit", label: "Edit and delete" },
+    { href: "#changed-files", label: "When a file changes" },
+    { href: "#connection", label: "Connection and unsaved work" }
+  ]}
+>
+  <h2 id="reading">Reading</h2>
+  <p>
+    Reader opens PDFs, EPUBs and saved web pages. Open a document's contents
+    from the document toolbar. <strong>Enter reading mode</strong>{" "}
+    (<kbd>Ctrl</kbd> <kbd>.</kbd>) hides everything except the document.
+    Press it again or <kbd>Esc</kbd> to leave.
+  </p>
+  <p>
+    Text size, typeface and line length can be changed from{" "}
+    <strong>Text and display</strong> in the header. These apply to EPUBs and
+    saved web pages. PDFs keep their layout. When you come back to a source,
+    Reader restores its saved reading position when it matches the open document.
+  </p>
+
+  <h2 id="highlight">Highlight a passage</h2>
+  <p>
+    Select text in the document. A toolbar appears next to the selection:
+  </p>
+  <ul>
+    <li><strong>Highlight</strong> (<kbd>H</kbd>) saves the passage as a highlight straight away.</li>
+    <li><strong>Comment</strong> (<kbd>C</kbd>) opens a comment field. Choose <strong>Save highlight</strong> to save the highlight with your comment.</li>
+    <li><strong>Copy text</strong> copies the passage, and <strong>Copy with citation</strong> copies it as a quote citing the source.</li>
+  </ul>
+  <p>
+    <kbd>Esc</kbd> dismisses the toolbar. By default, selecting text does not
+    create an annotation until you choose an action. Use the colour controls
+    to choose a highlight colour; highlights are also identified by their text
+    and annotation details.
+  </p>
+  <p>
+    If you highlight a lot, set <strong>Selecting text</strong> to{" "}
+    <strong>Highlight at once</strong> in <strong>Text and display</strong>.
+    Every selection is then saved as a highlight as soon as you make it.
+  </p>
+
+  <h2 id="area">Capture a PDF area</h2>
+  <p>
+    For a figure, table or equation in a PDF, choose <strong>Select area</strong>{" "}
+    in the document toolbar and drag across the part of the page you want.
+    The captured image is saved as a PNG file in the collection's{" "}
+    <code>files</code> folder, and the annotation embeds it. You can add a
+    comment before saving. A new crop is held in memory until it is saved;
+    reloading can lose the unsaved image and comment.
+  </p>
+
+  <h2 id="comment">Comment on the source</h2>
+  <p>
+    <strong>New comment</strong> in the annotation panel records a thought about
+    the source as a whole, with no passage attached.
+  </p>
+
+  <h2 id="bookmark">Bookmarks</h2>
+  <p>
+    <strong>Bookmark this position</strong> in the document toolbar, or the
+    command of the same name, saves your current place as an annotation. The
+    document must be open.
+  </p>
+
+  <h2 id="list">The annotation list</h2>
+  <p>
+    Open a source's <strong>Annotations</strong> view, or the side panel while
+    reading. You can search annotations, filter them to highlights, area
+    captures, comments on the source, bookmarks or those with commentary, and
+    order them by position in the document or newest first.
+  </p>
+  <p>
+    <strong>Show in document</strong> jumps to an annotation's passage.{" "}
+    <strong>Add to literature note</strong> embeds it in the source's note. See{" "}
+    <a href="/apps/reader/notes/">Notes and citations</a>.
+  </p>
+
+  <h2 id="edit">Edit and delete</h2>
+  <p>
+    Comments save automatically about a second after you stop typing. If a save
+    fails, your text stays in the editor with <strong>Retry save</strong>.
+    Unsaved comments are kept in memory only, so a forced reload or a crash can
+    lose text that was not saved yet. Reader warns you before you close a tab
+    with unsaved changes.
+  </p>
+  <p>
+    If the annotation was changed elsewhere, for example in another app, Reader
+    keeps your version and lets you compare it with the collection version
+    before choosing. An annotation can be edited in one pane at a time.
+  </p>
+  <p>
+    Deleting an annotation asks for confirmation. If literature notes embed it,
+    Reader lists them first, because those embeds will break.
+  </p>
+
+  <h2 id="changed-files">When a file changes</h2>
+  <p>
+    Each annotation records the exact version of the file it was made on.
+    Reader will not silently move an annotation to a passage it cannot confirm.
+  </p>
+  <ul>
+    <li>PDF highlights and bookmarks stay attached when a PDF is re-saved without its pages changing, for example after a metadata edit.</li>
+    <li>Web page highlights are found again by their quoted text.</li>
+    <li>EPUB positions belong to one version of the book. After the file changes, Reader checks the quoted text before it follows an old position.</li>
+  </ul>
+
+  <h2 id="connection">Connection and unsaved work</h2>
+  <p>
+    Reader needs Connect access to open collection files and save changes.
+    A document already loaded may remain readable during a connection failure,
+    but this is not an offline-library mode. The former
+    <strong>Available offline</strong> feature has been removed.
+  </p>
+  <p>
+    Wait for annotation saves to finish before closing or reloading. Pending
+    annotation text and new PDF crops are held in memory. Literature notes
+    have a separate local-draft recovery path; see
+    <a href="/apps/reader/notes/#saving">Saving and conflicts</a>.
+  </p>
+</DocsLayout>

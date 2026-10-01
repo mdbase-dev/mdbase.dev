@@ -1,0 +1,128 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import DocVideo from "../../../components/DocVideo.astro";
+---
+
+<DocsLayout
+  section="reader"
+  title="Get started"
+  description="mdbase Reader turns an mdbase collection into a reading library for PDFs, EPUBs and saved web pages."
+  active="overview"
+  headings={[
+    { href: "#status", label: "Status" },
+    { href: "#what", label: "What it is" },
+    { href: "#watch", label: "Highlight to Markdown" },
+    { href: "#open", label: "Open a collection" },
+    { href: "#setup", label: "Reader setup" },
+    { href: "#workspace", label: "The workspace" },
+    { href: "#preview", label: "Try the preview" },
+    { href: "#switch", label: "Switch collections" }
+  ]}
+>
+  <div class="callout">
+    <strong id="status">Reader is prerelease software.</strong>
+    <p>
+      Keep backups of important collections and check the save status before
+      closing or reloading. Sources, notes and annotations remain ordinary
+      mdbase records.
+    </p>
+  </div>
+
+  <h2 id="what">What it is</h2>
+  <p>
+    Reader is for reading, annotating, organising and citing source material.
+    Each source, such as a paper, a book or an article, is a Markdown record in
+    your collection. Its file sits beside it, and every highlight or comment is
+    a separate Markdown record. Other mdbase tools, a text editor or Obsidian
+    can read the collection records and files. See <a href="/apps/reader/data/">How Reader stores data</a>.
+    To write a manuscript using your library's citations and highlights, open
+    <a href="/apps/writer/">mdbase writer</a> with the same collection.
+  </p>
+  <p>
+    Reader works with collections hosted by mdbase Connect and with collections
+    that stay on your computer and are served by the{" "}
+    <a href="/downloads/">Connector</a>. For a computer-backed collection,
+    keep its desktop app running and the computer available.
+  </p>
+
+  <h2 id="watch">Highlight to Markdown</h2>
+  <DocVideo name="reader-markdown" />
+  <p>
+    See also the recordings for <a href="/apps/reader/library/#watch">views and panes</a>
+    and <a href="/apps/reader/extension/#watch">web capture</a>.
+  </p>
+
+  <h2 id="open">Open a collection</h2>
+  <ol>
+    <li>Open <a href="https://reader.mdbase.dev/">reader.mdbase.dev</a> and connect a collection.</li>
+    <li>
+      Sign in to mdbase Connect. If you do not have an account,{" "}
+      <a href="https://connect.mdbase.dev/signup">sign up</a> first.
+    </li>
+    <li>Choose the collection you want to use as your library.</li>
+    <li>Review and approve Reader's access to that collection.</li>
+  </ol>
+  <p>
+    You can use an existing collection or a new, empty one. Reader keeps its
+    records in their own folders, so it can share a collection with notes from
+    other apps.
+  </p>
+
+  <h2 id="setup">Reader setup</h2>
+  <p>
+    The first time you open a collection, Reader may show{" "}
+    <strong>Set up this reading collection</strong>. It lists the exact
+    changes it needs: the source and annotation contracts and two starter
+    types, <code>reader-source</code> and <code>reader-annotation</code>. Nothing
+    else in the collection changes. Choose <strong>Apply reviewed setup</strong>{" "}
+    to add them.
+  </p>
+  <p>
+    You can adapt the starter types later, for example in the{" "}
+    <a href="https://editor.mdbase.dev/">mdbase Editor</a>. Reader reads your records
+    through its contracts, so your types can use their own field names.
+  </p>
+
+  <h2 id="workspace">The workspace</h2>
+  <table class="api-table">
+    <thead>
+      <tr><th>Area</th><th>What it holds</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Sources sidebar</td><td>Find a source by title, author or tag, and see open and recent sources.</td></tr>
+      <tr><td>Library</td><td>Every source as a table or cards, with filters and saved views.</td></tr>
+      <tr><td>Documents</td><td>Each open source in a tab, showing its document, literature note, annotations or citation.</td></tr>
+      <tr><td>Side panel</td><td>Annotations and details for the source you are reading.</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Tabs and panels can be moved and split. Drag a tab onto another tab strip
+    to move it, or onto the edge of a pane to split. A tab's context menu and
+    the pane's <strong>⋯</strong> menu offer the same actions without
+    dragging. Your arrangement is saved per collection, and{" "}
+    <strong>Reset pane arrangement</strong> in the command palette restores the
+    default without closing tabs. On a phone, one pane is shown at a time.
+  </p>
+  <p>
+    Press <kbd>Ctrl</kbd> <kbd>K</kbd> (<kbd>⌘</kbd> <kbd>K</kbd> on a Mac)
+    to search sources and run any command.
+  </p>
+
+  <h2 id="preview">Try the preview</h2>
+  <p>
+    Open the <a href="https://reader.mdbase.dev/?preview=1">interface preview</a>
+    to explore sample sources. It runs in memory and creates no collection
+    records or files. Changes to the sample library are not kept.
+  </p>
+
+  <h2 id="switch">Switch collections</h2>
+  <p>
+    Open the collection-name menu in the header to choose another connected
+    collection or connect a new one. Review any pending saves before switching.
+    If a collection is unavailable, follow Reader's reconnect or access-review prompt.
+  </p>
+  <p>
+    See <a href="/support/">Support</a> to report bugs or request help.
+    Remove private notes, collection paths and credentials from reports.
+  </p>
+</DocsLayout>

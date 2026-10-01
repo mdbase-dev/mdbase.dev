@@ -1,0 +1,85 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+import CodeBlock from "../../../../components/CodeBlock.astro";
+import DocVideo from "../../../../components/DocVideo.astro";
+
+const chapters = `![[chapters/introduction]]
+
+![[chapters/results]]
+
+![[chapters/discussion]]`;
+---
+
+<DocsLayout
+  section="writer"
+  title="Chapters and embeds"
+  description="Assemble a longer manuscript from Markdown records in the same collection."
+  active="chapters"
+  headings={[
+    { href: "#watch", label: "Building a book" },
+    { href: "#include", label: "Include a chapter" },
+    { href: "#navigate", label: "Navigate and reorder" },
+    { href: "#references", label: "References across chapters" },
+    { href: "#annotations", label: "Embed a Reader annotation" },
+    { href: "#missing", label: "Missing and recursive embeds" }
+  ]}
+>
+  <h2 id="watch">Building a book</h2>
+  <DocVideo name="writer-book" />
+
+  <h2 id="include">Include a chapter</h2>
+  <p>
+    Put an embed on a line of its own in the main manuscript. Writer includes
+    the referenced record at that point in the document. The chapter is an
+    ordinary Markdown record; it needs no special manuscript type.
+  </p>
+  <CodeBlock code={chapters} language="markdown" label="main manuscript body" />
+  <p>
+    Use paths belonging to records in your collection. Writer resolves record
+    links in the collection; an unresolved link appears in Problems. A main
+    manuscript can also contain its own prose around the chapter embeds.
+  </p>
+
+  <h2 id="navigate">Navigate and reorder</h2>
+  <p>
+    Outline lists the included chapters in document order. Open one there or
+    from its card in the editor. Cards show the chapter title, word count and
+    problems. Each chapter has its own editing session and autosave status.
+  </p>
+  <p>
+    Drag a chapter in Outline, or use <kbd>Alt</kbd> <kbd>↑</kbd> and
+    <kbd>Alt</kbd> <kbd>↓</kbd>, to reorder its embed in the main manuscript.
+    Outline can also add a new chapter at the end. Review the preview after
+    changing the order.
+  </p>
+
+  <h2 id="references">References across chapters</h2>
+  <p>
+    Writer assembles the complete manuscript before formatting citations and
+    references. Footnotes, citations and labels can work across records.
+    Choose unique figure, section and equation labels throughout the manuscript
+    so a reference has one intended target.
+  </p>
+  <p>
+    Images belong to the collection, and relative image paths are resolved from
+    the chapter containing them. A chapter's file links should still work when
+    it is included from another record.
+  </p>
+
+  <h2 id="annotations">Embed a Reader annotation</h2>
+  <p>
+    An embed referring to a Reader annotation uses its quotation and available
+    source citation. For example, <code>![[annotations/your-highlight]]</code>
+    {" "}can include a saved passage. Keep the source's CSL metadata and citekey
+    available in the same collection, and verify the quoted text and locator.
+  </p>
+
+  <h2 id="missing">Missing and recursive embeds</h2>
+  <p>
+    Missing records and cyclic includes appear in Problems. A cycle happens
+    when a manuscript eventually embeds itself, directly or through another
+    record. Remove the recursive embed or move shared prose into a separate
+    record. Check all included chapters and images before
+    <a href="/apps/writer/export/">exporting</a>.
+  </p>
+</DocsLayout>

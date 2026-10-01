@@ -1,0 +1,101 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+import DocVideo from "../../../../components/DocVideo.astro";
+---
+
+<DocsLayout
+  section="reader"
+  title="Library and views"
+  description="Browse, filter, search and bulk-edit your sources, and save the result as a view in your collection."
+  active="library"
+  headings={[
+    { href: "#watch", label: "Views and panes" },
+    { href: "#open", label: "Open the library" },
+    { href: "#lenses", label: "Lenses" },
+    { href: "#filter", label: "Filter and sort" },
+    { href: "#search", label: "Search" },
+    { href: "#status", label: "Reading status" },
+    { href: "#bulk", label: "Edit several sources" },
+    { href: "#views", label: "Saved views" },
+    { href: "#annotations", label: "All annotations" }
+  ]}
+>
+  <h2 id="watch">Views and panes</h2>
+  <DocVideo name="reader-library" />
+
+  <h2 id="open">Open the library</h2>
+  <p>
+    Run <strong>Open library</strong> from the command palette. The library opens
+    as a tab, so it can sit beside a document. Show sources as a table or as
+    cards, and choose which columns the table shows. Any frontmatter field can
+    be a column.
+  </p>
+  <p>
+    For a quick lookup without opening the library, use the Sources sidebar.
+    Press <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>F</kbd>, or <kbd>/</kbd> when
+    you are not typing, and search by title, author or tag.
+  </p>
+
+  <h2 id="lenses">Lenses</h2>
+  <p>Lenses are ready-made starting points:</p>
+  <ul>
+    <li>All sources, Recently opened, Currently reading and Unread inbox</li>
+    <li>Has annotations and Missing citation data</li>
+    <li>PDF, EPUB and Saved web pages</li>
+  </ul>
+
+  <h2 id="filter">Filter and sort</h2>
+  <p>
+    Filter by reading status, format, tag, or conditions on any frontmatter
+    field. Every condition must match. Sort by when a source was saved or last
+    opened, title, creator, publication date, status, or any field.
+  </p>
+
+  <h2 id="search">Search</h2>
+  <p>The search box has three scopes:</p>
+  <table class="api-table">
+    <thead>
+      <tr><th>Scope</th><th>Searches</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Library</td><td>Source details such as title, authors and tags.</td></tr>
+      <tr><td>Notes &amp; annotations</td><td>Literature notes and annotation text. It does not search inside PDFs, EPUBs or saved pages.</td></tr>
+      <tr><td>Open documents</td><td>Text from loaded, supported document renderers. Unopened and suspended documents are not included, even if a suspended source still has a tab.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="status">Reading status</h2>
+  <p>
+    Each source can have a reading status: inbox, queued, reading, finished,
+    archived or abandoned. It is stored in the source record, so other apps can
+    see it too.
+  </p>
+
+  <h2 id="bulk">Edit several sources</h2>
+  <p>
+    Select sources in the table to set their reading status together, or to
+    set any field to a value. Leaving the value empty removes that field from
+    every selected source. You can also export a bibliography of just the
+    selected sources. <kbd>Esc</kbd> clears the selection.
+  </p>
+
+  <h2 id="views">Saved views</h2>
+  <p>
+    When a filtered, sorted arrangement is worth keeping, save it as a new view.
+    Views are ordinary collection records implementing <code>mdbase.view</code>,
+    normally in the <code>views</code> folder. The filter, sort and presentation
+    can be reopened on another device or used by other mdbase tools. Choose
+    <strong>Save view</strong> to update an editable Reader-owned view; save a new
+    view to keep a separate arrangement.
+  </p>
+
+  <h2 id="annotations">All annotations</h2>
+  <p>
+    Choose <strong>Annotations</strong> beside <strong>Sources</strong> in a
+    library view to browse annotations across sources. Search by
+    passage, note, source or tag, filter by type or tag, and sort by source or
+    creation date. This arrangement can be saved as an annotation view too.
+    The annotation text loads separately from the source list; wait for loading
+    to finish before treating a search result or count as complete.
+  </p>
+</DocsLayout>

@@ -1,0 +1,51 @@
+---
+import videos from "../data/doc-videos.json";
+
+interface Props {
+  name: keyof typeof videos;
+}
+
+const { name } = Astro.props;
+const video = videos[name];
+const titleId = `video-${name}-title`;
+const descriptionId = `video-${name}-description`;
+const src = `/videos/${name}.mp4`;
+---
+
+<figure class="doc-video">
+  <figcaption id={titleId}>
+    <strong>{video.title}</strong>
+    <span>{video.duration}</span>
+  </figcaption>
+  <video
+    controls
+    playsinline
+    preload="none"
+    poster={`/videos/${name}.jpg`}
+    width={video.width}
+    height={video.height}
+    aria-labelledby={titleId}
+    aria-describedby={descriptionId}
+  >
+    <source src={src} type="video/mp4" />
+    <p><a href={src}>Download the recording</a> to watch it in a video player.</p>
+  </video>
+  <p id={descriptionId}>{video.description} Silent recording with on-screen captions and sample data.</p>
+  <details>
+    <summary>Text description of the recording</summary>
+    <ol>{video.steps.map((step) => <li>{step}</li>)}</ol>
+  </details>
+  <p class="doc-video-download"><a href={src} download>Download MP4</a></p>
+</figure>
+
+<style>
+  .doc-video { margin: 1.5rem 0 2rem; }
+  figcaption { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.5rem; }
+  figcaption span { color: var(--ink-soft); font-family: var(--mono); font-size: 0.85em; }
+  video { display: block; width: 100%; height: auto; background: var(--paper-soft); border: 1px solid var(--line); }
+  p { margin: 0.6rem 0; }
+  details { padding: 0.6rem 0; border-block: 1px solid var(--line); }
+  summary { cursor: pointer; font-weight: 600; }
+  summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .doc-video-download { font-size: 0.85em; }
+</style>

@@ -1,0 +1,113 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+import CodeBlock from "../../../../components/CodeBlock.astro";
+
+const note = `Argues that close reading scales poorly to large corpora. [@morettiDistant13]
+
+![[annotations/ann_6f1c…]]
+
+My disagreement: the sampling problem cuts both ways.`;
+---
+
+<DocsLayout
+  section="reader"
+  title="Notes and citations"
+  description="Write a literature note for each source, embed annotations in it, and keep citation data in CSL-JSON."
+  active="notes"
+  headings={[
+    { href: "#note", label: "The literature note" },
+    { href: "#insert", label: "Insert annotations and citations" },
+    { href: "#saving", label: "Saving and conflicts" },
+    { href: "#citation", label: "Citation data" },
+    { href: "#lookup", label: "Find citation details" },
+    { href: "#export", label: "Export" }
+  ]}
+>
+  <h2 id="note">The literature note</h2>
+  <p>
+    Every source has a literature note: the Markdown body of its source record.
+    Open it with <strong>Open literature note</strong>, or switch the source's
+    tab to its note view. Reader never rewrites the note from your annotations.
+    It contains only what you write or insert.
+  </p>
+
+  <h2 id="insert">Insert annotations and citations</h2>
+  <p>
+    Use the insert menu in the note editor, or <strong>Add to literature note</strong>{" "}
+    on an annotation:
+  </p>
+  <ul>
+    <li>
+      <strong>Annotations</strong> are inserted as embeds, so the note shows the
+      current text of the highlight or comment. If you edit the annotation, the
+      note shows the change.
+    </li>
+    <li>
+      <strong>Citation</strong> inserts a Pandoc-style citation such as{" "}
+      <code>[@morettiDistant13]</code> at the cursor. It needs the source to
+      have citation data with a citation key.
+    </li>
+  </ul>
+  <CodeBlock code={note} language="markdown" label="literature note" />
+
+  <h2 id="saving">Saving and conflicts</h2>
+  <p>
+    The note saves automatically about a second after you stop typing. The same
+    note can be open in several panes. They share its text but keep their own
+    cursor, scroll position and undo history.
+  </p>
+  <p>
+    If a save fails, keep the note open and follow the retry prompt. Reader keeps
+    recoverable source-note drafts in this browser, scoped to the collection
+    and source. On reopening, review any recovered draft before saving it.
+    Browser storage is best-effort and can be cleared; it is not a collection backup.
+  </p>
+  <p>
+    If the note changed in the collection while you were editing, Reader shows
+    <strong>This note changed in the collection</strong> and lets you compare
+    your draft with the collection version. Check the save status before closing.
+    Annotation comments use a different, memory-only buffer.
+  </p>
+
+  <h2 id="citation">Citation data</h2>
+  <p>
+    Citation data is optional. When you add it, it is stored as one CSL-JSON
+    item in the source record's <code>csl</code> field, the format used by
+    Zotero, Pandoc and most citation tools. Its <code>id</code> is the citation
+    key, which must be unique in the collection.
+  </p>
+  <p>
+    Open <strong>Open citation data</strong> to edit it as a form or as raw
+    CSL-JSON. Every official CSL field is kept exactly as entered, and less
+    common fields can be added from the form. Problems are marked before you
+    save. The <strong>Missing citation data</strong> lens in the library lists
+    sources without it. The same source metadata and citekey are available in
+    <a href="/apps/writer/citations/">mdbase writer</a> when you open the same collection.
+  </p>
+
+  <h2 id="lookup">Find citation details</h2>
+  <p>
+    <strong>Find citation details</strong> searches by DOI, ISBN, URL or title.
+    Reader shows the details it found for you to review before saving. DOIs are
+    looked up in the DOI registry. Everything else goes to Wikimedia's Citoid
+    service. Only the identifier, address or title you searched for is sent;
+    the result is not saved until you approve it.
+  </p>
+
+  <h2 id="export">Export</h2>
+  <table class="api-table">
+    <thead>
+      <tr><th>Command</th><th>Produces</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Export bibliography</strong></td>
+        <td><code>references.json</code>, a CSL-JSON file of every source with citation data. You can also export only the sources selected in the library.</td>
+      </tr>
+      <tr>
+        <td><strong>Export current source</strong></td>
+        <td>A zip file with the source and annotation records as they are stored, a single Markdown file combining the note and its annotations, the source's references, and the original files. An <code>EXPORT-REPORT.md</code> lists anything that could not be included.</td>
+      </tr>
+    </tbody>
+  </table>
+</DocsLayout>

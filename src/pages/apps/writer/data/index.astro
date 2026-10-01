@@ -1,0 +1,94 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+import CodeBlock from "../../../../components/CodeBlock.astro";
+
+const manuscript = `---
+type: writer-manuscript
+title: A research paper
+authors:
+  - name: Alex Researcher
+    affiliation: Example University
+template: article
+csl: chicago-notes-bibliography
+lang: en-GB
+---
+# Introduction
+
+A claim supported by a source [@smith2024, p. 12].`;
+---
+
+<DocsLayout
+  section="writer"
+  title="Saving and collection data"
+  description="Understand where your manuscript lives, how edits save, and what to do about a conflict or failed save."
+  active="data"
+  headings={[
+    { href: "#records", label: "Manuscript records" },
+    { href: "#saving", label: "Autosave" },
+    { href: "#conflicts", label: "Conflicts" },
+    { href: "#device", label: "Browser state and demo" },
+    { href: "#access", label: "Access and availability" }
+  ]}
+>
+  <h2 id="records">Manuscript records</h2>
+  <p>
+    A manuscript is a Markdown record implementing{" "}
+    <code>dev.mdbase.writer.manuscript</code>. Its body is your writing;
+    frontmatter holds its title, authors, abstract, layout, citation style and
+    language. The following example uses the starter type's field names:
+  </p>
+  <CodeBlock code={manuscript} language="markdown" label="illustrative manuscript record" />
+  <p>
+    Chapters remain separate Markdown records. Reader sources hold their own
+    citation data and annotations, and comments use collection records too.
+    Other mdbase tools can read these records. Writer does not delete or rename them.
+  </p>
+
+  <h2 id="saving">Autosave</h2>
+  <p>
+    Manuscript text, chapter text and settings save through Connect record
+    sessions. Each included record has its own session. Watch the save status
+    and wait for changes to be saved before closing, reloading or changing
+    collections.
+  </p>
+  <p>
+    A failed save displays <strong>Not saved</strong>. The editor keeps the
+    current text, and saving retries when you type. Keep the tab open while
+    restoring access. If saving still fails, copy your writing somewhere safe
+    before reloading; do not assume an unsent edit is in the collection.
+  </p>
+
+  <h2 id="conflicts">Conflicts</h2>
+  <p>
+    If a record changes elsewhere while you are editing it, Writer reports the
+    conflict. <strong>Keep mine</strong> retains your version;
+    <strong>Use theirs</strong> adopts the collection version. Check both
+    versions and copy any text you need before choosing. A conflict in one
+    chapter belongs to that chapter's record.
+  </p>
+
+  <h2 id="device">Browser state and demo</h2>
+  <p>
+    Layout, zoom, theme and the last-used export format are remembered in the
+    browser. These preferences are separate from the manuscript settings stored
+    in the collection. Browser state is not a backup of your writing.
+  </p>
+  <p>
+    The <a href="https://lab.mdbase-writer.pages.dev/?demo">demo collection</a>
+    runs in memory. It is separate from the collections you authorise through
+    Connect. Do not use it for work you need to keep.
+  </p>
+
+  <h2 id="access">Access and availability</h2>
+  <p>
+    You approve Writer's collection access through Connect. A computer-backed
+    collection needs its Connector and computer available. If a collection
+    cannot be opened, follow the reconnect prompt, check its availability or
+    choose another collection.
+  </p>
+  <p>
+    When reporting a problem, include the browser, steps to reproduce and the
+    displayed error. Remove private manuscript text, paths and credentials.
+    Keep your collection backups independent of the browser.
+  </p>
+</DocsLayout>
