@@ -74,7 +74,7 @@ if (connectThemeBoundary === -1) {
 }
 writeFileSync(
   join(root, "public", "mdbase-theme.css"),
-  `${connectTheme.slice(0, connectThemeBoundary).trim()}\n`
+  `${resolveConnectThemeImports(connectTheme.slice(0, connectThemeBoundary)).trim()}\n`
 );
 cpSync(
   join(connectDir, "apps", "portal", "public", "theme-bootstrap.js"),
@@ -420,6 +420,29 @@ function replaceCanvasFunction(source, pattern, replacement) {
     throw new Error("Could not replace a prototype canvas drawing function");
   }
   return source.replace(pattern, replacement);
+}
+
+// The Connect theme imports its tokens from the shared @mdbase-dev/ui package.
+// Browsers cannot resolve bare package specifiers, so inline the tokens and
+// drop the app component styles, which this site does not use.
+function resolveConnectThemeImports(source) {
+  const inlined = { "tokens.css": true, "brand.css": false, "controls.css": false };
+  const resolved = source.replace(
+    /^@import\s+"@mdbase-dev\/ui\/([^"]+)";[^\S\n]*\n?/gm,
+    (statement, name) => {
+      if (!(name in inlined)) {
+        throw new Error(`Unexpected Connect theme import: ${statement.trim()}`);
+      }
+      if (!inlined[name]) return "";
+      const path = join(connectDir, "packages", "app-ui", "css", name);
+      required(path, `@mdbase-dev/ui ${name}`);
+      return `${readFileSync(path, "utf8").trim()}\n\n`;
+    }
+  );
+  if (/@import/.test(resolved)) {
+    throw new Error("Connect theme still contains an @import after inlining");
+  }
+  return resolved;
 }
 
 function copyAlias(source, destination) {
