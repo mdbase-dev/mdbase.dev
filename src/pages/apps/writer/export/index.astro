@@ -1,0 +1,86 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+---
+
+<DocsLayout
+  section="writer"
+  title="Layouts and export"
+  description="Choose the manuscript's appearance and download PDF, Word or a Pandoc/Quarto bundle."
+  active="export"
+  headings={[
+    { href: "#settings", label: "Manuscript settings" },
+    { href: "#layouts", label: "Layouts" },
+    { href: "#formats", label: "Export formats" },
+    { href: "#differences", label: "PDF and Word differences" },
+    { href: "#check", label: "Check before sharing" }
+  ]}
+>
+  <h2 id="settings">Manuscript settings</h2>
+  <p>
+    Open <strong>Settings</strong> to edit title, subtitle, authors, abstract,
+    date, citation style, layout and language. Enter authors one per line;
+    <code>Name; Affiliation</code> adds an affiliation. Settings update the
+    manuscript's frontmatter and preview as you edit.
+  </p>
+  <p>
+    A problem with a setting appears beside that field. Check the save status
+    after changing settings, just as you do after writing body text.
+  </p>
+
+  <h2 id="layouts">Layouts</h2>
+  <p>
+    The bundled <strong>Article</strong> and <strong>Thesis</strong> layouts
+    typeset the manuscript with appropriate title and document structure.
+    You can also choose a Typst template stored as a <code>.typ</code> file in
+    the collection. Custom layouts require Typst knowledge and a template
+    function accepting title, subtitle, authors, abstract, date and body.
+  </p>
+  <p>
+    A collection template is one file: files it imports are not loaded.
+    Its layout affects the PDF. A manuscript's citation style can be a bundled
+    style or a <code>.csl</code> file in the collection.
+  </p>
+
+  <h2 id="formats">Export formats</h2>
+  <p>
+    Open the menu beside <strong>Export</strong> to choose a format. The main
+    button repeats the format you used last in this browser. You can also open
+    the export menu with <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>S</kbd>
+    (<kbd>⌘</kbd> on macOS).
+  </p>
+  <table class="api-table">
+    <thead><tr><th>Format</th><th>Contents</th></tr></thead>
+    <tbody>
+      <tr><td>PDF</td><td>The typeset manuscript using the selected layout. It is available once the manuscript typesets.</td></tr>
+      <tr><td>Word (DOCX)</td><td>An editable document with formatted citations, resolved cross-references and Word document styles.</td></tr>
+      <tr><td>Pandoc bundle (ZIP)</td><td>Materialised Markdown, references, citation style and supporting files for building with Pandoc or Quarto. Follow the bundle's README.</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Exports are generated in the browser. The first Word export downloads about
+    16 MB of additional software. Keep the tab open while it prepares the file.
+    A slow first export does not mean the manuscript needs to be reopened.
+  </p>
+
+  <h2 id="differences">PDF and Word differences</h2>
+  <p>
+    PDF uses the Typst layout; Word uses its own styles and Pandoc's document
+    structure. Word is not a page-for-page copy of the preview. A custom Typst
+    layout uses article styles for Word output. The bundled article and thesis
+    layouts have their corresponding Word reference styles.
+  </p>
+  <p>
+    The Word export resolves cross-reference numbers before conversion. A
+    Pandoc/Quarto bundle leaves cross-references for the external build tools;
+    follow its instructions for Quarto or an appropriate Pandoc filter.
+  </p>
+
+  <h2 id="check">Check before sharing</h2>
+  <p>
+    Review Problems and export warnings, then inspect the downloaded file.
+    Missing records or images can leave output incomplete. Check page breaks,
+    figures, cross-references, citations and bibliography before submitting or
+    sharing. The bundle includes manuscript text and supporting content;
+    treat it as private research material.
+  </p>
+</DocsLayout>

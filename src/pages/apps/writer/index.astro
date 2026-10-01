@@ -1,0 +1,97 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import DocVideo from "../../../components/DocVideo.astro";
+---
+
+<DocsLayout
+  section="writer"
+  title="Get started"
+  description="Write Markdown manuscripts with a typeset preview, citations from Reader, and PDF or Word export."
+  active="overview"
+  headings={[
+    { href: "#status", label: "Status and demo" },
+    { href: "#watch", label: "Writing a paper" },
+    { href: "#connect", label: "Connect a collection" },
+    { href: "#create", label: "Create a manuscript" },
+    { href: "#workspace", label: "The workspace" },
+    { href: "#next", label: "Next steps" }
+  ]}
+>
+  <div class="callout">
+    <strong id="status">Writer is prerelease software.</strong>
+    <p>
+      Keep backups of important work and check the save status before closing or
+      reloading. The <a href="https://lab.mdbase-writer.pages.dev/?demo">demo</a>
+      uses an in-memory sample collection. Demo changes are not kept and do not
+      change your own collection.
+    </p>
+  </div>
+  <p>
+    mdbase writer is for papers, theses and books. Your manuscript stays a
+    Markdown record in your collection. Writer typesets it as you write and
+    uses your <a href="/apps/reader/">Reader library</a> for citations and quotations.
+    The bundled layouts need no Typst or LaTeX knowledge.
+  </p>
+
+  <h2 id="watch">Writing a paper</h2>
+  <DocVideo name="writer-paper" />
+  <p>
+    The recordings use a separate Darwin-themed sample library. The live demo
+    may contain different sample manuscripts. See also
+    <a href="/apps/writer/chapters/#watch">building a book from chapters</a>.
+  </p>
+
+  <h2 id="connect">Connect a collection</h2>
+  <ol>
+    <li>Open <a href="https://writer.mdbase.dev/">writer.mdbase.dev</a> and choose <strong>Connect a collection</strong>.</li>
+    <li>Sign in through mdbase Connect, choose a collection and review Writer's requested access.</li>
+    <li>Choose the same collection as your Reader library to cite its sources.</li>
+    <li>If prompted, review the proposed manuscript and source types, then choose <strong>Set up collection</strong>.</li>
+  </ol>
+  <p>
+    Setup adds the contracts and types Writer needs after your approval. It does
+    not rewrite existing manuscript text. Collections can be hosted by Connect
+    or served from your computer by the Connector. For a computer-backed
+    collection, keep the desktop app running and the computer available.
+  </p>
+
+  <h2 id="create">Create a manuscript</h2>
+  <ol>
+    <li>Choose <strong>New manuscript</strong>.</li>
+    <li>Enter a title and choose an article or thesis layout and a citation style.</li>
+    <li>Choose <strong>Create manuscript</strong> and begin writing.</li>
+  </ol>
+  <p>
+    To use an existing note, choose <strong>Use a note you already have…</strong>
+    in the same dialog. Select the note and choose <strong>Use as manuscript</strong>.
+    This adds the manuscript type while retaining its other types, text and location.
+  </p>
+
+  <h2 id="workspace">The workspace</h2>
+  <table class="api-table">
+    <thead><tr><th>Area</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td>Editor</td><td>Write Markdown. Edits autosave through Connect.</td></tr>
+      <tr><td>Preview</td><td>See the typeset pages. Click a block to return to its text.</td></tr>
+      <tr><td>Outline</td><td>Navigate headings, open chapters and reorder chapter embeds.</td></tr>
+      <tr><td>Sources</td><td>Find library sources, insert citations and use Reader quotations.</td></tr>
+      <tr><td>Comments</td><td>Review comments, replies and suggested edits.</td></tr>
+      <tr><td>Settings</td><td>Edit the title, authors, abstract, date, language, citation style and layout.</td></tr>
+      <tr><td>Problems</td><td>Find citation, cross-reference, image, embed and typesetting problems.</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Settings changes update the manuscript's frontmatter and preview. Your
+    sidebar, editor/preview arrangement and zoom are remembered in this browser.
+    On a phone, switch between writing, preview and outline views.
+  </p>
+
+  <h2 id="next">Next steps</h2>
+  <ul>
+    <li><a href="/apps/writer/writing/">Write and review</a> Markdown, figures, footnotes and comments.</li>
+    <li><a href="/apps/writer/citations/">Find and cite sources</a> from your Reader library.</li>
+    <li><a href="/apps/writer/chapters/">Assemble chapters</a> from separate Markdown records.</li>
+    <li><a href="/apps/writer/export/">Choose a layout and export</a> PDF, Word or a Pandoc bundle.</li>
+    <li><a href="/apps/writer/data/">Check saving and conflicts</a> before leaving the manuscript.</li>
+  </ul>
+</DocsLayout>

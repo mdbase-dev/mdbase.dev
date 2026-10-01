@@ -1,0 +1,108 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+import CodeBlock from "../../../../components/CodeBlock.astro";
+
+const example = `# Introduction {#sec-introduction}
+
+A claim supported by a source [@smith2024, p. 12].
+
+See @sec-introduction and @fig-results.
+
+![Results](figures/results.png){#fig-results}
+
+A sentence with a footnote.[^note]
+
+[^note]: A longer explanation.`;
+const shortcuts = [
+  ["Ctrl K", "Open the command palette"],
+  ["Ctrl Shift F", "Search across the manuscript's records"],
+  ["Ctrl Shift E", "Find a source"],
+  ["Ctrl ,", "Open manuscript settings"],
+  ["Ctrl \\", "Show or hide the sidebar"],
+  ["Ctrl Shift \\", "Cycle the editor/preview arrangement"],
+  ["Ctrl Alt M", "Comment on a selection"],
+  ["Ctrl Alt S", "Suggest an edit to a selection"],
+  ["Ctrl Shift S", "Choose an export format"],
+  ["F8 / Shift F8", "Next or previous problem"]
+];
+---
+
+<DocsLayout
+  section="writer"
+  title="Writing and reviewing"
+  description="Write Markdown, label figures and headings, navigate the preview, and review comments and suggested edits."
+  active="writing"
+  headings={[
+    { href: "#markdown", label: "Markdown and labels" },
+    { href: "#preview", label: "Preview and navigation" },
+    { href: "#problems", label: "Problems" },
+    { href: "#comments", label: "Comments and suggestions" },
+    { href: "#shortcuts", label: "Shortcuts" }
+  ]}
+>
+  <h2 id="markdown">Markdown and labels</h2>
+  <p>
+    Use Markdown headings, emphasis, lists, tables, links and footnotes. Writer
+    also understands Pandoc citations and Quarto-style labels and references.
+    This example uses a library citekey and an image stored in the collection:
+  </p>
+  <CodeBlock code={example} language="markdown" label="manuscript body" />
+  <p>
+    Replace <code>smith2024</code> with one of your source citekeys and the image
+    path with your own file. Labels such as <code>{"{#sec-introduction}"}</code>
+    {" "}identify headings; <code>@sec-introduction</code> refers to them. Figures
+    use a <code>fig-</code> label. Keep labels unique across the whole manuscript.
+  </p>
+  <p>
+    Image paths are resolved relative to the record containing them. Store the
+    image in the collection where Writer can read it. Missing files appear in
+    Problems and can affect the downloaded document.
+  </p>
+
+  <h2 id="preview">Preview and navigation</h2>
+  <p>
+    The preview typesets your manuscript as you type and follows the cursor's
+    block. Click a preview block to jump to its Markdown. Hover over a citation
+    to see its bibliography entry, or a cross-reference to see its target.
+    <kbd>Ctrl</kbd>-click (<kbd>⌘</kbd>-click on a Mac) follows a reference.
+  </p>
+  <p>
+    Outline lists your sections and chapters with word counts. Manuscript
+    search can find text across the included records and open the result in its
+    editor. The command palette is another way to find sources or run commands.
+  </p>
+
+  <h2 id="problems">Problems</h2>
+  <p>
+    Writer marks unknown citekeys, missing labels, unavailable records and
+    images, footnote problems, malformed LaTeX and typesetting errors at the
+    affected Markdown line. Open Problems to jump to one. <kbd>F8</kbd> moves
+    to the next problem; <kbd>Shift</kbd> <kbd>F8</kbd> moves back.
+  </p>
+  <p>
+    Unknown citekeys and labels can offer close matches. Problems with a
+    manuscript setting take you to that field in Settings. Check Problems
+    before exporting and review the downloaded document.
+  </p>
+
+  <h2 id="comments">Comments and suggestions</h2>
+  <p>
+    Select text and choose a comment or suggested edit from the selection
+    toolbar or command palette. Open Comments to read threads and reply.
+    A suggested edit includes replacement text; accepting it changes the
+    record through its editing session. Review the replacement before accepting.
+  </p>
+  <p>
+    Comments are collection records anchored to quoted text. Writer looks for
+    the quote again after edits and reports a detached comment when it cannot
+    find a reliable target. A comment can be signed with your collection person
+    record when identity access is available; otherwise it is unsigned.
+  </p>
+
+  <h2 id="shortcuts">Shortcuts</h2>
+  <p>On macOS, use <kbd>⌘</kbd> in place of <kbd>Ctrl</kbd>. Writer's keyboard-shortcuts dialog lists the available commands.</p>
+  <table class="api-table">
+    <thead><tr><th>Keys</th><th>Action</th></tr></thead>
+    <tbody>{shortcuts.map(([keys, action]) => <tr><td><kbd>{keys}</kbd></td><td>{action}</td></tr>)}</tbody>
+  </table>
+</DocsLayout>

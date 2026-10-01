@@ -1,0 +1,86 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+---
+
+<DocsLayout
+  section="reader"
+  title="Adding sources"
+  description="Add PDFs, EPUBs and web pages, or start from a DOI, arXiv ID, ISBN or PubMed ID."
+  active="sources"
+  headings={[
+    { href: "#file", label: "Add a file" },
+    { href: "#link", label: "Add a link or identifier" },
+    { href: "#web", label: "Web pages" },
+    { href: "#identifiers", label: "Identifiers" },
+    { href: "#privacy", label: "What is sent where" }
+  ]}
+>
+  <p>
+    Choose <strong>Add source</strong> in the library, or run{" "}
+    <strong>Add source…</strong> from the command palette. You can add a file
+    or paste a link or identifier.
+  </p>
+
+  <h2 id="file">Add a file</h2>
+  <p>
+    Choose a PDF, an EPUB, or a web page you saved earlier. You can also drop a
+    file onto Reader. The original file is stored unchanged in your collection,
+    and Reader creates a source record that points to it.
+  </p>
+
+  <h2 id="link">Add a link or identifier</h2>
+  <p>
+    Paste a web address, DOI, arXiv ID, ISBN or PubMed ID into{" "}
+    <strong>Link or identifier</strong> and choose <strong>Add</strong>.
+    Reader shows each step as it works: fetching the page, looking up citation
+    details, or looking for an open-access PDF.
+  </p>
+
+  <h2 id="web">Web pages</h2>
+  <p>
+    For a web address, Reader fetches the page and saves a readable copy. If
+    the address points to a PDF, it saves the PDF instead. When the page cannot
+    be fetched, Reader may find citation details and offer to save a citation-only
+    source. Review that offer before accepting it.
+  </p>
+  <p>
+    Pages behind a sign-in or paywall cannot be fetched this way. Use the{" "}
+    <a href="/apps/reader/extension/">browser extension</a>, which saves the page
+    you are already viewing, or save the page yourself and add the file.
+  </p>
+
+  <h2 id="identifiers">Identifiers</h2>
+  <p>
+    For a DOI, arXiv ID, ISBN or PubMed ID, Reader first looks up the citation
+    details. For a DOI or arXiv ID, it then looks for a freely available PDF.
+    It tries direct PDF links first, then open-access article pages. Paywalled
+    and blocked sites are skipped.
+  </p>
+  <p>
+    If no PDF is found, you can keep a source with citation details and attach
+    a file later. Review any follow-up message: <strong>Open source</strong>
+    opens a source already added, while a citation-only offer needs your approval.
+    If citation data could not be stored, Reader says so; use the source's
+    citation tab to review or add it.
+  </p>
+
+  <h2 id="privacy">What is sent where</h2>
+  <table class="api-table">
+    <thead>
+      <tr><th>Step</th><th>Service</th><th>What is sent</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Fetching a web page or PDF</td><td>Reader's capture service</td><td>The address to fetch. Private and local network addresses are refused.</td></tr>
+      <tr><td>DOI and arXiv citations</td><td>The DOI registry (doi.org)</td><td>The DOI only.</td></tr>
+      <tr><td>Other citations: ISBN, PubMed, URL or title</td><td>Wikimedia Citoid</td><td>The identifier, address or title only.</td></tr>
+      <tr><td>Open-access search for a DOI</td><td>OpenAlex, and Unpaywall where enabled</td><td>The DOI only. PDFs it finds are then fetched by Reader's capture service.</td></tr>
+      <tr><td>Open-access search for an arXiv ID</td><td>arXiv, through Reader's capture service</td><td>The arXiv ID only.</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Citation lookups send the identifier, address or search text needed for that
+    lookup, not your notes or annotations. Fetching a page sends its address;
+    check that it does not contain a private access token. See the
+    <a href="/privacy/">privacy policy</a> for data handling.
+  </p>
+</DocsLayout>

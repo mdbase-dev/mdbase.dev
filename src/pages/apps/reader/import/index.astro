@@ -1,0 +1,99 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+---
+
+<DocsLayout
+  section="reader"
+  title="Importing a library"
+  description="Bring sources, files, highlights and notes from Zotero or Readwise Reader into an mdbase collection."
+  active="import"
+  headings={[
+    { href: "#start", label: "Start an import" },
+    { href: "#zotero", label: "From Zotero" },
+    { href: "#readwise", label: "From Readwise Reader" },
+    { href: "#review", label: "Review and confirm" },
+    { href: "#resume", label: "Stopping and resuming" }
+  ]}
+>
+  <div class="callout">
+    <strong>Importing is experimental.</strong>
+    <p>
+      Try it on a new or test collection first. An import only adds records and
+      files. It does not change your Zotero or Readwise library.
+    </p>
+  </div>
+
+  <h2 id="start">Start an import</h2>
+  <p>
+    Run <strong>Import a library…</strong> from the command palette, or open
+    <a href="https://reader.mdbase.dev/import">Reader's import page</a>.
+    Choose Zotero or Readwise Reader. Keep the import tab open while it runs.
+  </p>
+
+  <h2 id="zotero">From Zotero</h2>
+  <p>
+    Zotero imports bring references, original files, notes, collections and
+    Zotero's own annotations. They use a small Zotero plugin that writes an
+    export folder for Reader.
+  </p>
+  <ol>
+    <li>Download the Zotero exporter (<code>.xpi</code>) from the import page. It supports Zotero 10.0.x.</li>
+    <li>In Zotero, choose <strong>Tools → Plugins → Install Plugin From File…</strong> and select the file.</li>
+    <li>Choose <strong>Tools → Export for mdbase Reader…</strong> and save the export folder.</li>
+    <li>In Reader, select the whole exported folder. Do not select Zotero's data directory.</li>
+  </ol>
+  <p>
+    The experimental exporter includes all of <strong>My Library</strong>,
+    not a selected collection or group library. Finish syncing and avoid editing
+    Zotero while exporting. Only a completed export can be imported.
+  </p>
+  <p>
+    Reader checks every payload file against its checksum before collection
+    writes. Selecting a folder needs a supporting browser such as Chrome.
+    Export bundles contain private notes and attachment content; keep them private.
+  </p>
+
+  <h2 id="readwise">From Readwise Reader</h2>
+  <p>
+    Readwise imports bring Reader documents and files, plus highlights from
+    classic Readwise sources such as Kindle, Apple Books and Instapaper.
+    Classic sources import as metadata and highlights, without the book text.
+  </p>
+  <ol>
+    <li>Get your <a href="https://readwise.io/access_token">Readwise access token</a> and paste it into Reader.</li>
+    <li>Choose whether to include unsaved Feed items. Archived library items are always included.</li>
+    <li>Choose <strong>Scan Readwise library</strong>.</li>
+  </ol>
+  <p>
+    The token stays in memory in that browser tab and is sent only to Readwise.
+    The importer only reads from Readwise. Scanning reads metadata, highlights
+    and saved article pages. Original PDFs and EPUBs are downloaded only after
+    you confirm. A large library can take several minutes to scan.
+  </p>
+
+  <h2 id="review">Review and confirm</h2>
+  <p>
+    Reader shows what it found: the number of sources, annotations and notes,
+    and the content files and their size. Then choose a destination collection.
+    If the collection does not have Reader's setup yet, you review and apply it
+    first. Nothing is written until you confirm.
+  </p>
+  <p>
+    Imported files are stored under <code>files/reader/imports</code>. When the
+    import finishes, <strong>Open imported collection</strong> takes you to it.
+  </p>
+
+  <h2 id="resume">Stopping and resuming</h2>
+  <p>
+    Choose <strong>Stop safely</strong> to pause an active import. Everything
+    already written is kept, and <strong>Resume import</strong> continues the
+    confirmed job. The job stays bound to its destination; switching collections
+    cannot redirect it.
+  </p>
+  <p>
+    After reloading, reselect the same export folder or reconnect Readwise,
+    choose the same collection and scan again. Check the destination before
+    resuming. Records already imported are kept; review the completion warnings
+    for missing or unavailable content.
+  </p>
+</DocsLayout>

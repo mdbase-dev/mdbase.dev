@@ -1,0 +1,92 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+
+const shortcuts = [
+  ["Ctrl K", "Search sources and run commands"],
+  ["Ctrl Shift F", "Filter sources in the sidebar"],
+  ["/", "Search the library view, or the sidebar elsewhere"],
+  ["H", "Highlight the selected text"],
+  ["C", "Comment on the selected text"],
+  ["Esc", "Dismiss the selection toolbar, or leave reading mode"],
+  ["Ctrl .", "Enter or leave reading mode"],
+  ["Ctrl \\", "Show or hide the left sidebar"],
+  ["Ctrl Shift \\", "Show or hide the right sidebar"],
+  ["Ctrl Tab / Ctrl Shift Tab", "Next or previous tab"],
+  ["Ctrl Shift T", "Reopen the last closed tab"],
+  ["Alt ← / Alt →", "Back or forward"],
+  ["F6", "Move focus to the next pane"],
+  ["Ctrl Enter", "Open the selected sidebar source beside the current one"]
+];
+
+const display = [
+  ["Text size", "Larger or smaller text for EPUBs and saved web pages."],
+  ["Typeface", "Serif or sans serif."],
+  ["Line length", "Narrow or standard."],
+  ["Density", "Comfortable or compact lists and tables."],
+  ["Sidebar while reading", "Keep the sidebar open or hide it while a document is focused."],
+  ["Selecting text", "Show actions, or highlight at once."]
+];
+---
+
+<DocsLayout
+  section="reader"
+  title="Shortcuts and display"
+  description="Keyboard shortcuts and display settings in mdbase Reader."
+  active="shortcuts"
+  headings={[
+    { href: "#shortcuts", label: "Keyboard shortcuts" },
+    { href: "#palette", label: "Command palette" },
+    { href: "#display", label: "Text and display" }
+  ]}
+>
+  <h2 id="shortcuts">Keyboard shortcuts</h2>
+  <p>
+    On a Mac, use <kbd>⌘</kbd> in place of <kbd>Ctrl</kbd>, except for{" "}
+    <kbd>Ctrl</kbd> <kbd>Tab</kbd>. Single-key shortcuts such as{" "}
+    <kbd>H</kbd> and <kbd>/</kbd> do nothing while you are typing in a field.
+  </p>
+  <table class="api-table">
+    <thead>
+      <tr><th>Keys</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      {shortcuts.map(([keys, action]) => (
+        <tr><td><kbd>{keys}</kbd></td><td>{action}</td></tr>
+      ))}
+    </tbody>
+  </table>
+  <p>
+    For the browser extension's shortcuts, see{" "}
+    <a href="/apps/reader/extension/#highlights">Browser extension</a>.
+    Chrome can change extension shortcuts at <code>chrome://extensions/shortcuts</code>.
+  </p>
+
+  <h2 id="palette">Command palette</h2>
+  <p>
+    <kbd>Ctrl</kbd> <kbd>K</kbd> opens the command palette. Type part of a
+    source title or author to open it, or a command name to run it. Commands
+    include opening the library, adding or importing sources, switching between
+    open tabs, opening a source's note, annotations or citation, arranging and
+    resetting panes, exporting, bookmarking and changing the theme. The
+    <strong>Reset pane arrangement</strong> command keeps your tabs open;
+    <strong>Import a library…</strong> opens the import flow in a new tab.
+  </p>
+
+  <h2 id="display">Text and display</h2>
+  <p>
+    Open <strong>Text and display</strong> in the header. These settings are
+    stored in this browser. Light, dark and system themes are also available
+    from the command palette. Reading preferences change reflowable documents;
+    PDFs retain their page layout.
+  </p>
+  <table class="api-table">
+    <thead>
+      <tr><th>Setting</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      {display.map(([name, effect]) => (
+        <tr><td>{name}</td><td>{effect}</td></tr>
+      ))}
+    </tbody>
+  </table>
+</DocsLayout>
