@@ -46,9 +46,8 @@ const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
     <div class="callout">
       <strong>Signing and notarization</strong>
       <p>
-        Windows may show an Unknown Publisher or SmartScreen warning. {macDownloadsSigned
-          ? "The macOS builds are signed and notarized."
-          : "macOS requires a manual Privacy & Security override and the app has not been notarized."} The release includes checksums and Sigstore provenance.
+        Windows may show an Unknown Publisher or SmartScreen warning. {!macDownloadsSigned &&
+          "macOS requires a manual Privacy & Security override and the app has not been notarized."} The release includes checksums and Sigstore provenance.
       </p>
     </div>
 
