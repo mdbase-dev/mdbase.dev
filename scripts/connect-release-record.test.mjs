@@ -63,6 +63,15 @@ test("derives the website record from verified release evidence", () => {
   assert.equal(record.channelManifestUrl, `https://github.com/mdbase-dev/mdbase-connect/releases/download/${tag}/mdbase-connect-channel-v1.json`);
 });
 
+test("labels macOS downloads from their notarization marker", () => {
+  assert.equal(build().desktop[0].trust, "Beta preview · notarized");
+  const unsignedName = `mdbase-connect-${version}-macos-arm64-UNSIGNED.dmg`;
+  const unsigned = { ...release, assets: release.assets.map((asset) => asset.name === names[0] ? { ...asset, name: unsignedName } : asset) };
+  const record = build({ release: unsigned });
+  assert.equal(record.desktop[0].trust, "Beta preview · not notarized");
+  assert.equal(record.desktop[1].trust, "Beta preview · notarized");
+});
+
 test("rejects inconsistent release evidence and duplicate artifacts", () => {
   assert.throws(() => build({ npmVersion: "0.1.0-beta.83" }), /SDK version/);
   assert.throws(() => build({ channel: { ...channel, tag: "v0.1.0-beta.83" } }), /manifest tag/);

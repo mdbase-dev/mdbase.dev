@@ -12,7 +12,7 @@
     {
       "platform": "macOS",
       "detail": "Apple Silicon",
-      "trust": "Beta preview · not notarized",
+      "trust": "Beta preview · notarized",
       "file": "mdbase-connect-0.1.0-beta.121-macos-arm64.dmg",
       "size": 140657138,
       "sha256": "f65580e68296e44f02754113c025322f895c7007a1b947f57a44a8e337208922",
@@ -21,7 +21,7 @@
     {
       "platform": "macOS",
       "detail": "Intel",
-      "trust": "Beta preview · not notarized",
+      "trust": "Beta preview · notarized",
       "file": "mdbase-connect-0.1.0-beta.121-macos-x64.dmg",
       "size": 147641847,
       "sha256": "135dc3896aea83585faac70f46bb822e2f9f3d1bfa60487600ac1dc21ead2228",

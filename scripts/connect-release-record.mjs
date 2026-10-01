@@ -162,6 +162,11 @@ function websiteArtifact(assets, version, platform, detail, pattern, trust, labe
   };
 }
 
+// The release workflow marks every macOS artifact that was not Developer ID
+// signed and notarized with an -UNSIGNED filename suffix.
 function macTrust(channel) {
-  return channel === "stable" ? "Signed and notarized" : "Beta preview · not notarized";
+  return (file) => {
+    if (/-UNSIGNED\.dmg$/.test(file)) return "Beta preview · not notarized";
+    return channel === "stable" ? "Signed and notarized" : "Beta preview · notarized";
+  };
 }
