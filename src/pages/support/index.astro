@@ -1,0 +1,74 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Support"
+  description="Get help with mdbase, mdbase Connect, and the mdbase plugin for ChatGPT, Claude, and other MCP clients."
+>
+  <article class="legal">
+    <header>
+      <h1>Support</h1>
+      <p>Where to get help with mdbase, Connect, and connected applications.</p>
+      <div class="button-row">
+        <a class="button button--primary" href="mailto:callum@mdbase.dev"
+          >Email support</a
+        >
+        <a class="button" href="https://status.mdbase.dev">Service status</a>
+      </div>
+    </header>
+
+    <h2>Contact</h2>
+    <p>
+      Email <a href="mailto:callum@mdbase.dev">callum@mdbase.dev</a> for help with
+      your account, a connected application, or anything on this page. Include
+      the application you were using, what you expected, and what happened.
+      Never send passwords, recovery codes, or collection contents.
+    </p>
+    <p>
+      Report bugs and feature requests in the relevant repository in the
+      <a href="https://github.com/mdbase-dev">mdbase GitHub organization</a>.
+      Report security issues as described on the <a href="/security/">security page</a>.
+    </p>
+
+    <h2>ChatGPT, Claude, and other MCP clients</h2>
+    <p>
+      The mdbase plugin and connector use the MCP endpoint
+      <code>https://mcp.mdbase.dev/mcp</code>. Each collection is approved
+      separately, with its own operations.
+    </p>
+    <ul>
+      <li>
+        <strong>A collection is missing.</strong> Ask the assistant to connect
+        another collection, then approve it at the link it gives you.
+      </li>
+      <li>
+        <strong>Writes are refused.</strong> The collection was approved for
+        reading only. Ask the assistant to reconnect it and approve write
+        access.
+      </li>
+      <li>
+        <strong>Operations fail or time out.</strong> A local collection is
+        reachable only while its computer is on and the Connect app is running.
+        Hosted collections do not depend on your computer. Check
+        <a href="https://status.mdbase.dev">service status</a>.
+      </li>
+    </ul>
+
+    <h2>Manage or revoke access</h2>
+    <p>
+      Review connected applications, collections, and computers in
+      <a href="https://editor.mdbase.dev/connect">Connect</a>. Revoking an
+      application's access takes effect on its next request. To be sure an
+      assistant can no longer reach a collection, revoke its access in Connect
+      rather than only removing the plugin or connector from the assistant.
+    </p>
+
+    <h2>Accounts and data</h2>
+    <ul>
+      <li><a href="/account-deletion/">Delete a Connect account</a></li>
+      <li><a href="/privacy/">Privacy</a></li>
+      <li><a href="/terms/">Terms</a></li>
+    </ul>
+  </article>
+</BaseLayout>
