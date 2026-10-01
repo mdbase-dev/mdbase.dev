@@ -8,7 +8,7 @@ const desktopDownloads = release.desktop;
 const cliDownloads = release.cli;
 const macDownloadsSigned = desktopDownloads
   .filter(({ platform }) => platform === "macOS")
-  .every(({ trust }) => trust === "Signed and notarized");
+  .every(({ trust }) => trust === "Signed and notarized" || trust === "Beta preview · notarized");
 const published = new Date(release.publishedAt);
 const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
 ---
