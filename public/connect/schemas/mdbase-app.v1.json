@@ -111,16 +111,27 @@
     "requirements": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["contracts"],
+      "required": ["access", "contracts"],
       "properties": {
         "capabilities": { "$ref": "#/$defs/capabilityRequirements" },
         "access": {
-        "enum": ["contract", "full_collection"],
-        "description": "Access boundary requested after compatibility and provisioning checks."
-      },
+          "const": "full_collection",
+          "description": "Compatibility declaration for collection-level application authorization."
+        },
       "collection_kind": {
           "const": "hosted",
           "description": "Require a durable provider-backed collection with direct sync support."
+        },
+        "people": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["version"],
+          "anyOf": [{ "required": ["required"] }, { "required": ["optional"] }],
+          "properties": {
+            "version": { "const": 1 },
+            "required": { "$ref": "#/$defs/peoplePermissions" },
+            "optional": { "$ref": "#/$defs/peoplePermissions" }
+          }
         },
         "files": { "$ref": "#/$defs/fileRequirement" },
         "configuration": {
@@ -141,7 +152,7 @@
       "additionalProperties": false,
       "required": ["contract_version", "required"],
       "properties": {
-        "contract_version": { "const": 1 },
+        "contract_version": { "const": 2 },
         "required": {
           "type": "array",
           "maxItems": 32,
@@ -198,57 +209,37 @@
     },
     "applicationCapability": {
       "enum": [
-        "collection.inspect",
-        "records.watch",
-        "records.read",
-        "records.query",
-        "records.validate",
+        "collection.read",
         "records.create",
-        "records.update",
+        "records.edit",
         "records.delete",
-        "records.rename",
-        "views.list",
-        "views.execute",
-        "views.source.read",
-        "views.source.create",
-        "views.source.update",
-            "views.source.delete",
-            "definitions.contracts.current",
-            "definitions.read",
-        "definitions.create",
-        "definitions.update",
-        "definitions.type-pack.inspect",
-        "definitions.type-pack.apply",
-        "collection.setup.apply",
-        "timers.list",
-        "timers.put",
-        "timers.cancel",
-        "timers.reconcile",
-        "sync.offline-replica",
-        "notifications.background-delivery",
-        "files.list",
-        "files.read",
-        "files.add",
-        "files.replace",
-        "files.move",
-        "files.delete"
+        "views.manage",
+        "definitions.manage",
+        "background.schedule",
+        "offline.replica"
       ]
+    },
+    "peoplePermissions": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "enum": ["identity", "members"] }
     },
     "fileRequirement": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["actions", "scope"],
+      "required": ["required", "scope"],
       "properties": {
-        "actions": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 6,
-          "uniqueItems": true,
-          "items": {
-            "enum": ["list", "read", "add", "replace", "move", "delete"]
-          }
-        },
+        "required": { "$ref": "#/$defs/fileActions" },
+        "optional": { "$ref": "#/$defs/fileActions" },
         "scope": { "$ref": "#/$defs/fileScope" }
+      }
+    },
+    "fileActions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "enum": ["list", "read", "add", "replace", "move", "delete"]
       }
     },
     "fileScope": {
@@ -327,9 +318,25 @@
       "properties": {
         "kind": { "enum": ["contract", "type", "schema"] },
         "mode": { "enum": ["managed", "seed"] },
+        "upgrade_from": {
+          "oneOf": [
+            { "$ref": "#/$defs/typePackUpgradeBaseline" },
+            { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/typePackUpgradeBaseline" } }
+          ]
+        },
         "source": { "type": "string", "minLength": 1, "maxLength": 240 },
         "target": { "type": "string", "minLength": 1, "maxLength": 240 },
         "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    },
+    "typePackUpgradeBaseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["digest", "document"],
+      "properties": {
+        "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "document": { "type": "string", "maxLength": 262144 },
+        "version": { "type": "integer", "minimum": 1 }
       }
     },
     "typePackSourceResource": {

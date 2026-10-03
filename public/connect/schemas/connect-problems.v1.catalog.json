@@ -37,6 +37,7 @@
       }
     },
     "access_paused": { "category": "availability", "recovery": "resume_connector_access" },
+    "application_declaration_mismatch": { "category": "authorization", "recovery": "reauthorize" },
     "application_identity_unavailable": { "category": "compatibility", "recovery": "upgrade_application" },
     "approval_window_blocked": {
       "category": "authorization",
@@ -156,6 +157,7 @@
       }
     },
     "concurrent_modification": { "category": "conflict", "recovery": "refresh" },
+    "connector_busy": { "category": "availability", "recovery": "retry" },
     "connector_identity_changed": { "category": "integrity", "recovery": "reauthorize" },
     "connector_offline": {
       "category": "availability",
@@ -168,6 +170,7 @@
       }
     },
     "connector_upgrade_required": { "category": "compatibility", "recovery": "upgrade_connector" },
+    "cursor_capacity_exhausted": { "category": "availability", "recovery": "retry" },
     "device_authorization_failed": { "category": "authorization", "recovery": "reauthorize" },
     "direct_operation_rejected": { "category": "authorization", "recovery": "reauthorize" },
     "discovery_failed": { "category": "availability", "recovery": "retry" },
@@ -190,11 +193,15 @@
     "expired_token": { "category": "authorization", "recovery": "reauthorize" },
     "file_changed_during_move": { "category": "conflict", "recovery": "refresh" },
     "file_changed_during_read": { "category": "conflict", "recovery": "refresh" },
+    "file_index_warming": { "category": "availability", "recovery": "retry" },
+    "file_list_changed": { "category": "conflict", "recovery": "refresh" },
     "file_move_failed": { "category": "internal", "recovery": "contact_support" },
     "file_mutation_conflict": { "category": "conflict", "recovery": "resolve_conflict" },
     "file_not_found": { "category": "conflict", "recovery": "refresh" },
     "file_source_mismatch": { "category": "conflict", "recovery": "refresh" },
     "file_upload_incomplete": { "category": "conflict", "recovery": "retry" },
+    "fresh_request_required": { "category": "availability", "recovery": "retry" },
+    "generation_expired": { "category": "conflict", "recovery": "refresh" },
     "hosted_provider_unavailable": { "category": "availability", "recovery": "retry" },
     "insufficient_access": {
       "category": "authorization",
@@ -241,8 +248,10 @@
     "invalid_preflight": { "category": "conflict", "recovery": "refresh" },
     "invalid_push_payload": { "category": "validation", "recovery": "fix_request" },
     "invalid_push_subscription": { "category": "validation", "recovery": "fix_request" },
+    "invalid_read_cursor": { "category": "validation", "recovery": "fix_request" },
     "invalid_request": { "category": "validation", "recovery": "fix_request" },
     "invalid_token_response": { "category": "integrity", "recovery": "contact_support" },
+    "legacy_scope_reauthorization_required": { "category": "authorization", "recovery": "reauthorize" },
     "managed_fcm_not_declared": { "category": "compatibility", "recovery": "fix_request" },
     "manifest_load_failed": { "category": "availability", "recovery": "retry" },
     "manifest_required": { "category": "validation", "recovery": "fix_request" },
@@ -311,6 +320,9 @@
     "relay_unavailable": { "category": "availability", "recovery": "retry" },
     "sandbox_unsupported": { "category": "compatibility", "recovery": "fix_request" },
     "scope_denied": { "category": "authorization", "recovery": "reauthorize" },
+    "session_destroyed": { "category": "cancellation", "recovery": "none" },
+    "session_not_started": { "category": "validation", "recovery": "fix_request" },
+    "session_starting": { "category": "availability", "recovery": "retry" },
     "stale_file_revision": { "category": "conflict", "recovery": "refresh" },
     "storage_required": { "category": "compatibility", "recovery": "none" },
     "sync_failed": { "category": "availability", "recovery": "retry" },
