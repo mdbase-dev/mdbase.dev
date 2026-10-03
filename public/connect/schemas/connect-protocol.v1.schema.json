@@ -170,7 +170,7 @@
       "required": ["type", "protocol_version", "request_id", "grant_id", "collection_id", "application_id", "operation", "input"],
       "properties": {
         "type": { "const": "operation_request" },
-        "protocol_version": { "const": 2 },
+        "protocol_version": { "const": 3 },
         "request_id": { "$ref": "#/$defs/uuid" },
         "grant_id": { "$ref": "#/$defs/uuid" },
         "collection_id": { "$ref": "#/$defs/uuid" },
@@ -184,7 +184,7 @@
       "additionalProperties": false,
       "required": ["protocol_version", "request_id", "input"],
       "properties": {
-        "protocol_version": { "const": 2 },
+        "protocol_version": { "const": 3 },
         "request_id": { "$ref": "#/$defs/uuid" },
         "input": true
       }
@@ -194,7 +194,7 @@
       "additionalProperties": false,
       "required": ["protocol_version", "request_id", "ok"],
       "properties": {
-        "protocol_version": { "const": 2 },
+        "protocol_version": { "const": 3 },
         "request_id": { "$ref": "#/$defs/uuid" },
         "ok": { "type": "boolean" },
         "result": true,
@@ -220,7 +220,7 @@
       "required": ["type", "protocol_version", "request_id", "ok"],
       "properties": {
         "type": { "const": "operation_response" },
-        "protocol_version": { "const": 2 },
+        "protocol_version": { "const": 3 },
         "request_id": { "$ref": "#/$defs/uuid" },
         "ok": { "type": "boolean" },
         "result": true,
@@ -274,6 +274,7 @@
         "file_capability": {
           "$ref": "https://mdbase.dev/connect/schemas/files.v1.json#/$defs/fileCapability"
         },
+        "application_declaration": {},
         "application_authorization": { "$ref": "#/$defs/applicationAuthorizationProof" }
       }
     },
@@ -409,9 +410,25 @@
       "properties": {
         "kind": { "enum": ["contract", "type", "schema"] },
         "mode": { "enum": ["managed", "seed"] },
+        "upgrade_from": {
+          "oneOf": [
+            { "$ref": "#/$defs/typePackUpgradeBaseline" },
+            { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/typePackUpgradeBaseline" } }
+          ]
+        },
         "source": { "type": "string", "minLength": 1, "maxLength": 500 },
         "target": { "type": "string", "minLength": 1, "maxLength": 500 },
         "digest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "typePackUpgradeBaseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["digest", "document"],
+      "properties": {
+        "digest": { "$ref": "#/$defs/digest" },
+        "document": { "type": "string", "maxLength": 262144 },
+        "version": { "type": "integer", "minimum": 1 }
       }
     },
     "typePackSourceResource": {
@@ -446,7 +463,7 @@
       "required": ["id", "path", "predicate", "value"],
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$" },
-        "path": { "type": "string", "pattern": "^/x-[^/]+(?:/.*)?$", "maxLength": 1024 },
+        "path": { "type": "string", "pattern": "^(?:/settings/record_extensions|/x-[^/]+(?:/.*)?)$", "maxLength": 1024 },
         "predicate": { "const": "contains" },
         "value": { "oneOf": [
           { "type": "string" },
@@ -463,7 +480,7 @@
       "properties": {
         "requirement": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$" },
         "operation": { "const": "set_add" },
-        "path": { "type": "string", "pattern": "^/x-[^/]+(?:/.*)?$", "maxLength": 1024 },
+        "path": { "type": "string", "pattern": "^(?:/settings/record_extensions|/x-[^/]+(?:/.*)?)$", "maxLength": 1024 },
         "value": { "oneOf": [
           { "type": "string" },
           { "type": "number" },
@@ -613,11 +630,24 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["type", "protocol_version", "request_id", "revision", "grants"],
+      "oneOf": [
+        { "required": ["connector_id", "sequence", "lease_issued_at_ms", "lease_expires_at_ms"] },
+        { "not": { "anyOf": [
+          { "required": ["connector_id"] },
+          { "required": ["sequence"] },
+          { "required": ["lease_issued_at_ms"] },
+          { "required": ["lease_expires_at_ms"] }
+        ] } }
+      ],
       "properties": {
         "type": { "const": "policy_snapshot" },
         "protocol_version": { "const": 1 },
         "request_id": { "$ref": "#/$defs/uuid" },
         "revision": { "$ref": "#/$defs/digest" },
+        "connector_id": { "$ref": "#/$defs/uuid" },
+        "sequence": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+        "lease_issued_at_ms": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "lease_expires_at_ms": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
         "grants": { "type": "array", "items": { "$ref": "#/$defs/grantPolicy" } }
       }
     },
@@ -660,10 +690,94 @@
         "display_name": { "type": "string", "minLength": 1 },
         "spec_version": { "type": "string", "minLength": 1 },
         "operations": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/operation" } },
+        "authority_capabilities": { "type": "array", "items": { "type": "string" } },
         "change_cursor": { "type": "integer", "minimum": 0 },
         "types": { "type": "array", "items": { "$ref": "#/$defs/collectionType" } },
         "contracts": { "type": "array", "items": { "$ref": "#/$defs/collectionContract" } },
         "configuration": { "type": "object", "description": "Canonical portable collection settings. Extension and implementation-specific values are omitted." }
+      }
+    },
+    "dataContractSelector": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "type": "string" }, "version": { "type": "string" }, "type": { "type": "string" }
+      }
+    },
+    "readInput": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "paths": { "type": "array", "minItems": 1, "maxItems": 100, "items": { "type": "string", "minLength": 1 } },
+        "include_body": { "type": "boolean", "description": "Batch default true; point-read defaults unchanged." },
+        "include_document": { "type": "boolean", "default": false },
+        "contract": { "$ref": "#/$defs/dataContractSelector" }
+      },
+      "oneOf": [{ "required": ["path"] }, { "required": ["paths"] }],
+      "allOf": [{ "if": { "required": ["contract"] }, "then": { "properties": { "include_document": { "const": false } } } }]
+    },
+    "recordDocument": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "revision", "types", "frontmatter", "effective_frontmatter", "file"],
+      "properties": {
+        "path": { "type": "string" }, "revision": { "type": "string" },
+        "types": { "type": "array", "items": { "type": "string" } },
+        "frontmatter": { "type": "object" }, "effective_frontmatter": { "type": "object" },
+        "body": { "type": "string" }, "document": { "type": "string" },
+        "file": { "type": "object" }, "contract": { "type": "object" }
+      }
+    },
+    "readManyDocumentItem": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false, "required": ["path", "status", "record"],
+          "properties": { "path": { "type": "string" }, "status": { "const": "found" }, "record": { "$ref": "#/$defs/recordDocument" } }
+        },
+        {
+          "type": "object", "additionalProperties": false, "required": ["path", "status"],
+          "properties": { "path": { "type": "string" }, "status": { "const": "missing" } }
+        },
+        {
+          "type": "object", "additionalProperties": false, "required": ["path", "status", "error"],
+          "properties": {
+            "path": { "type": "string" }, "status": { "const": "error" },
+            "error": {
+              "type": "object", "additionalProperties": false, "required": ["code", "message"],
+              "properties": { "code": { "type": "string" }, "message": { "type": "string" } }
+            }
+          }
+        }
+      ]
+    },
+    "readManyDocumentsResult": {
+      "description": "Ordered items including duplicates. Serialized operation envelope maximum 8 MiB; overflow fails explicitly and asks callers to split, never truncates.",
+      "type": "object", "additionalProperties": false, "required": ["items"],
+      "properties": { "items": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/readManyDocumentItem" } } }
+    },
+    "queryRecord": {
+      "type": "object", "additionalProperties": false, "required": ["path", "types", "file"],
+      "properties": {
+        "path": { "type": "string" }, "revision": { "type": "string" },
+        "types": { "type": "array", "items": { "type": "string" } },
+        "frontmatter": { "type": "object" }, "effective_frontmatter": { "type": "object" },
+        "body": { "type": "string" }, "values": { "type": "object" },
+        "file": { "type": "object" }, "contract": { "type": "object" }
+      }
+    },
+    "queryMetadataRecord": {
+      "type": "object", "additionalProperties": false, "required": ["path", "types", "revision", "values"],
+      "properties": {
+        "path": { "type": "string" }, "revision": { "type": "string" },
+        "types": { "type": "array", "items": { "type": "string" } },
+        "values": { "type": "object" }, "contract": { "type": "object" }
+      }
+    },
+    "queryMetadataResult": {
+      "type": "object", "additionalProperties": false, "required": ["output", "results"],
+      "properties": {
+        "output": { "const": "metadata" },
+        "results": { "type": "array", "items": { "$ref": "#/$defs/queryMetadataRecord" } },
+        "meta": { "type": "object" }
       }
     },
     "collectionType": {
