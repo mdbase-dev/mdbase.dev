@@ -14,7 +14,12 @@ pnpm dev
 The source synchronizer reads sibling checkouts of `mdbase-spec`,
 `mdbase-connect`, `mdbase-contracts`, `mdbase-rs`, and `mdbase` by default.
 Override their paths with `MDBASE_SPEC_DIR`, `MDBASE_CONNECT_DIR`,
-`MDBASE_CONTRACTS_DIR`, `MDBASE_RS_DIR`, and `MDBASE_TS_DIR`.
+`MDBASE_CONTRACTS_DIR`, `MDBASE_RS_DIR`, and `MDBASE_TS_DIR`. Check those
+checkouts out at the refs in `site-sources.json` to match production. The
+synchronized schemas, contracts and conformance data are generated and
+untracked (see `.gitignore`), so run the synchronizer before building. CI,
+deployment and the Connect release update all regenerate them from the pinned
+refs. To change what the site publishes, change `site-sources.json`.
 
 ## Production build
 

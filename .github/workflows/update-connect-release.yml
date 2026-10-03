@@ -42,20 +42,6 @@ jobs:
           ref: main
           persist-credentials: false
 
-      - name: Read specification source identity
-        id: specification
-        run: |
-          echo "repository=$(jq -r '.specification.repository' site-sources.json)" >> "$GITHUB_OUTPUT"
-          echo "ref=$(jq -r '.specification.ref' site-sources.json)" >> "$GITHUB_OUTPUT"
-
-      - name: Check out specification
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: ${{ steps.specification.outputs.repository }}
-          ref: ${{ steps.specification.outputs.ref }}
-          path: .sources/mdbase-spec
-          persist-credentials: false
-
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           version: 10
@@ -71,16 +57,84 @@ jobs:
       - name: Install website dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build specification artifact
-        working-directory: .sources/mdbase-spec/site
-        run: npm ci && npm run build
-
       - name: Verify public evidence and generate release record
         env:
           GH_TOKEN: ${{ github.token }}
           MDBASE_RELEASE_NPM_ATTEMPTS: "15"
           MDBASE_RELEASE_NPM_DELAY_MS: "60000"
         run: node scripts/update-connect-release.mjs '${{ steps.release.outputs.tag }}'
+
+      # Read after the release record, which moves the Connect ref to the tag.
+      - name: Read pinned source identities
+        id: sources
+        run: |
+          echo "spec_repository=$(jq -r '.specification.repository' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "spec_ref=$(jq -r '.specification.ref' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "connect_repository=$(jq -r '.connect.repository' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "connect_ref=$(jq -r '.connect.ref' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "contracts_repository=$(jq -r '.contracts.repository' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "contracts_ref=$(jq -r '.contracts.ref' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "rust_repository=$(jq -r '.implementations[] | select(.id == "rust") | .repository' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "rust_ref=$(jq -r '.implementations[] | select(.id == "rust") | .ref' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "typescript_repository=$(jq -r '.implementations[] | select(.id == "typescript") | .repository' site-sources.json)" >> "$GITHUB_OUTPUT"
+          echo "typescript_ref=$(jq -r '.implementations[] | select(.id == "typescript") | .ref' site-sources.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Check out specification
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ steps.sources.outputs.spec_repository }}
+          ref: ${{ steps.sources.outputs.spec_ref }}
+          path: .sources/mdbase-spec
+          persist-credentials: false
+
+      - name: Check out Connect
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ steps.sources.outputs.connect_repository }}
+          ref: ${{ steps.sources.outputs.connect_ref }}
+          path: .sources/mdbase-connect
+          persist-credentials: false
+
+      - name: Check out contracts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ steps.sources.outputs.contracts_repository }}
+          ref: ${{ steps.sources.outputs.contracts_ref }}
+          path: .sources/mdbase-contracts
+          persist-credentials: false
+
+      - name: Check out Rust implementation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ steps.sources.outputs.rust_repository }}
+          ref: ${{ steps.sources.outputs.rust_ref }}
+          path: .sources/mdbase-rs
+          persist-credentials: false
+
+      - name: Check out TypeScript implementation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ steps.sources.outputs.typescript_repository }}
+          ref: ${{ steps.sources.outputs.typescript_ref }}
+          path: .sources/mdbase
+          persist-credentials: false
+
+      - name: Build contract catalog
+        working-directory: .sources/mdbase-contracts
+        run: npm ci && npm run build
+
+      - name: Build specification artifact
+        working-directory: .sources/mdbase-spec/site
+        run: npm ci && npm run build
+
+      - name: Synchronize schemas, contracts, and conformance claims
+        run: pnpm sync:sources
+        env:
+          MDBASE_SPEC_DIR: .sources/mdbase-spec
+          MDBASE_CONNECT_DIR: .sources/mdbase-connect
+          MDBASE_CONTRACTS_DIR: .sources/mdbase-contracts
+          MDBASE_RS_DIR: .sources/mdbase-rs
+          MDBASE_TS_DIR: .sources/mdbase
 
       - name: Validate generated website
         env:
