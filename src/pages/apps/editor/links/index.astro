@@ -1,0 +1,83 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+import CodeBlock from "../../../../components/CodeBlock.astro";
+
+const links = `[[projects/alpha]]
+[[projects/alpha|Project Alpha]]
+[[projects/alpha#Goals]]
+[[projects/alpha#^decision-1]]`;
+
+const embeds = `![[meeting-notes#Decisions]]
+![[Attachments/diagram.png]]
+![[Attachments/contract.pdf]]`;
+---
+
+<DocsLayout
+  section="editor"
+  title="Links, embeds and files"
+  description="Connect notes to each other, include one note inside another, and attach files."
+  active="links"
+  headings={[
+    { href: "#links", label: "Link to a note" },
+    { href: "#mentions", label: "Link with @" },
+    { href: "#embeds", label: "Embed a note or file" },
+    { href: "#backlinks", label: "Backlinks" },
+    { href: "#attachments", label: "Attach files" }
+  ]}
+>
+  <h2 id="links">Link to a note</h2>
+  <p>
+    Type <kbd>[[</kbd> and start typing a title or path. The Editor suggests
+    notes and files from the collection and completes the link:
+  </p>
+  <CodeBlock code={links} language="markdown" label="note.md" />
+  <p>
+    After a note name, type <kbd>#</kbd> to link to one of its headings, or{" "}
+    <kbd>#^</kbd> to link to a block. Links are stored as ordinary Markdown
+    wikilinks, so other mdbase tools and Obsidian read them the same way.
+    Links that do not resolve to a note are marked as you write.
+  </p>
+
+  <h2 id="mentions">Link with @</h2>
+  <p>
+    Typing <kbd>@</kbd> at the start of a line, after a space or after an opening bracket opens the same suggestions and inserts a{" "}
+    <code>[[wikilink]]</code>. To limit suggestions to one type, type{" "}
+    <kbd>@/</kbd>, choose the type, and continue typing. For example,{" "}
+    <code>@/person/sam</code> suggests only records of the{" "}
+    <code>person</code> type that match "sam".
+  </p>
+
+  <h2 id="embeds">Embed a note or file</h2>
+  <p>
+    Add <kbd>!</kbd> before a link to show its content inside the current note.
+    You can embed a whole note, a section or block of it (<code>#^id</code>), or a file:
+  </p>
+  <CodeBlock code={embeds} language="markdown" label="note.md" />
+  <p>
+    The embedded content is read from the other file each time, so it stays up
+    to date. The Editor tells you when an embed points to a missing note or
+    heading, matches more than one note, or would include itself.
+  </p>
+
+  <h2 id="backlinks">Backlinks</h2>
+  <p>
+    <strong>Backlinks</strong> lists every note that links to the one you are
+    reading. The button in the note header shows how many there are.
+  </p>
+
+  <h2 id="attachments">Attach files</h2>
+  <p>
+    Choose <strong>Attach file…</strong> from the note's action menu. Each file
+    is uploaded to an <code>Attachments</code> folder next to the note, and an
+    embed or link to each file is added to the note. You can choose several
+    files at once. An existing file with the same name is never replaced. The
+    new file gets a numbered name instead. Images, PDFs, audio, video and text
+    files preview in the Editor. Other files show their name and path and are
+    stored as they are, for other tools to open.
+  </p>
+  <p>
+    If the Editor's approval does not include file access, the menu shows{" "}
+    <strong>Request attachment access</strong> instead, which asks you to
+    approve it in Connect.
+  </p>
+</DocsLayout>

@@ -1,0 +1,87 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+---
+
+<DocsLayout
+  section="editor"
+  title="Sharing a collection"
+  description="Invite other people to view or edit a hosted collection, and manage their access."
+  active="sharing"
+  headings={[
+    { href: "#which", label: "Which collections" },
+    { href: "#roles", label: "Roles" },
+    { href: "#invite", label: "Invite someone" },
+    { href: "#code", label: "Sharing codes" },
+    { href: "#accept", label: "Accept an invitation" },
+    { href: "#manage", label: "Change or remove access" }
+  ]}
+>
+  <h2 id="which">Which collections can be shared</h2>
+  <p>
+    Sharing is for collections hosted by mdbase Connect. A collection that
+    stays on your computer is not shared this way. Sharing is managed in the
+    Connect workspace at{" "}
+    <a href="https://editor.mdbase.dev/connect">editor.mdbase.dev/connect</a>.
+    Open the collection and find <strong>People &amp; sharing</strong>. Only
+    the collection's owner sees it.
+  </p>
+
+  <h2 id="roles">Roles</h2>
+  <table class="api-table">
+    <thead>
+      <tr><th>Role</th><th>Can</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Owner</td><td>Everything, including inviting and removing people.</td></tr>
+      <tr><td>Editor</td><td>Edit notes, manage types, rename the collection, and connect apps.</td></tr>
+      <tr><td>Viewer</td><td>Read the collection and connect read-only apps or synced folders.</td></tr>
+    </tbody>
+  </table>
+  <p>
+    A viewer who opens the collection in mdbase Editor sees it read-only.
+  </p>
+
+  <h2 id="invite">Invite someone</h2>
+  <ol>
+    <li>Choose <strong>Invite person</strong>.</li>
+    <li>
+      Under <strong>Invite using</strong>, choose <strong>Verified email</strong>{" "}
+      and enter their email address, or choose <strong>Sharing code</strong>{" "}
+      and enter the code they gave you.
+    </li>
+    <li>Choose <strong>Viewer</strong> or <strong>Editor</strong>, then <strong>Create invitation</strong>.</li>
+    <li>Copy the invitation link and send it to them yourself.</li>
+  </ol>
+  <p>
+    Email invitations only work for someone who already has a Connect account
+    with that email address verified. If they signed up after you created the
+    invitation, create a new one.
+  </p>
+
+  <h2 id="code">Sharing codes</h2>
+  <p>
+    Use a sharing code when you cannot invite someone by email, for example if
+    they sign in with a different address. The person you are inviting creates
+    the code on the <strong>Account &amp; sessions</strong> page in the Connect
+    workspace, under <strong>Sharing code</strong> → <strong>Generate code</strong>,
+    and sends it to you. A code can be used once. Invitations and sharing codes
+    expire after seven days.
+  </p>
+
+  <h2 id="accept">Accept an invitation</h2>
+  <p>
+    Open the invitation link while signed in to the account it was created for.
+    Connect shows <strong>A collection was shared with you</strong>. Choose{" "}
+    <strong>Accept</strong> to add the collection to your collections, then
+    open it in the Editor or approve other apps to use it.
+  </p>
+
+  <h2 id="manage">Change or remove access</h2>
+  <p>
+    In <strong>People &amp; sharing</strong>, change a person's role from the
+    list, or choose <strong>Remove</strong>. Removing someone also revokes the
+    apps and synced folders they connected to the collection. Invitations that
+    have not been accepted are listed under <strong>Pending invitations</strong>,
+    where you can cancel them.
+  </p>
+</DocsLayout>

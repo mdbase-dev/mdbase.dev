@@ -1,0 +1,117 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+const claudeCode = `claude mcp add --transport http mdbase https://mcp.mdbase.dev/mcp`;
+
+const firstPrompt = `List my mdbase collections, then describe the first one.`;
+---
+
+<DocsLayout
+  section="mcp"
+  title="Set up mdbase MCP"
+  description="Connect an AI client to the mdbase collections you approve, through one remote MCP endpoint."
+  active="overview"
+  headings={[
+    { href: "#what", label: "What it does" },
+    { href: "#before", label: "Before you start" },
+    { href: "#add", label: "Add the server" },
+    { href: "#approve", label: "Approve a collection" },
+    { href: "#check", label: "Check the connection" },
+    { href: "#next", label: "Next steps" }
+  ]}
+>
+  <h2 id="what">What it does</h2>
+  <p>
+    mdbase MCP is a remote Model Context Protocol server. An MCP client, such
+    as Claude, uses it to read and change records in mdbase collections you
+    have approved. It works the same way whether a collection is hosted by
+    mdbase Connect or stays on your computer and is served by the Connector.
+  </p>
+  <p>
+    The client never receives your Connect account. You approve one collection
+    at a time, with the exact operations you want to allow, and you can revoke
+    that approval from Connect at any time.
+  </p>
+
+  <h2 id="before">Before you start</h2>
+  <ul>
+    <li>
+      An mdbase Connect account. <a href="https://connect.mdbase.dev/signup">Sign up</a>{" "}
+      if you do not have one.
+    </li>
+    <li>
+      At least one collection. A hosted collection works immediately. A
+      collection on your computer needs the <a href="/downloads/">Connector</a>{" "}
+      running and online whenever the client uses it.
+    </li>
+    <li>
+      An MCP client that supports remote servers over Streamable HTTP with
+      OAuth sign-in, including dynamic client registration and PKCE.
+    </li>
+  </ul>
+
+  <h2 id="add">Add the server to your client</h2>
+  <p>Every client uses the same endpoint:</p>
+  <CodeBlock code="https://mcp.mdbase.dev/mcp" language="text" label="MCP endpoint" />
+  <p>
+    In Claude on the web or desktop, add it as a custom connector. In Claude
+    Code, add it from a terminal:
+  </p>
+  <CodeBlock code={claudeCode} language="sh" label="terminal" />
+  <p>
+    Other clients have their own screens for adding a remote MCP server. Give
+    them the endpoint above. There is no API key to paste in. The client
+    discovers the sign-in flow from the server.
+  </p>
+
+  <h2 id="approve">Approve a collection</h2>
+  <p>When the client first connects, it opens a browser window for sign-in.</p>
+  <ol>
+    <li>Sign in to mdbase Connect.</li>
+    <li>Choose one collection.</li>
+    <li>
+      Review the permissions. <strong>Read this collection</strong> is
+      required. <strong>Create records</strong>, <strong>Edit records</strong>,{" "}
+      <strong>Delete records</strong> and <strong>Manage definitions</strong>{" "}
+      are optional, and you can leave any of them out. They appear when the
+      client asked for write access, which it does by default.
+    </li>
+    <li>Approve. The browser returns you to your client.</li>
+  </ol>
+  <p>
+    Each approval covers one collection. To use more than one, ask the client
+    to connect another collection after setup. See{" "}
+    <a href="/apps/mcp/collections/#more">Connect more collections</a>.
+  </p>
+
+  <h2 id="check">Check the connection</h2>
+  <p>Ask your client something that needs the collection:</p>
+  <CodeBlock code={firstPrompt} language="text" label="prompt" />
+  <p>
+    The client should call <code>list_connections</code> and then{" "}
+    <code>describe_collection</code>. <code>list_connections</code> shows
+    each collection's approved operations and whether it is local or hosted;
+    <code>describe_collection</code> returns its types, fields and contracts.
+  </p>
+
+  <h2 id="next">Next steps</h2>
+  <ul>
+    <li>
+      <a href="/apps/mcp/collections/">Collections and access</a> explains how
+      approvals, reconnecting and revocation work.
+    </li>
+    <li>
+      <a href="/apps/mcp/working-with-records/">Working with records</a> covers
+      queries, edits and safe retries.
+    </li>
+    <li>
+      <a href="/apps/mcp/tools/">Tool reference</a> lists every tool and its
+      inputs.
+    </li>
+    <li>
+      <a href="/apps/mcp/data-handling/">Data handling</a> describes what the
+      MCP server stores and what it can see.
+    </li>
+  </ul>
+</DocsLayout>

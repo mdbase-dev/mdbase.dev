@@ -1,0 +1,121 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+---
+
+<DocsLayout
+  section="mcp"
+  title="Troubleshooting"
+  description="What common mdbase MCP errors mean and how to recover from them."
+  active="troubleshooting"
+  headings={[
+    { href: "#errors", label: "Error codes" },
+    { href: "#sign-in", label: "Sign-in does not finish" },
+    { href: "#missing", label: "A collection is missing" },
+    { href: "#no-write", label: "The client cannot write" },
+    { href: "#self-hosted", label: "Self-hosted servers" }
+  ]}
+>
+  <p>
+    Failed calls return an error with a <code>code</code> and a message. Most
+    clients show the message; ask the client for the code if it does not.
+    Some rejections, such as conflicts and validation problems, instead return
+    a result marked <code>valid: false</code> with diagnostics that carry the
+    code.
+  </p>
+
+  <h2 id="errors">Error codes</h2>
+  <table class="api-table">
+    <thead>
+      <tr><th>Code</th><th>What happened</th><th>What to do</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>connector_offline</code></td>
+        <td>The computer that holds this collection is not reachable.</td>
+        <td>Start the Connector on that computer and check it is online, then retry.</td>
+      </tr>
+      <tr>
+        <td><code>connector_busy</code></td>
+        <td>The Connector is handling other work.</td>
+        <td>Retry after a moment.</td>
+      </tr>
+      <tr>
+        <td><code>connector_upgrade_required</code></td>
+        <td>The Connector is too old for this request.</td>
+        <td>Install the latest Connector from <a href="/downloads/">Downloads</a>.</td>
+      </tr>
+      <tr>
+        <td><code>insufficient_collection_access</code></td>
+        <td>You did not approve this operation for the collection.</td>
+        <td>Ask the client to reconnect the collection, then approve the extra permission.</td>
+      </tr>
+      <tr>
+        <td><code>connection_expired</code></td>
+        <td>The collection's approval is no longer valid.</td>
+        <td>Ask the client to reconnect the collection.</td>
+      </tr>
+      <tr>
+        <td><code>connection_not_found</code></td>
+        <td>The connection ID does not belong to this client's approvals.</td>
+        <td>Ask the client to list collections again and use a current ID.</td>
+      </tr>
+      <tr>
+        <td><code>concurrent_modification</code></td>
+        <td>The record changed after the client read it. Reported as a diagnostic.</td>
+        <td>Let the client read the record again before changing it.</td>
+      </tr>
+      <tr>
+        <td><code>invalid_query</code></td>
+        <td>The query does not follow the mdbase query format.</td>
+        <td>The message names the problem. The client should correct the query.</td>
+      </tr>
+      <tr>
+        <td><code>encryption_binding_stale</code></td>
+        <td>Access to a collection on your computer changed in Connect.</td>
+        <td>Retry later, or reconnect the collection.</td>
+      </tr>
+      <tr>
+        <td><code>generation_expired</code>, <code>query_cursor_expired</code></td>
+        <td>The query cursor expired.</td>
+        <td>Run the query again.</td>
+      </tr>
+      <tr>
+        <td><code>mutation_request_conflict</code></td>
+        <td>A <code>mutation_id</code> was reused for a different change.</td>
+        <td>Use a new ID, or repeat exactly the original change.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="sign-in">Sign-in does not finish</h2>
+  <p>
+    If you closed the browser window or declined the approval, start the
+    connection again from your client. Links from <code>add_connection</code>{" "}
+    and <code>reconnect_collection</code> can be used once and expire after
+    ten minutes, so ask the client for a new one if a link no longer works.
+  </p>
+
+  <h2 id="missing">A collection is missing</h2>
+  <p>
+    The client only sees collections you approved for it. Ask it to connect
+    another collection, or check the{" "}
+    <a href="https://editor.mdbase.dev/connect/applications">Applications</a>{" "}
+    page in Connect to see which collections <strong>mdbase</strong> can use.
+  </p>
+
+  <h2 id="no-write">The client cannot write</h2>
+  <p>
+    If the client says it has no tool to create or change records, it signed
+    in with read-only scope. Remove the server from the client and add it
+    again. If the tools exist but fail with{" "}
+    <code>insufficient_collection_access</code>, reconnect the collection and
+    approve the write permissions. See{" "}
+    <a href="/apps/mcp/collections/#write">Read and write access</a>.
+  </p>
+
+  <h2 id="self-hosted">Self-hosted servers</h2>
+  <p>
+    Running your own MCP server alongside a self-hosted Connect is covered in
+    the <a href="https://github.com/mdbase-dev/mdbase-connect/blob/main/docs/mcp-gateway.md">MCP gateway operator guide</a>.
+  </p>
+</DocsLayout>

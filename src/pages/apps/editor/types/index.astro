@@ -1,0 +1,123 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+---
+
+<DocsLayout
+  section="editor"
+  title="Types"
+  description="Define the shape of a collection's notes, how notes are assigned to types, and how types work with other apps."
+  active="types"
+  headings={[
+    { href: "#what", label: "What a type is" },
+    { href: "#create", label: "Create a type" },
+    { href: "#fields", label: "Fields" },
+    { href: "#membership", label: "Type membership" },
+    { href: "#behaviour", label: "Collection behaviour" },
+    { href: "#apps", label: "Works with applications" },
+    { href: "#save", label: "Review and save" }
+  ]}
+>
+  <h2 id="what">What a type is</h2>
+  <p>
+    A type is a Markdown file in the collection's types folder. It names a kind
+    of record, such as a task or a person, and describes its frontmatter fields
+    with JSON Schema. The Editor uses types to build property forms, check
+    notes, and suggest links. Other apps use the same files. The format is
+    defined in the <a href="/spec/">mdbase specification</a>.
+  </p>
+  <p>
+    Open <strong>Types</strong> from the collection rail to see every type. Changing
+    types needs the collection's definition management permission, which the
+    Editor requests when you approve it.
+  </p>
+
+  <h2 id="create">Create a type</h2>
+  <p>In the Types list, choose <strong>Add a type</strong>, then one of:</p>
+  <ul>
+    <li>
+      <strong>New type</strong> starts from an empty definition. Give the type
+      a unique name and add your own fields.
+    </li>
+    <li>
+      <strong>Ready-made types</strong> is a catalog. Each type comes
+      with an application contract, so apps built for that contract can use
+      your notes. Adding one creates a new, editable type. Existing files are
+      never overwritten. Installing one needs permission to install type packs;
+      without it, the catalog offers to request that access.
+    </li>
+  </ul>
+
+  <h2 id="fields">Fields</h2>
+  <p>
+    The visual editor covers the field shapes most collections need: text,
+    numbers, dates and times, choices, links, lists, nested objects, lists of
+    objects, and required fields. You can also set <strong>Read defaults</strong>, which are
+    used when a note leaves a property out. Source files stay unchanged.
+  </p>
+  <p>
+    Link rules say which fields point to other records, which types they may
+    point to, and whether the target must exist. Uniqueness rules require a
+    value to be unique within the type, across the collection, or among
+    records that match a path pattern.
+  </p>
+  <p>
+    Anything the visual editor cannot represent stays in the YAML source,
+    marked where it appears. Switch to <strong>YAML</strong> to edit the complete
+    definition directly.
+  </p>
+
+  <h2 id="membership">Type membership</h2>
+  <p>
+    <strong>Type membership</strong> decides which notes belong to the type.
+    A note that names a type in one of the collection's type keys (<code>type</code>{" "}
+    or <code>types</code> by default) belongs to the types it names, and the
+    automatic rules below are skipped. Otherwise the note belongs when every
+    configured condition matches:
+  </p>
+  <table class="api-table">
+    <thead>
+      <tr><th>Condition</th><th>Matches when</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Path</td><td>Its path matches one of the path patterns.</td></tr>
+      <tr><td>Field presence</td><td>Its frontmatter contains all the listed fields.</td></tr>
+      <tr><td>Expression</td><td>Each extra rule on its fields is true. These rules are edited in YAML.</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Some collections turn explicit assignment off. Then every note is
+    classified by the other rules.
+  </p>
+
+  <h2 id="behaviour">Collection behaviour</h2>
+  <p>
+    <strong>Collection behaviour</strong> controls how the type appears and
+    acts across tools: the field used as a record's name, description and
+    colour, an icon, and a path policy. The path policy tells tools where to put
+    new records of this type and how to name them. Changing it affects future
+    files only. Existing files are not moved.
+  </p>
+
+  <h2 id="apps">Works with applications</h2>
+  <p>
+    An application contract describes the fields an app expects, such as a
+    task manager's due date and status. <strong>Works with applications</strong>{" "}
+    connects a type to an installed contract and maps each contract field to one
+    of your field names. The app reads your notes through that mapping, and your
+    notes keep their own field names. A mapping copies values as they are. It
+    does not convert them.
+  </p>
+  <p>
+    The Editor suggests contracts that might fit, based on field names and
+    shapes. Check that the meanings match before you accept a suggestion.
+  </p>
+
+  <h2 id="save">Review and save</h2>
+  <p>
+    A type change can affect every note of that type. Before saving, the Editor
+    shows the fields added, changed and removed, the YAML differences, and
+    which existing notes would need attention. You can open the list of
+    affected notes. The collection checks the complete definition when you
+    confirm.
+  </p>
+</DocsLayout>
