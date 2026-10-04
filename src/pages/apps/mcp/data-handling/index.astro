@@ -1,0 +1,81 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+---
+
+<DocsLayout
+  section="mcp"
+  title="Data handling"
+  description="What the mdbase MCP server stores, what it can see while it works, and what stays with Connect."
+  active="data"
+  headings={[
+    { href: "#boundary", label: "Why it is separate" },
+    { href: "#stored", label: "What is stored" },
+    { href: "#not-stored", label: "What is not stored" },
+    { href: "#client", label: "Your MCP client" },
+    { href: "#controls", label: "Your controls" }
+  ]}
+>
+  <h2 id="boundary">Why it is a separate service</h2>
+  <p>
+    The Connect control plane, which handles accounts and approvals, does not
+    see collection content. Requests to a collection on your computer are
+    encrypted before they reach the Connect relay, and only your Connector
+    decrypts them. A hosted collection is stored by the mdbase hosted
+    provider, a separate service that can read it to perform operations; it is
+    encrypted at rest.
+  </p>
+  <p>
+    An AI client cannot perform that encryption itself, so the MCP server does
+    it on the client's behalf. That means the MCP server sees operation inputs
+    and results in memory while it handles a tool call, for local and hosted
+    collections alike. It runs as its own service, with its own database, so
+    that this access stays outside the control plane. It is not a
+    zero-knowledge service.
+  </p>
+
+  <h2 id="stored">What is stored</h2>
+  <ul>
+    <li>Client registrations (name and redirect URLs), hashes of access and refresh tokens, and short-lived sign-in state.</li>
+    <li>For each approved collection: its ID, display name, approved operations and contract scope.</li>
+    <li>The credentials the MCP server uses to reach Connect, encrypted.</li>
+    <li>A key pair for each connection, with the private key encrypted, and a plain message counter for each key.</li>
+  </ul>
+  <p>
+    Expired sign-in records are not currently deleted automatically. The
+    server does not log individual requests. Unexpected errors are logged for
+    diagnosis.
+  </p>
+
+  <h2 id="not-stored">What is not stored</h2>
+  <p>The MCP server's database does not hold:</p>
+  <ul>
+    <li>Record contents, including frontmatter and bodies.</li>
+    <li>Tool call results.</li>
+    <li>Record paths within a collection.</li>
+    <li>Filesystem paths on your computer. These are never sent to the MCP server or to Connect.</li>
+  </ul>
+
+  <h2 id="client">Your MCP client</h2>
+  <p>
+    Whatever a tool returns goes to your MCP client and, through it, to the AI
+    model you are using. That client's own data policies apply to it. Approve
+    only the collections and permissions you are comfortable sharing with that
+    client.
+  </p>
+
+  <h2 id="controls">Your controls</h2>
+  <ul>
+    <li>Each collection is approved separately, with its own permissions.</li>
+    <li>
+      Revoking a collection on the{" "}
+      <a href="https://editor.mdbase.dev/connect/applications">Applications</a>{" "}
+      page stops the next tool call. For a local collection, the Connector also
+      refuses a revoked approval on its own.
+    </li>
+    <li>
+      See the <a href="/privacy/">privacy notice</a> and{" "}
+      <a href="/security/">security page</a> for how mdbase handles account
+      data in general.
+    </li>
+  </ul>
+</DocsLayout>

@@ -1,0 +1,164 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+import CodeBlock from "../../../../components/CodeBlock.astro";
+
+const query = `{
+  "connection_id": "…",
+  "types": ["task"],
+  "where": "status != \\"done\\" && priority >= 3",
+  "order_by": [{ "field": "due", "direction": "asc" }],
+  "limit": 20
+}`;
+
+const paged = `{
+  "connection_id": "…",
+  "types": ["note"],
+  "pagination": "cursor",
+  "limit": 200
+}`;
+
+const update = `{
+  "connection_id": "…",
+  "path": "tasks/renew-passport.md",
+  "patch": { "status": "done" },
+  "if_revision": "…revision from read_record…"
+}`;
+
+const receipt = `{
+  "mutation_receipt": {
+    "request_id": "5b0d…",
+    "retry": "Reuse this request_id as mutation_id when retrying the exact mutation."
+  },
+  "outcome": { … }
+}`;
+---
+
+<DocsLayout
+  section="mcp"
+  title="Working with records"
+  description="How the MCP tools read, query and change records without losing concurrent edits."
+  active="records"
+  headings={[
+    { href: "#start", label: "Start with the collection" },
+    { href: "#query", label: "Query records" },
+    { href: "#pages", label: "Large result sets" },
+    { href: "#read", label: "Read one record" },
+    { href: "#change", label: "Create and change records" },
+    { href: "#revisions", label: "Revisions" },
+    { href: "#retries", label: "Retrying safely" },
+    { href: "#types", label: "Type definitions" }
+  ]}
+>
+  <p>
+    You do not need to call these tools yourself. Your MCP client chooses them.
+    This page explains what they do, so you can tell the client what you want
+    and understand what it did.
+  </p>
+
+  <h2 id="start">Start with the collection</h2>
+  <p>
+    <code>describe_collection</code> returns the collection's types, their
+    fields and its contracts. A client that reads
+    it first can use your field names and types instead of guessing them from a
+    few files.
+  </p>
+
+  <h2 id="query">Query records</h2>
+  <p>
+    <code>query_records</code> uses the mdbase query format from the{" "}
+    <a href="/spec/">specification</a>. <code>where</code> is an expression
+    over record fields, <code>types</code> limits the query to declared types,
+    and <code>order_by</code> sorts the results.
+  </p>
+  <CodeBlock code={query} language="json" label="query_records input" />
+  <p>
+    Record bodies are left out unless <code>include_body</code> is{" "}
+    <code>true</code>. <code>frontmatter_mode</code> chooses between the
+    frontmatter stored in the file (<code>persisted</code>), the values after
+    type defaults and computed fields are applied (<code>effective</code>), or
+    both.
+  </p>
+
+  <h2 id="pages">Large result sets</h2>
+  <p>
+    <code>limit</code> can be at most 1,000. For large result sets, set{" "}
+    <code>pagination</code> to <code>"cursor"</code>. Pages may be smaller
+    than <code>limit</code>. Each page's result
+    includes a cursor for the next page, and every page reads from the same
+    snapshot of the collection.
+  </p>
+  <CodeBlock code={paged} language="json" label="query_records input" />
+  <p>
+    A cursor that is no longer needed can be released with{" "}
+    <code>release_query_cursor</code>. Unused cursors expire after a short
+    idle period, from seconds to minutes, so continue promptly. To continue,
+    repeat the same query with the <code>cursor</code>.
+  </p>
+
+  <h2 id="read">Read one record</h2>
+  <p>
+    <code>read_record</code> takes a path relative to the collection root, such
+    as <code>projects/alpha.md</code>. The result includes the frontmatter,
+    body, the types the record belongs to, and its current{" "}
+    <code>revision</code>.
+  </p>
+
+  <h2 id="change">Create and change records</h2>
+  <p>
+    These tools are available when the client has write access and you approved
+    the matching operation for the collection.
+  </p>
+  <table class="api-table">
+    <thead>
+      <tr><th>Tool</th><th>Use</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>create_record</code></td><td>Create a record from a type, frontmatter and body. The path can be given or left to the collection's path rules.</td></tr>
+      <tr><td><code>update_record</code></td><td>Change fields with <code>patch</code> and replace the <code>body</code>, or replace the whole Markdown source with <code>document</code>. A <code>document</code> cannot be combined with the other two.</td></tr>
+      <tr><td><code>rename_record</code></td><td>Move a record. Links to it are updated unless <code>update_refs</code> is <code>false</code> or the collection turns this off.</td></tr>
+      <tr><td><code>delete_record</code></td><td>Delete a record. With <code>check_backlinks: true</code>, the result lists records whose links to it are now broken.</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Changes are validated against every type the record belongs to. At the
+    default validation level, an invalid change is rejected with details and
+    nothing is written. A collection can lower its validation level in its
+    configuration.
+  </p>
+
+  <h2 id="revisions">Revisions prevent lost edits</h2>
+  <p>
+    Each record has a revision that changes whenever the file changes. When a
+    client passes the revision it read as <code>if_revision</code>, the change
+    is applied only if nobody else has changed the record since. That includes
+    you, in another app or a text editor.
+  </p>
+  <CodeBlock code={update} language="json" label="update_record input" />
+  <p>
+    If the record changed in the meantime, the change is not applied. The
+    result is marked <code>valid: false</code> with a{" "}
+    <code>concurrent_modification</code> diagnostic. The client should read the record again and decide what to do with the newer
+    content, rather than overwrite it.
+  </p>
+
+  <h2 id="retries">Retrying safely</h2>
+  <p>
+    Every change returns a receipt containing a request ID:
+  </p>
+  <CodeBlock code={receipt} language="json" label="tool result" />
+  <p>
+    If a call times out and the client cannot tell whether it happened, it can
+    repeat the same change with that ID as <code>mutation_id</code>. The
+    change is applied at most once. Reusing an ID for a different change fails
+    with <code>mutation_request_conflict</code>.
+  </p>
+
+  <h2 id="types">Type definitions</h2>
+  <p>
+    <code>read_type</code> returns a type definition by name or path.{" "}
+    <code>create_type</code> and <code>update_type</code> take the complete
+    type file as <code>document</code>. Updating a type always requires its
+    current revision. A type change can affect every record of that type, so
+    the <strong>Manage definitions</strong> permission is approved separately in Connect.
+  </p>
+</DocsLayout>

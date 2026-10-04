@@ -93,6 +93,13 @@ jobs:
         working-directory: .sources/mdbase-spec/site
         run: npm ci && npm run build
 
+      - name: Build the MCP server for the tool reference
+        working-directory: .sources/mdbase-connect
+        run: |
+          pnpm_version="$(jq -r '.packageManager | sub("^pnpm@"; "")' package.json)"
+          npx --yes "pnpm@$pnpm_version" install --frozen-lockfile --filter "@mdbase/connect-mcp..."
+          npx --yes "pnpm@$pnpm_version" --filter "@mdbase/connect-mcp..." build
+
       - name: Synchronize schemas, contracts, and conformance claims
         run: pnpm sync:sources
         env:

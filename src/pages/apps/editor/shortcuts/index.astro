@@ -1,0 +1,86 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+
+const shortcuts = [
+  ["Ctrl P", "Quick open"],
+  ["Ctrl K", "Quick open, outside the note text"],
+  [">", "Actions, typed at the start of quick open"],
+  ["Ctrl Shift N", "New note"],
+  ["Ctrl Enter", "Create the note being composed"],
+  ["Ctrl Shift L", "Show or hide the notes sidebar"],
+  ["↑ / ↓", "Move through the note list"],
+  ["Alt J / Alt K", "Next or previous note"],
+  ["Alt ← / Alt →", "Back or forward through opened notes"],
+  ["Ctrl F", "Find in note"],
+  ["Ctrl B / Ctrl I", "Bold or italic"],
+  ["Ctrl Shift C", "Inline code"],
+  ["Ctrl K", "Add a link, in the note text"],
+  ["Tab / Shift Tab", "Indent or outdent a list item"],
+  ["/", "Markdown commands, at the start of a line"],
+  ["[[", "Link to a note or file"],
+  ["@", "Link to a note, optionally filtered by type"],
+  ["?", "Show the shortcut guide"],
+  ["Esc", "Close quick open or the shortcut guide"]
+];
+
+const settings = [
+  ["Color theme", "Follow the system appearance, or keep a light or dark theme in this browser."],
+  ["Text size", "Compact, Comfortable or Large note text, without changing the rest of the interface."],
+  ["Wrap long lines", "Keep Markdown within the writing width. On by default."],
+  ["Quiet Markdown", "Soften punctuation away from the active line and make tasks checkable. On by default."],
+  ["Vim key bindings", "Use normal, insert, visual and command modes in the note editor. Off by default."]
+];
+---
+
+<DocsLayout
+  section="editor"
+  title="Shortcuts and settings"
+  description="Keyboard shortcuts and the preferences you can change in mdbase Editor."
+  active="shortcuts"
+  headings={[
+    { href: "#shortcuts", label: "Keyboard shortcuts" },
+    { href: "#settings", label: "Editor settings" },
+    { href: "#collection", label: "Collection settings" }
+  ]}
+>
+  <h2 id="shortcuts">Keyboard shortcuts</h2>
+  <p>
+    On a Mac, use <kbd>⌘</kbd> in place of <kbd>Ctrl</kbd>. Press{" "}
+    <kbd>?</kbd> anywhere outside a text field to see the guide in the Editor.
+  </p>
+  <table class="api-table">
+    <thead>
+      <tr><th>Keys</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      {shortcuts.map(([keys, action]) => (
+        <tr><td><kbd>{keys}</kbd></td><td>{action}</td></tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2 id="settings">Editor settings</h2>
+  <p>
+    Open <strong>Settings</strong> from the collection rail. These preferences
+    are stored in this browser only.
+  </p>
+  <table class="api-table">
+    <thead>
+      <tr><th>Setting</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      {settings.map(([name, effect]) => (
+        <tr><td>{name}</td><td>{effect}</td></tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2 id="collection">Collection settings</h2>
+  <p>
+    Settings also shows the open collection: its ID, the specification version
+    it uses, its types folder, the frontmatter keys that declare a type, its
+    validation level, and the operations the Editor is approved for.{" "}
+    <strong>Forget from this browser</strong> removes the collection from the
+    Editor without changing its files.
+  </p>
+</DocsLayout>

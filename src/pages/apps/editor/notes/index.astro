@@ -1,0 +1,137 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+---
+
+<DocsLayout
+  section="editor"
+  title="Writing notes"
+  description="Create, edit, find and organise the Markdown records in a collection."
+  active="notes"
+  headings={[
+    { href: "#create", label: "Create a note" },
+    { href: "#write", label: "Write" },
+    { href: "#properties", label: "Properties" },
+    { href: "#find", label: "Find notes" },
+    { href: "#rename", label: "Rename and move" },
+    { href: "#check", label: "Check a note" },
+    { href: "#conflicts", label: "Edits made elsewhere" },
+    { href: "#delete", label: "Delete a note" }
+  ]}
+>
+  <h2 id="create">Create a note</h2>
+  <p>
+    Choose <strong>New note</strong> or press <kbd>Ctrl</kbd> <kbd>Shift</kbd>{" "}
+    <kbd>N</kbd>. A note is not written to the collection until you create it,
+    so you can fill in everything first:
+  </p>
+  <ul>
+    <li>
+      <strong>Type.</strong> Pick one of the collection's types, or{" "}
+      <strong>General note</strong> for a note without a type.
+    </li>
+    <li>
+      <strong>Required properties.</strong> The fields the type requires are
+      shown up front. Nested objects and lists follow the type's schema.
+    </li>
+    <li>
+      <strong>Path.</strong> The Editor suggests where the file will live.
+      Edit it to choose another folder or file name. A new folder appears once
+      its first note is created.
+    </li>
+  </ul>
+  <p>
+    Press <kbd>Ctrl</kbd> <kbd>Enter</kbd> to create the note.
+  </p>
+
+  <h2 id="write">Write</h2>
+  <p>
+    The body is plain Markdown. Changes save automatically. Type{" "}
+    <kbd>/</kbd> at the start of a line for Markdown commands such as
+    headings, lists, tasks, quotes, code blocks, tables and links.
+  </p>
+  <p>
+    <kbd>Ctrl</kbd> <kbd>B</kbd> and <kbd>Ctrl</kbd> <kbd>I</kbd> set bold and
+    italic, <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>C</kbd> sets inline code,{" "}
+    <kbd>Ctrl</kbd> <kbd>K</kbd> adds a link, and pasting a URL over
+    selected text turns it into a link. <kbd>Tab</kbd> and{" "}
+    <kbd>Shift</kbd> <kbd>Tab</kbd> indent and outdent list items.
+  </p>
+  <p>
+    <strong>Quiet Markdown</strong>, on by default, softens Markdown punctuation
+    away from the line you are editing and makes task checkboxes clickable.
+    Vim key bindings can be turned on in Settings. See{" "}
+    <a href="/apps/editor/shortcuts/">Shortcuts and settings</a>.
+  </p>
+
+  <h2 id="properties">Properties</h2>
+  <p>
+    Open <strong>Note properties</strong> to see and edit frontmatter. It has
+    three views:
+  </p>
+  <table class="api-table">
+    <thead>
+      <tr><th>View</th><th>Shows</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Fields</td><td>Structured inputs based on the note's types, including dates, links, lists and nested objects.</td></tr>
+      <tr><td>JSON</td><td>The frontmatter stored in the file, as JSON.</td></tr>
+      <tr><td>Source</td><td>The exact Markdown file, including YAML frontmatter and body.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="find">Find notes</h2>
+  <ul>
+    <li>
+      <strong>Quick open</strong> (<kbd>Ctrl</kbd> <kbd>P</kbd>) searches
+      titles, paths, properties and text. Start with <kbd>&gt;</kbd> to search
+      actions instead.
+    </li>
+    <li>
+      Folders, Tags and By type in the collection rail filter the note list.
+      Its view options sort by modified date, title or path.
+    </li>
+    <li>
+      <kbd>Alt</kbd> <kbd>J</kbd> and <kbd>Alt</kbd> <kbd>K</kbd> move to the
+      next and previous note. <kbd>Alt</kbd> <kbd>←</kbd> and{" "}
+      <kbd>Alt</kbd> <kbd>→</kbd> go back and forward through notes you
+      opened.
+    </li>
+    <li><kbd>Ctrl</kbd> <kbd>F</kbd> finds text within the open note.</li>
+  </ul>
+
+  <h2 id="rename">Rename and move</h2>
+  <p>
+    Click the path in the note header to rename or move the Markdown file; the
+    new path must end in <code>.md</code>. If other notes link to it, the
+    Editor asks whether to <strong>Rename and update links</strong>, which
+    rewrites those links, or <strong>Rename only</strong>. Otherwise it renames
+    the file and updates links straight away.
+  </p>
+
+  <h2 id="check">Check a note</h2>
+  <p>
+    <strong>Check note</strong>, in the note's action menu, validates the note
+    against its types and reports any fields that do not fit. Links that do not
+    resolve are marked in the editor as you write.
+  </p>
+
+  <h2 id="conflicts">Edits made elsewhere</h2>
+  <p>
+    Every save checks that the file has not changed since the Editor read it.
+    If another app, a text editor or another person changed the note, the
+    Editor does not overwrite it. It shows <strong>This note changed elsewhere</strong>{" "}
+    and lets you compare the title and body before choosing{" "}
+    <strong>Keep my edits</strong> or <strong>Use latest</strong>.
+  </p>
+  <p>
+    Edits that were not saved, for example because the browser closed, stay in
+    this browser for up to seven days. Reopening the note offers{" "}
+    <strong>Restore unsaved edits</strong> or <strong>Discard recovered edits</strong>.
+  </p>
+
+  <h2 id="delete">Delete a note</h2>
+  <p>
+    <strong>Delete note</strong> is in the note's action menu. It asks for
+    confirmation, then removes the Markdown file from the collection.
+  </p>
+</DocsLayout>

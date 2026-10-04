@@ -1,0 +1,115 @@
+---
+import DocsLayout from "../../../../components/DocsLayout.astro";
+---
+
+<DocsLayout
+  section="mcp"
+  title="Collections and access"
+  description="How approvals work, how to add or reconnect collections, and how to take access away."
+  active="collections"
+  headings={[
+    { href: "#model", label: "One approval per collection" },
+    { href: "#connection-ids", label: "Connection IDs" },
+    { href: "#more", label: "Connect more collections" },
+    { href: "#broaden", label: "Reconnect or broaden access" },
+    { href: "#write", label: "Read and write access" },
+    { href: "#revoke", label: "Revoke access" },
+    { href: "#local", label: "Collections on your computer" }
+  ]}
+>
+  <h2 id="model">One approval per collection</h2>
+  <p>
+    The client does not get general access to your account. Each collection is
+    approved on its own, with its own list of operations. There is no query or
+    write that spans collections, and no collection is used unless you approved
+    it.
+  </p>
+
+  <h2 id="connection-ids">Connection IDs</h2>
+  <p>
+    <code>list_connections</code> returns one entry for each approved
+    collection:
+  </p>
+  <table class="api-table">
+    <thead>
+      <tr><th>Field</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>id</code></td><td>The connection ID. Every collection tool requires it as <code>connection_id</code>.</td></tr>
+      <tr><td><code>collection_id</code></td><td>The collection's ID in Connect.</td></tr>
+      <tr><td><code>display_name</code></td><td>The collection name shown in Connect.</td></tr>
+      <tr><td><code>operations</code></td><td>The operations you approved, such as <code>read</code>, <code>query</code> or <code>update</code>.</td></tr>
+      <tr><td><code>authority</code></td><td><code>local</code> when the collection is on your computer, <code>remote</code> when it is hosted.</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Connection IDs are opaque. They are not collection paths and do not reveal
+    where the collection is stored.
+  </p>
+
+  <h2 id="more">Connect more collections</h2>
+  <p>
+    Ask the client to connect another collection. It calls{" "}
+    <code>add_connection</code>, which returns a link for you to open in a
+    browser. The link can be used once and expires after ten minutes.
+  </p>
+  <p>
+    The link opens the same Connect approval screen as the first setup. Choose
+    the collection and its operations, approve, then ask the client to list
+    collections again.
+  </p>
+
+  <h2 id="broaden">Reconnect or broaden access</h2>
+  <p>
+    If a collection's approval expires, or you want to allow operations you
+    previously left out, the client calls <code>reconnect_collection</code>{" "}
+    with that connection ID. The returned link opens Connect on that
+    collection only. You review and approve its operations, or decline.
+  </p>
+
+  <h2 id="write">Read and write access</h2>
+  <p>
+    Two separate approvals control writing. The first is the MCP sign-in scope
+    the client requests: <code>mdbase:read</code>, <code>mdbase:write</code>,
+    or both. A client that does not ask for a specific scope gets both. The
+    client only sees the write tools when the scope includes{" "}
+    <code>mdbase:write</code>.
+  </p>
+  <p>
+    The second is the set of operations you approve for each collection in
+    Connect. This one decides what can actually happen. If you approved a
+    collection for reading only, a write tool fails with{" "}
+    <code>insufficient_collection_access</code>. It never expands your
+    approval by itself. If you narrow access in Connect, calls may fail with a
+    different code until the MCP server's sign-in next refreshes, within an
+    hour.
+  </p>
+
+  <h2 id="revoke">Revoke access</h2>
+  <p>
+    Open the <a href="https://editor.mdbase.dev/connect/applications">Applications</a>{" "}
+    page in the Connect workspace. The MCP server is listed as{" "}
+    <strong>mdbase</strong>. You can narrow or revoke its access to each
+    collection there. The next tool call for a revoked collection fails, and
+    other collections keep working.
+  </p>
+  <p>
+    Removing the server from your MCP client stops that client from using it,
+    but does not remove the approvals held in Connect. Revoke them in Connect as
+    well if you no longer use them.
+  </p>
+
+  <h2 id="local">Collections on your computer</h2>
+  <p>
+    For a collection that stays on your computer, requests travel from the MCP
+    server through the Connect relay to the Connector. They are encrypted end
+    to end between the MCP server and your Connector. The Connector checks its
+    own copy of your approval before it opens the collection, so a grant you
+    revoked is refused locally too.
+  </p>
+  <p>
+    The Connector must be running and online. If it is not, tools return{" "}
+    <code>connector_offline</code>. See{" "}
+    <a href="/apps/mcp/troubleshooting/">Troubleshooting</a>.
+  </p>
+</DocsLayout>

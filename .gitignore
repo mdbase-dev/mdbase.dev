@@ -20,3 +20,4 @@ dist/
 /public/theme-bootstrap.js
 /src/data/contracts.json
 /src/data/conformance.json
+/src/data/mcp-tools.json

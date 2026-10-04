@@ -1,6 +1,7 @@
 import release from "./connect-release.json";
+import mcpTools from "./mcp-tools.json";
 
-export type DocsSectionId = "sdk" | "reader" | "writer";
+export type DocsSectionId = "sdk" | "mcp" | "editor" | "reader" | "writer";
 
 type DocLink = { href: string; label: string; key: string };
 type DocsSection = {
@@ -47,6 +48,66 @@ export const docsSections: Record<DocsSectionId, DocsSection> = {
         docs: [
           { href: "/sdk/security/", label: "Security model", key: "security" },
           { href: "/sdk/api/", label: "API reference", key: "api" }
+        ]
+      }
+    ]
+  },
+  mcp: {
+    label: "mdbase MCP",
+    navLabel: "mdbase MCP documentation",
+    headerCurrent: "apps",
+    sourcePath: "src/pages/apps/mcp",
+    meta: { label: "Server", value: mcpTools.server_version },
+    groups: [
+      {
+        label: "Start",
+        docs: [
+          { href: "/apps/mcp/", label: "Set up mdbase MCP", key: "overview" },
+          { href: "/apps/mcp/collections/", label: "Collections and access", key: "collections" }
+        ]
+      },
+      {
+        label: "Use",
+        docs: [
+          { href: "/apps/mcp/working-with-records/", label: "Working with records", key: "records" },
+          { href: "/apps/mcp/troubleshooting/", label: "Troubleshooting", key: "troubleshooting" }
+        ]
+      },
+      {
+        label: "Reference",
+        docs: [
+          { href: "/apps/mcp/tools/", label: "Tool reference", key: "tools" },
+          { href: "/apps/mcp/data-handling/", label: "Data handling", key: "data" }
+        ]
+      }
+    ]
+  },
+  editor: {
+    label: "mdbase Editor",
+    navLabel: "mdbase Editor documentation",
+    headerCurrent: "apps",
+    sourcePath: "src/pages/apps/editor",
+    meta: { label: "Web", value: "editor.mdbase.dev" },
+    groups: [
+      {
+        label: "Start",
+        docs: [
+          { href: "/apps/editor/", label: "Get started", key: "overview" }
+        ]
+      },
+      {
+        label: "Use",
+        docs: [
+          { href: "/apps/editor/notes/", label: "Writing notes", key: "notes" },
+          { href: "/apps/editor/links/", label: "Links, embeds and files", key: "links" },
+          { href: "/apps/editor/types/", label: "Types", key: "types" },
+          { href: "/apps/editor/sharing/", label: "Sharing a collection", key: "sharing" }
+        ]
+      },
+      {
+        label: "Reference",
+        docs: [
+          { href: "/apps/editor/shortcuts/", label: "Shortcuts and settings", key: "shortcuts" }
         ]
       }
     ]
