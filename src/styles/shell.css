@@ -53,7 +53,7 @@ body {
   top: 0;
   left: var(--site-left);
   margin-left: 0;
-  background: color-mix(in srgb, var(--color-canvas) 92%, transparent);
+  background: var(--color-canvas);
 }
 
 .site-header__inner {

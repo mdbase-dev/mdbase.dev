@@ -134,7 +134,6 @@
     grain.style.backgroundImage = `url("/textures/${dark ? 'dark' : 'light'}-2.png")`;
     if (pauseControl) {
       pauseControl.textContent = paused ? 'Play motion' : 'Pause motion';
-      pauseControl.setAttribute('aria-pressed', String(paused));
       pauseControl.hidden = reducedMotion.matches;
     }
     readBase();

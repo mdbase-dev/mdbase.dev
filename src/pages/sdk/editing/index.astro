@@ -89,6 +89,7 @@ const lease = await db.records.open(recordId, { recovery: loadRecovery() });`;
   <h2 id="states">States</h2>
   <ul>
     <li><code>saved</code>: the text is the record, confirmed by the log.</li>
+    <li><code>saved_on_device</code>: the text is kept on this device and syncs when the log can be reached.</li>
     <li><code>unsaved</code>: local changes wait for autosave or <code>flush()</code>.</li>
     <li><code>saving</code>: a save is in flight. Typing continues; newer text is saved next.</li>
     <li><code>conflict</code>: the record changed elsewhere while you had unsaved changes, or it is held.</li>
@@ -121,7 +122,9 @@ const lease = await db.records.open(recordId, { recovery: loadRecovery() });`;
   <CodeBlock code={leave} language="ts" label="leave.ts" />
   <p>
     <code>flush()</code> resolves once there is nothing left to save and the
-    log has confirmed it, or tells you why it can’t. Releasing the last view
+    log has confirmed it, or tells you why it can’t. If the change is kept on
+    this device but not confirmed yet, it resolves with <code>ok: true</code>
+    {" "}and <code>saved: "on_device"</code>. Releasing the last view
     stops autosave but keeps unsaved text, so opening the record again on the
     same client picks it up. A client keeps at most 64 sessions with unsaved
     text; settle some before opening more.

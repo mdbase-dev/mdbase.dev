@@ -18,7 +18,7 @@ import HomeLayout from "../layouts/HomeLayout.astro";
     <a href="#permission">Permissions</a>
     <a href="#sharing">Sharing</a>
     <a href="#start">Get started</a>
-    <button class="chapter-index__motion" type="button" data-motion-control aria-pressed="false">Pause motion</button>
+    <button class="chapter-index__motion" type="button" data-motion-control>Pause motion</button>
   </nav>
 <main id="main" tabindex="-1">
 <section id="intro" data-index="Home" class="chapter is-active" data-scene="intro" aria-label="Introduction"><div class="chapter__inner">
@@ -66,7 +66,7 @@ easier to understand.</code></pre>
 <p>There are two ways to sync a collection. They differ in whether mdbase can read it, which decides how your devices and apps reach it.</p>
 <p><strong>Cloud copy</strong> also keeps a readable copy with mdbase, so web apps keep working while your devices are off, and a new device joins when you sign in.</p>
 <p><strong>Private</strong> is end-to-end encrypted: only your devices can unlock it, and mdbase never holds the key. Apps reach the collection through one of your devices. To add a device, you sign in and unlock it with your encryption password or recovery key.</p>
-<p>Both sync the same way, and you can switch later.</p>
+<p>Both sync the same way.</p>
 </div></section>
 
 <section id="permission" data-index="Permissions" class="chapter" data-scene="grant" aria-label="Application access"><div class="chapter__inner">
@@ -83,9 +83,9 @@ easier to understand.</code></pre>
 </div></section>
 <section id="start" data-index="Get started" class="chapter" data-scene="intro" aria-label="Get started"><div class="chapter__inner">
 <h2>Get started</h2>
-<p>Sign up for mdbase Connect, the account that syncs and shares your collections. Choose Cloud copy or Private for your first collection, then open it in any app. One synced collection is free.</p>
+<p>Sign up for mdbase Connect, the account that syncs and shares your collections. Your account starts with a small Cloud copy collection that you can open in any app. To sync a folder on your computer, as Cloud copy or Private, use the desktop app.</p>
 <div class="chapter__actions home-actions"><a class="home-action home-action--primary" href="https://connect.mdbase.dev/signup">Sign up</a><a class="home-action" href="/downloads/">Download the desktop app</a><a class="home-action" href="/apps/">See all apps</a></div>
-<p class="developer-note">Building an app? Any app can work with an mdbase collection. Read the <a href="/sdk/">SDK documentation</a> and the <a href="/spec/">specification</a>. mdbase is open source under the MIT licence, <a href="https://github.com/mdbase-dev">on GitHub</a>.</p>
+<p class="developer-note">Building an app? Any app can work with an mdbase collection. Read the <a href="/sdk/">SDK documentation</a> and the <a href="/spec/">specification</a>. The specification, Connect, Reader and Writer are open source under the MIT licence, <a href="https://github.com/mdbase-dev">on GitHub</a>.</p>
 </div></section>
 </main>
 </HomeLayout>

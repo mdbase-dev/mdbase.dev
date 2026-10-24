@@ -44,9 +44,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       </div>
     </dl>
     <p>
-      You can switch a collection between the two later. One synced collection
-      is free. The <a href="/security/">security page</a> lists exactly what
-      mdbase stores and can read in each case.
+      The <a href="/security/">security page</a> lists exactly what mdbase
+      stores and can read in each case.
     </p>
   </section>
 
@@ -87,8 +86,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     <p>
       The permission is recorded with the collection, and every copy checks it:
       your devices and, for Cloud copy, mdbase’s copy. In a Private collection,
-      a new permission only takes effect once one of your devices has approved
-      it.
+      a new permission takes effect once one of your signed-in devices has
+      recorded it. You aren’t asked again on the device.
     </p>
     <p>
       You can narrow or revoke a permission at any time. Removing an app
@@ -126,8 +125,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   <section class="content-section" aria-labelledby="moving-from-the-connector">
     <h2 id="moving-from-the-connector">If you used Connect before</h2>
     <p>
-      Existing accounts move to the new sync system in an announced migration
-      window. Your files stay where they are.
+      Existing accounts move to the new sync system automatically, in waves.
+      You don’t need to export anything, and your files stay where they are.
     </p>
     <ul>
       <li>
@@ -138,19 +137,27 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         review if the record also changed elsewhere.
       </li>
       <li>
-        <strong>Local collections served by the Connector</strong> stay on your
-        computer with sync off. The updated <a href="/downloads/">desktop app</a>{" "}
-        takes them over and keeps their files and record IDs. Nothing is
-        uploaded. You’ll be asked to turn sync on and choose Cloud copy or
-        Private. Until then, apps reach the collection through that computer
-        while it’s running.
+        <strong>Local collections served by the Connector</strong> become
+        Private collections when the updated <a href="/downloads/">desktop app</a>{" "}
+        takes them over on that computer. They keep their files, record IDs
+        and app permissions, and they’re end-to-end encrypted, so mdbase can’t
+        read them. Keep that computer online while it moves them.
       </li>
       <li>
         <strong>Apps</strong> need their current versions. Older versions can’t
         reach migrated collections and will ask you to update, and you may need
         to approve some apps again.
       </li>
+      <li>
+        <strong>Notes larger than 1 MiB</strong> move too. They stay as
+        Markdown files but aren’t in the normal record index, so they may not
+        appear in app lists or searches.
+      </li>
     </ul>
+    <p>
+      mdbase keeps the old system’s copy of each collection for 90 days after
+      it moves, for recovery.
+    </p>
   </section>
 
   <section class="content-section" aria-labelledby="get-started">

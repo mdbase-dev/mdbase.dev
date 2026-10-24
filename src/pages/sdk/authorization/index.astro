@@ -63,8 +63,7 @@ try {
   <p>
     Declare capabilities in your manifest. The user can’t turn off a
     {" "}<code>required</code> one without declining your app. Each
-    {" "}<code>optional</code> one gets its own switch; destructive ones start
-    switched off.
+    {" "}<code>optional</code> one gets its own switch.
   </p>
   <CodeBlock code={requirements} language="json" label="Manifest fragment" />
   <table class="api-table">
@@ -82,7 +81,7 @@ try {
       <tr><td><code>views.manage</code></td><td>Create, update and delete saved views</td></tr>
       <tr><td><code>definitions.manage</code></td><td>Create and update types; check and apply type packs</td></tr>
       <tr><td><code>background.schedule</code></td><td>Timers; see <a href="/sdk/notifications/">Notifications and timers</a></td></tr>
-      <tr><td><code>offline.replica</code></td><td>Keep a replica of the collection in the app. Not granted to other apps at launch.</td></tr>
+      <tr><td><code>offline.replica</code></td><td>Keep a replica of the collection in the app. Only mdbase’s own apps can hold it.</td></tr>
     </tbody>
   </table>
   <p>
@@ -93,7 +92,8 @@ try {
   <p>
     Files that aren’t records, such as images and PDFs, are requested under
     {" "}<code>requirements.files</code>. Each file action pairs with a record
-    capability, and you must declare both halves:
+    capability. A file action works only when your app also holds that
+    capability:
   </p>
   <table class="api-table">
     <thead>
@@ -124,10 +124,11 @@ try {
 
   <h2 id="private">Private collections</h2>
   <p>
-    In a Private collection, mdbase can’t read the content, and it can’t
-    decide on its own that your app may. The user must also approve the grant
-    on one of their devices, and can narrow it there. Until they do, your app
-    can’t reach the collection.
+    In a Private collection, mdbase can’t read the content. Your app reaches
+    it through one of the user’s devices. Approving your app in mdbase is the
+    only consent: a signed-in device applies the same grant automatically,
+    with nothing more to approve. While none of their devices is online, your
+    app can’t reach the collection.
   </p>
 
   <h2 id="disconnect">Revocation</h2>

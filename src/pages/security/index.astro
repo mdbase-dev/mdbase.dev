@@ -65,7 +65,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         <tr>
           <td>A new app permission takes effect</td>
           <td>When you approve it in Connect</td>
-          <td>When you approve it in Connect and one of your devices confirms it</td>
+          <td>When you approve it in Connect and one of your signed-in devices records it</td>
         </tr>
         <tr>
           <td>A new device of yours gets the key</td>
@@ -120,16 +120,15 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   <section class="content-section" aria-labelledby="sync-off">
     <h2 id="sync-off">Collections with sync off</h2>
     <p>
-      Collections moved from the Connector start with sync off, and any
-      collection can be set to sync off in its advanced settings. mdbase stores
-      none of their contents. Apps reach them through mdbase’s relay to the
-      computer that holds them, while it’s running.
+      You can turn sync off for a collection in the desktop app. mdbase then
+      stores none of its contents. Apps reach it through mdbase’s relay to the
+      computer that holds it, while that computer is running.
     </p>
     <p>
       For these collections, the background service on your computer trusts the
       app permissions that mdbase issues. It notifies you when a new app gains
       access and keeps a list of apps you can review and revoke. To require your
-      approval on the computer as well, turn on{" "}
+      approval on the computer as well, run{" "}
       <code>mdbase settings --require-approval on</code>.
     </p>
   </section>
@@ -144,9 +143,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         device receiving new changes. Devices don’t yet detect this.
       </li>
       <li>
-        When a collection switches from Cloud copy to Private, content stored
-        before the switch remains readable with the keys mdbase held until it is
-        re-encrypted. You’re offered a step that re-encrypts it.
+        If a Cloud copy collection is changed to Private, content stored before
+        the change stays readable with the keys mdbase held until it is
+        re-encrypted.
       </li>
       <li>
         The web apps that mdbase publishes see what they show you. Private

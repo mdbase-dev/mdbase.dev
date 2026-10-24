@@ -37,7 +37,7 @@ const writeOptions = `interface WriteOptions {
     { href: "#connection", label: "Status and link" },
     { href: "#records", label: "Holds and conflicts" },
     { href: "#files", label: "Files" },
-    { href: "#session", label: "MdbaseConnect" },
+    { href: "#session", label: "createMdbase" },
     { href: "#notifications", label: "Other exports" },
     { href: "#errors", label: "Errors" }
   ]}
@@ -157,10 +157,18 @@ const writeOptions = `interface WriteOptions {
     </tbody>
   </table>
 
-  <h2 id="session">MdbaseConnect</h2>
+  <h2 id="session">createMdbase</h2>
   <p>
-    <code>new MdbaseConnect(declaration)</code> is the entry point for web apps.
-    {" "}<code>application()</code> returns an object with
+    <code>createMdbase(declaration)</code> is the entry point for web apps. Its
+    snapshot has a <code>phase</code> that says what to show; when
+    {" "}<code>phase.kind</code> is <code>"ready"</code>,
+    {" "}<code>phase.connection</code> is the open connection. Its actions
+    include <code>start</code>, <code>signIn</code>, <code>select</code>,
+    {" "}<code>forget</code>, <code>signOut</code> and <code>close</code>.
+  </p>
+  <p>
+    <code>new MdbaseConnect(declaration)</code> is the same entry under its
+    previous name. Its <code>application()</code> returns an object with
     {" "}<code>getSnapshot</code>, <code>subscribe</code>, <code>start</code>,
     {" "}<code>authorize</code>, <code>select</code>, <code>assess</code>,
     {" "}<code>configure</code>, <code>clearSelection</code>,

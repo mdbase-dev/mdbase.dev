@@ -106,9 +106,11 @@ export async function listWorkItems(db: MdbaseClient) {
     <code>queryContract()</code> returns records under the contract’s field
     names, across every type that implements it. Each projection carries the
     type name and any validation <code>issues</code>. It returns one page at a
-    time, up to 128 records; pass <code>cursor</code> for the next. To write,
-    use the type’s own fields with <code>create()</code> and
-    {" "}<code>update()</code>.
+    time, up to 128 records; pass <code>cursor</code> for the next. To write
+    under the contract’s field names, pass
+    {" "}<code>contract: &#123; id, version &#125;</code> to <code>create()</code>
+    {" "}or <code>update()</code>. The replica maps the fields to the type’s
+    own fields, and refuses fields it can’t map.
   </p>
 
   <h2 id="ownership">Keep domain behaviour with its app</h2>

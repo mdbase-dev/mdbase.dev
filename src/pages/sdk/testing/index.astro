@@ -75,7 +75,7 @@ const where = `const replica = new MemoryReplica({
   <ul>
     <li>Reads, queries with cursors, live queries and the change feed.</li>
     <li>Creates, updates, renames and deletes, with receipts and <code>ifRevision</code>.</li>
-    <li>Sync status and pending writes. Hold and conflict calls answer, but the lists are always empty.</li>
+    <li>Sync status and pending writes. Holds and conflicts are empty until you add one with <code>hold(ref)</code> or <code>conflict(ref, &#123; field, kept, lost &#125;)</code>.</li>
     <li>Files: upload, download and listing.</li>
     <li>Record sessions from <code>db.records.open()</code>.</li>
   </ul>
@@ -144,7 +144,7 @@ const where = `const replica = new MemoryReplica({
     <li>field and body merges;</li>
     <li>query expressions, type validation and defaults;</li>
     <li>grants and permission errors;</li>
-    <li>holds and conflicts;</li>
+    <li>when real holds and conflicts happen;</li>
     <li>routing to a Private collection.</li>
   </ul>
 </DocsLayout>

@@ -20,37 +20,33 @@ const manifest = `{
 
 const install = `npm install @mdbase-dev/sdk`;
 
-const client = `import { MdbaseConnect } from "@mdbase-dev/sdk";
+const client = `import { createMdbase } from "@mdbase-dev/sdk";
 import manifest from "./mdbase-app.json";
 
-export const mdbase = new MdbaseConnect({
-  id: WORKLOG_APPLICATION_ID, // your app’s registered application ID
-  name: "Worklog",
+export const mdbase = createMdbase({
+  id: "dev.example.worklog",
+  name: "Worklog", // must match the manifest's name
   origin: "https://worklog.example",
   environment: "production",
   manifest,
-});
+});`;
 
-export const app = mdbase.application();`;
+const authorize = `import { mdbase } from "./mdbase";
 
-const authorize = `import { app, mdbase } from "./mdbase";
+mdbase.subscribe(() => render(mdbase.getSnapshot()));
+await mdbase.start();
 
-app.subscribe(() => render(app.getSnapshot()));
-await app.start();
-
-// Call authorize() straight from the click, so the browser allows its window.
-signInButton.onclick = () => app.authorize();
+// Call signIn() straight from the click, so the browser allows its window.
+signInButton.onclick = () => mdbase.signIn();
 
 function render(snapshot) {
-  // "signed_out", "authorizing", "unselected", "setup_required", "ready", …
-  showScreen(snapshot.status);
-  if (snapshot.status === "unselected") {
-    showPicker(snapshot.collections, (id) => app.select(id));
+  const { phase } = snapshot;
+  // "signed_out", "authorizing", "choosing", "needs_setup", "ready", …
+  showScreen(phase.kind);
+  if (phase.kind === "choosing") {
+    showPicker(snapshot.collections, (id) => mdbase.select(id));
   }
-  if (snapshot.status === "ready" && snapshot.selectedCollectionId) {
-    const connection = mdbase.connection(snapshot.selectedCollectionId);
-    if (connection) startApp(connection.records);
-  }
+  if (phase.kind === "ready") startApp(phase.connection.records);
 }`;
 
 const operate = `async function startApp(db) {
@@ -84,16 +80,12 @@ const operate = `async function startApp(db) {
   ]}
 >
   <div class="callout" id="before">
-    <strong>This flow is not available yet.</strong>
+    <strong>The SDK is not on npm yet.</strong>
     <p>
-      <code>MdbaseConnect</code> is in the SDK with its final shape, but it
-      does not sign anyone in yet. In current builds, <code>getSnapshot()</code>
-      {" "}reports status <code>"blocked"</code> with problem
-      {" "}<code>application_not_yet_available</code>, and the other methods
-      reject with <code>MdbaseApplicationUnavailableError</code>. Write and test
-      your app against it now with
-      {" "}<a href="/sdk/testing/">createApplicationFixture()</a>. This page
-      will say when it works against real collections.
+      Signing in to real collections needs a packaged SDK release, and none is
+      published yet. Until then, write and test your app against
+      {" "}<a href="/sdk/testing/">createApplicationFixture()</a>.
+      This page will say when a release is out.
     </p>
   </div>
 
@@ -114,16 +106,21 @@ const operate = `async function startApp(db) {
   <h2 id="client">3. Declare the app</h2>
   <CodeBlock code={client} language="ts" label="mdbase.ts" />
   <p>
-    Create one <code>MdbaseConnect</code> for your app. <code>origin</code> must
-    be the exact origin your app is served from.
+    Create one <code>createMdbase()</code> entry for your app.
+    {" "}<code>origin</code> must be the exact origin your app is served from.
+    The SDK registers your manifest with mdbase when the app starts, so you
+    don’t need an ID from mdbase first. <code>MdbaseConnect</code> is the same
+    entry under its previous name.
   </p>
 
   <h2 id="authorize">4. Sign in and pick a collection</h2>
   <CodeBlock code={authorize} language="ts" label="main.ts" />
   <p>
-    Render from the snapshot. It tells you where the user is: signed out,
-    signing in, choosing a collection, or ready. When a collection needs
-    set-up first, the status is <code>setup_required</code>;
+    Render from the snapshot’s <code>phase</code>. It tells you where the user
+    is: signed out, signing in, choosing a collection, or ready. Switch on
+    {" "}<code>phase.kind</code> rather than building your own ready check.
+    When a collection needs set-up first, the phase is
+    {" "}<code>needs_setup</code>;
     {" "}<code>assess()</code> says why and <code>configure()</code> applies
     what your manifest declares.
   </p>
@@ -141,9 +138,13 @@ const operate = `async function startApp(db) {
 
   <h2 id="production">Origins</h2>
   <p>
-    <code>origin</code> must use HTTPS. Browser extension origins
-    ({" "}<code>chrome-extension:</code> and <code>moz-extension:</code>) are
-    also accepted. The manifest’s <code>homepage</code> and
-    {" "}<code>redirect_uris</code> must be HTTPS too.
+    <code>origin</code> is normally your manifest’s HTTPS
+    {" "}<code>homepage</code> origin. A Capacitor shell
+    ({" "}<code>capacitor://</code>) or Chrome extension
+    ({" "}<code>chrome-extension://</code>) origin must also be listed under the
+    manifest’s <code>installation_origins</code>. Firefox extension origins are
+    not accepted. Browser <code>redirect_uris</code> must be HTTPS on the
+    homepage origin; a native app can use a private-use scheme based on its
+    manifest ID.
   </p>
 </DocsLayout>

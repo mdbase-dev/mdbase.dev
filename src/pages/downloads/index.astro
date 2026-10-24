@@ -121,9 +121,9 @@ const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
     <p>
       Install this release over your existing copy. When your account moves to
       the new sync system, the app takes over the collections the Connector
-      served. Their files don’t change, they start with sync off, and the app
-      asks you to turn sync on with Cloud copy or Private. Folders that mirrored
-      a hosted collection join its Cloud copy.
+      served and turns them into Private collections. Their files, record IDs
+      and app permissions carry over. Folders that mirrored a collection stored
+      by Connect join its Cloud copy.
     </p>
     <p>
       On a headless install, <code>mdbase migrate status</code> shows progress

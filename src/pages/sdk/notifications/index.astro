@@ -75,8 +75,9 @@ if (await deliveries.claim(event.delivery_id)) {
   <div class="callout">
     <strong>Timer access comes from the app connection.</strong>
     <p>
-      <code>connection.timers</code> is part of <code>MdbaseConnect</code>,
-      which is not available yet. See
+      <code>connection.timers</code> is on the connection you get from
+      {" "}<code>createMdbase()</code> once a collection is ready. The SDK is
+      not on npm yet. See
       {" "}<a href="/sdk/connect-quickstart/">Connect a browser app</a>.
     </p>
   </div>
@@ -148,8 +149,8 @@ if (await deliveries.claim(event.delivery_id)) {
     Use opaque IDs, such as a hash.
   </p>
   <p>
-    In a Private collection, timers need a grant the user has approved on one
-    of their devices, with <code>background.schedule</code> kept. Opening the
-    app from a notification still needs one of their devices to be online.
+    In a Private collection, timers work once a signed-in device has applied
+    your app’s grant, which it does automatically. Opening the app from a
+    notification still needs one of their devices to be online.
   </p>
 </DocsLayout>

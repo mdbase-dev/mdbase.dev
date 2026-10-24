@@ -86,8 +86,8 @@ const db = await connect({
     your app cannot reach the collection.
   </p>
   <p>
-    In a Private collection, the user must also approve your app’s grant on
-    one of their devices before that device will serve it.
+    The user approves your app once, in mdbase. A signed-in device applies
+    that grant automatically; there is no second approval on the device.
   </p>
 
   <h2 id="relay">The relay</h2>

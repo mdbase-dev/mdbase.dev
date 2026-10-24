@@ -47,12 +47,14 @@ const provision = `"provisions": {
         "resources": [
           {
             "kind": "contract",
+            "mode": "managed",
             "source": "contracts/example.work-item.md",
             "target": "_contracts/example.work-item.md",
             "digest": "sha256:9cd7f8e4…"
           },
           {
             "kind": "type",
+            "mode": "managed",
             "source": "types/work-item.md",
             "target": "_types/work-item.md",
             "digest": "sha256:2be7d8a5…"
@@ -84,7 +86,7 @@ const provision = `"provisions": {
 >
   <p>
     Ship the manifest with your app and pass it to
-    {" "}<code>MdbaseConnect</code>. The SDK validates it with the same parser
+    {" "}<code>createMdbase()</code>. The SDK validates it with the same parser
     mdbase uses. Schema:
     {" "}<a href="/connect/schemas/mdbase-app.v1.json"><code>mdbase-app.v1.json</code></a>.
     The whole file may be at most 512 KiB.
@@ -173,8 +175,9 @@ const provision = `"provisions": {
     type pack that adds it. Every resource is pinned by digest. The pack is
     checked as a whole and written all at once or not at all. A pack may only
     provide contracts listed in <code>requirements.contracts</code>. A target
-    file that already exists with different bytes is a conflict, never
-    overwritten.
+    file that already exists with different bytes is a conflict. If your app
+    didn’t put it there and the resource is <code>managed</code>, the user can
+    choose to replace it with your app’s version. Otherwise it is left alone.
   </p>
   <CodeBlock code={provision} language="json" label="Manifest fragment (digests shortened)" />
   <p>
