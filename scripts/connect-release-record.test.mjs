@@ -54,6 +54,7 @@ function build(overrides = {}) {
 test("derives the website record from verified release evidence", () => {
   const record = build();
   assert.equal(record.version, version);
+  assert.equal(record.sdkVersion, version);
   assert.equal(record.channel, "beta");
   assert.equal(record.desktop.length, 5);
   assert.equal(record.cli.length, 4);
@@ -72,8 +73,13 @@ test("labels macOS downloads from their notarization marker", () => {
   assert.equal(record.desktop[1].trust, "Beta preview · notarized");
 });
 
+test("carries forward a previously verified older SDK without changing client evidence", () => {
+  const record = build({ npmVersion: "0.1.0-beta.83" });
+  assert.deepEqual(record, { ...build(), sdkVersion: "0.1.0-beta.83" });
+});
+
 test("rejects inconsistent release evidence and duplicate artifacts", () => {
-  assert.throws(() => build({ npmVersion: "0.1.0-beta.83" }), /SDK version/);
+  assert.throws(() => build({ npmVersion: "0.1.0-beta.85" }), /SDK version/);
   assert.throws(() => build({ channel: { ...channel, tag: "v0.1.0-beta.83" } }), /manifest tag/);
   const wrongDigest = structuredClone(channel);
   wrongDigest.targets["linux-x64"].artifacts[0].sha256 = "f".repeat(64);

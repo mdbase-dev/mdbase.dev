@@ -34,9 +34,9 @@ try {
   ], { stdio: ["ignore", "ignore", "inherit"] });
 
   const channel = JSON.parse(await readFile(channelPath, "utf8"));
-  const npmVersion = await waitForSdk(versionFromTag(tag), tag, sourceRevision);
-  const next = buildConnectReleaseRecord({ tag, sourceRevision, release, channel, npmVersion });
   const current = JSON.parse(await readFile(releasePath, "utf8"));
+  const npmVersion = await waitForSdk(versionFromTag(tag), tag, sourceRevision) ?? current.sdkVersion;
+  const next = buildConnectReleaseRecord({ tag, sourceRevision, release, channel, npmVersion });
   const disposition = releaseUpdateDisposition(current, next);
 
   if (disposition === "stale") {
@@ -136,7 +136,10 @@ async function waitForSdk(version, releaseTag, sourceRevision) {
         if (attempt === attempts) throw error;
         console.warn(`npm provenance is not ready for ${version}; retrying (${attempt}/${attempts}).`);
       }
-    } else if (response.status !== 404 || attempt === attempts) {
+    } else if (response.status === 404) {
+      console.warn(`npm has no @mdbase-dev/connect@${version}; retaining the previously verified SDK version.`);
+      return null;
+    } else {
       throw new Error(`npm returned HTTP ${response.status} for @mdbase-dev/connect@${version}`);
     }
     await new Promise((resolveDelay) => setTimeout(resolveDelay, delayMs));

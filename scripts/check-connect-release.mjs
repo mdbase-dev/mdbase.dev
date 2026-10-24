@@ -10,7 +10,6 @@ const release = JSON.parse(await readFile(new URL("../src/data/connect-release.j
 const sources = JSON.parse(await readFile(new URL("../site-sources.json", import.meta.url)));
 
 assert.equal(release.tag, `v${release.version}`, "release tag must match version");
-assert.equal(release.sdkVersion, release.version, "public SDK and Connect release versions must match");
 assert.equal(sources.connect.ref, release.sourceRevision, "published docs must use the released Connect source");
 assert.match(release.releaseUrl, new RegExp(`/releases/tag/${release.tag}$`));
 assert.match(release.channelManifestUrl, new RegExp(`/releases/download/${release.tag}/mdbase-connect-channel-v1\\.json$`));
@@ -81,10 +80,14 @@ const npmAttestationsResponse = await fetch(`https://registry.npmjs.org/-/npm/v1
   signal: AbortSignal.timeout(30000)
 });
 assert.equal(npmAttestationsResponse.status, 200, "npm provenance request failed");
+const sdkTag = `v${release.sdkVersion}`;
+const sdkRevision = sdkTag === release.tag ? release.sourceRevision : execFileSync("gh", [
+  "api", `repos/mdbase-dev/mdbase-connect/commits/${sdkTag}`, "--jq", ".sha"
+], { encoding: "utf8" }).trim();
 validateNpmProvenance({
   version: release.sdkVersion,
-  releaseTag: release.tag,
-  sourceRevision: release.sourceRevision,
+  releaseTag: sdkTag,
+  sourceRevision: sdkRevision,
   metadata: sdk,
   attestations: await npmAttestationsResponse.json()
 });
