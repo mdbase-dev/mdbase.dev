@@ -4,54 +4,163 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="mdbase Connect"
-  description="Host, share, and synchronize Markdown collections, serve local folders to applications, and control access through explicit permissions."
+  description="mdbase Connect is the account that syncs and shares your Markdown collections. Choose Cloud copy or Private for each collection, approve apps, share with people, and add devices."
   current="connect"
 >
-  <section class="content-section" aria-label="About mdbase Connect">
-    <h1 class="sr-only">mdbase Connect</h1>
+  <header class="page-intro">
+    <h1>mdbase Connect</h1>
+    <p class="page-intro__lede">
+      Connect is the account that syncs and shares your collections. This page
+      explains what you choose for each collection, what mdbase can read, and
+      how apps, people and devices get access.
+    </p>
+  </header>
+
+  <section class="content-section" aria-labelledby="sync-options">
+    <h2 id="sync-options">Cloud copy or Private</h2>
     <p>
-      mdbase Connect makes Markdown collections available to applications. It
-      hosts collections online, lets you share them with other people,
-      synchronizes them with local copies, and manages application access.
+      When you turn on sync for a collection, every device that syncs it keeps a
+      complete copy as ordinary files and works offline. Each change is locked
+      on the device before it leaves. mdbase passes it to your other devices
+      and can’t read it. You choose one of two options for each collection:
+    </p>
+    <dl class="glossary-list">
+      <div>
+        <dt>Cloud copy</dt>
+        <dd>
+          The default for new accounts. mdbase also keeps a readable copy of the
+          collection and holds its key. Web apps keep working while your devices
+          are off, and a new device joins when you sign in.
+        </dd>
+      </div>
+      <div>
+        <dt>Private</dt>
+        <dd>
+          End-to-end encrypted. Only your devices hold the key, so mdbase can’t
+          read the collection. Apps reach it through one of your devices, so one
+          of them must be online, such as a computer running the
+          <a href="/downloads/">desktop app</a>.
+        </dd>
+      </div>
+    </dl>
+    <p>
+      You can switch a collection between the two later. One synced collection
+      is free. The <a href="/security/">security page</a> lists exactly what
+      mdbase stores and can read in each case.
+    </p>
+  </section>
+
+  <section class="content-section" aria-labelledby="devices">
+    <h2 id="devices">Add a device</h2>
+    <p>
+      For a Cloud copy collection, sign in on the new device. Once your account
+      approves it, the device receives the collection key and downloads its
+      copy. None of your other devices need to be online.
     </p>
     <p>
-      When a collection is hosted, Connect serves its online copy directly.
-      When a collection remains on your computer, the mdbase Connector serves
-      the folder locally. Connect still manages approval, but the contents of
-      local operations do not pass through the hosted service.
+      For Private collections, you set an encryption password when you create
+      your first one, and mdbase shows you a recovery key once. Keep the
+      recovery key in a password manager or on paper. To add a device, sign in
+      and enter your encryption password or the recovery key. mdbase stores your
+      key only in a form locked with your password, so it can’t reset the
+      password for you. The recovery key is how you get back in if you forget it.
     </p>
     <p>
-      When an application asks for access, you choose a collection and review
-      what it needs to do. The permission applies only to that application and
-      collection and can be narrowed, paused, or revoked later.
+      If you’d prefer mdbase to store no copy of that key, turn on strict mode.
+      You then approve each new device from one you already have, by checking
+      that both screens show the same six-digit code.
+    </p>
+    <p>
+      If you lose a device, remove it from your account. The collection gets a
+      new key, so the removed device receives no further changes. It keeps the
+      files it already had.
+    </p>
+  </section>
+
+  <section class="content-section" aria-labelledby="apps">
+    <h2 id="apps">Apps ask first</h2>
+    <p>
+      An app asks for access to one collection and lists the operations it
+      needs, such as finding, creating and editing records. You choose the
+      collection and see what the app asks for before you approve it.
+    </p>
+    <p>
+      The permission is recorded with the collection, and every copy checks it:
+      your devices and, for Cloud copy, mdbase’s copy. In a Private collection,
+      a new permission only takes effect once one of your devices has approved
+      it.
+    </p>
+    <p>
+      You can narrow or revoke a permission at any time. Removing an app
+      never removes the collection, and your other apps keep using it.
     </p>
   </section>
 
   <section class="content-section" aria-labelledby="share-a-collection">
     <h2 id="share-a-collection">Share a collection</h2>
     <p>
-      Owners can invite other people to a hosted collection as viewers or
-      editors. Viewers can read; editors can read and change records but cannot
-      manage membership. Each member’s applications and mirrors stay within
-      that member’s permissions. Owners can change roles or remove access later.
+      Owners can invite people as viewers, who can read, or editors, who can
+      read and change records. Both Cloud copy and Private collections can be
+      shared. Open the collection’s sharing controls in the
+      <a href="https://editor.mdbase.dev/">mdbase Editor</a> and invite someone
+      by email. They need a registered, verified Connect account.
     </p>
     <p>
-      To share a collection, open its sharing controls in the <a href="https://editor.mdbase.dev/">mdbase Editor</a> and invite someone
-      by email. The recipient must already have a registered, verified Connect
-      account. After accepting, they can open the collection in compatible
-      applications; applications requiring permissions beyond their role cannot
-      be connected.
+      Each member’s devices keep a full copy, and members can connect their own
+      apps within the role you gave them. In a Private collection, an owner or
+      editor approves a new member’s first device by comparing a six-digit code
+      with them, in person or on a call.
     </p>
     <p>
-      Sharing applies to hosted collections, not local folders served by the
-      Connector. It provides access to the same records, not simultaneous live
-      co-editing of a note.
+      You can change a member’s role or remove them at any time. A removed
+      member stops receiving changes and keeps the files they already had.
     </p>
     <p>
-      You can <a href="/downloads/">download the Connector</a> to use local
-      folders, <a href="/beta/">create a Connect account</a> for hosted
-      collections, or <a href="https://connect.mdbase.dev/login">sign in</a> to
-      manage an existing account.
+      Sharing covers a whole collection. To share part of one, make a separate
+      collection. Edits that people make at the same time are combined field by
+      field, and edits that change the same field are held for review. There is
+      no live co-editing of a note.
+    </p>
+  </section>
+
+  <section class="content-section" aria-labelledby="moving-from-the-connector">
+    <h2 id="moving-from-the-connector">If you used Connect before</h2>
+    <p>
+      Existing accounts move to the new sync system in an announced migration
+      window. Your files stay where they are.
+    </p>
+    <ul>
+      <li>
+        <strong>Collections hosted by Connect</strong> become Cloud copy
+        collections, with their records, files, record IDs and members. Folders
+        that mirrored them join the new collection once the desktop app is
+        updated. Edits that weren’t uploaded yet arrive then, or are held for
+        review if the record also changed elsewhere.
+      </li>
+      <li>
+        <strong>Local collections served by the Connector</strong> stay on your
+        computer with sync off. The updated <a href="/downloads/">desktop app</a>{" "}
+        takes them over and keeps their files and record IDs. Nothing is
+        uploaded. You’ll be asked to turn sync on and choose Cloud copy or
+        Private. Until then, apps reach the collection through that computer
+        while it’s running.
+      </li>
+      <li>
+        <strong>Apps</strong> need their current versions. Older versions can’t
+        reach migrated collections and will ask you to update, and you may need
+        to approve some apps again.
+      </li>
+    </ul>
+  </section>
+
+  <section class="content-section" aria-labelledby="get-started">
+    <h2 id="get-started">Get started</h2>
+    <p>
+      <a href="/beta/">Create a Connect account</a>,{" "}
+      <a href="/downloads/">download the desktop app</a>, or{" "}
+      <a href="https://connect.mdbase.dev/login">sign in</a> to manage an
+      existing account. See the <a href="/apps/">apps</a> that work with mdbase
+      collections.
     </p>
   </section>
 </BaseLayout>

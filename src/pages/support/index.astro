@@ -6,24 +6,25 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   title="Support"
   description="Get help with mdbase, mdbase Connect, and the mdbase plugin for ChatGPT, Claude, and other MCP clients."
 >
+  <header class="page-intro">
+    <h1>Support</h1>
+    <p class="page-intro__lede">Where to get help with mdbase, Connect, and connected applications.</p>
+    <div class="button-row">
+      <a class="button button--primary" href="mailto:callum@mdbase.dev"
+        >Email support</a
+      >
+      <a class="button" href="https://status.mdbase.dev">Service status</a>
+    </div>
+  </header>
   <article class="legal">
-    <header>
-      <h1>Support</h1>
-      <p>Where to get help with mdbase, Connect, and connected applications.</p>
-      <div class="button-row">
-        <a class="button button--primary" href="mailto:callum@mdbase.dev"
-          >Email support</a
-        >
-        <a class="button" href="https://status.mdbase.dev">Service status</a>
-      </div>
-    </header>
 
     <h2>Contact</h2>
     <p>
       Email <a href="mailto:callum@mdbase.dev">callum@mdbase.dev</a> for help with
       your account, a connected application, or anything on this page. Include
       the application you were using, what you expected, and what happened.
-      Never send passwords, recovery codes, or collection contents.
+      Never send passwords, encryption passwords, recovery keys, recovery
+      codes, or collection contents.
     </p>
     <p>
       Report bugs and feature requests in the relevant repository in the
@@ -47,21 +48,37 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         access.
       </li>
       <li>
-        <strong>Operations fail or time out.</strong> A local collection is
-        reachable only while its computer is on and the Connect app is running.
-        Hosted collections do not depend on your computer. Check
+        <strong>Operations fail or time out.</strong> A Private collection, or
+        one with sync off, is reachable only while one of your devices that
+        holds it is online, such as a computer running the desktop app. Cloud
+        copy collections don’t depend on your devices. Check
         <a href="https://status.mdbase.dev">service status</a>.
       </li>
     </ul>
 
     <h2>Manage or revoke access</h2>
     <p>
-      Review connected applications, collections, and computers in
+      Review connected applications, collections, and devices in
       <a href="https://editor.mdbase.dev/connect">Connect</a>. Revoking an
       application's access takes effect on its next request. To be sure an
       assistant can no longer reach a collection, revoke its access in Connect
       rather than only removing the plugin or connector from the assistant.
     </p>
+
+    <h2>Private collections</h2>
+    <ul>
+      <li>
+        <strong>You forgot your encryption password.</strong> Enter your
+        recovery key instead, then set a new password. mdbase can’t reset the
+        password or recover the key for you.
+      </li>
+      <li>
+        <strong>A new device can’t open a Private collection.</strong> Sign in,
+        then enter your encryption password or recovery key. In strict mode,
+        approve the device from one you already have and check that both show
+        the same six-digit code.
+      </li>
+    </ul>
 
     <h2>Accounts and data</h2>
     <ul>

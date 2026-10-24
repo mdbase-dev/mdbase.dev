@@ -2,174 +2,239 @@
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
-const readQuery = `const record = await connection.read({ path: "tasks/release.md" });
-if (!record.ok) return renderProblem(record.problem);
+const read = `import { isMdbaseError, toPlain } from "@mdbase-dev/sdk";
 
-const open = await connection.query({
+// By ID, or by path. get() throws not_found; find() returns null.
+const task = await db.get({ path: "tasks/plan.md" }, { body: true });
+const maybe = await db.find(taskId);
+
+console.log(task.revision);                   // "sha256:…"
+console.log(toPlain(task.frontmatter));       // plain object
+console.log(task.state.state);                // "confirmed" or "pending"
+
+// One page of a query. Pass page.cursor to get the next.
+const page = await db.query({
   types: ["task"],
-  where: 'status == "open" && due != null',
-  orderBy: [{ field: "due", direction: "asc" }],
-  limit: 100
+  where: 'status != "done"',
+  order_by: [{ field: "due", direction: "asc" }],
+  limit: 50,
 });
-if (!open.ok) return renderProblem(open.problem);`;
 
-const pageQuery = `let loaded = 0;
-for await (const page of connection.queryPages(
-  { types: ["task"], where: 'status != "done"' },
-  { firstPageSize: 100, pageSize: 1000, signal: abortController.signal }
-)) {
-  if (!page.ok) return renderProblem(page.problem);
-  appendRows(page.value.results);
-  renderProgress(loaded += page.value.results.length);
+// Or every page in turn.
+for await (const p of db.pages({ types: ["task"], limit: 200 })) {
+  render(p.records);
 }`;
 
-const createUpdate = `const created = await connection.create({
-  path: "tasks/release.md",
-  type: "task",
-  frontmatter: { type: "task", title: "Prepare release", status: "open" },
-  body: "Release checklist."
-});
-if (!created.ok) return renderProblem(created.problem);
-
-const updated = await connection.update({
-  path: created.value.path,
-  patch: { status: "done" },
-  ifRevision: created.value.revision
-});
-if (!updated.ok && updated.problem.code === "concurrent_modification") {
-  // Changed since it was read: refresh, then let the user or domain logic decide.
-}`;
-
-const watch = `const lifetime = new AbortController();
-const opened = await connection.watch({ lifetimeSignal: lifetime.signal }, { timeoutMs: 20_000 });
-if (!opened.ok) return renderProblem(opened.problem);
-const unsubscribe = opened.value.subscribe(
-  (change) => applyChange(change.type, change.payload.path),
-  renderWatchStatus,
-  renderProblem
+const live = `const open = db.live(
+  { types: ["task"], where: 'status == "open"', limit: 100 },
+  { effective: true },
 );
-// Leaving: unsubscribe(); opened.value.close();
-void unsubscribe;`;
 
-const preflight = `const preview = await connection.preflightRename({
-  from: "tasks/release.md",
-  to: "archive/release.md",
-  updateRefs: true,
-  ifRevision: current.revision
+const stop = open.subscribe((state) => {
+  // Called now, then after every snapshot, diff or reset.
+  renderList(state.records, { stale: state.stale });
 });
-if (!preview.ok) return renderProblem(preview.problem);
-showImpact(preview.value.referencesAffected, preview.value.warnings);
 
-const renamed = await connection.renameWithProgress({
-  from: preview.value.from,
-  to: preview.value.to,
-  updateRefs: true,
-  ifRevision: current.revision
-}, {
-  preflight: preview.value,
-  signal: abortController.signal,
-  onProgress: renderMutationProgress
+// Widen the window later without a new subscription.
+await open.setQuery({ types: ["task"], where: 'status == "open"', limit: 200 });
+
+// When the screen closes:
+stop();
+open.close();`;
+
+const write = `const created = await db.create({
+  type: "task",
+  path: "tasks/review.md",
+  frontmatter: { title: "Review the draft", status: "open" },
+  body: "Check the numbers.\\n",
 });
-if (!renamed.ok) renderProblem(renamed.problem);`;
+const id = created.records[0].id; // usable straight away
 
-const recover = `for (const pending of connection.pendingMutations()) {
-  const recovered = await pending.recover({ timeoutMs: 30_000 });
-  if (!recovered.ok) renderProblem(recovered.problem);
-}`;
+// Pass the record you read. Only the fields you change are sent, each with
+// the value you saw, so concurrent edits to other fields merge.
+const task = await db.get(id, { body: true });
+await db.update(task, {
+  patch: { status: "in-progress" },
+  add: { tags: ["review"] },
+  body: task.body + "Add a summary.\\n",
+});
+
+await db.rename(task, "tasks/review-q3.md"); // updates links by default
+await db.delete(id);`;
+
+const changes = `let cursor = loadCursor();
+
+const watch = db.watchChanges(cursor, (batch) => {
+  if (batch.reset) {
+    rebuildFromScratch(); // the cursor expired: start again
+  } else {
+    applyChanges(batch.changes);
+  }
+  saveCursor(batch.cursor);
+});
+await watch.ready;
+
+// Later:
+watch();`;
+
+const preflight = `const preview = await db.update(task, { patch: { status: "done" } }, { dryRun: true });
+console.log(preview.receipt.preflight);
+
+const issues = await db.validate([{ path: "tasks/review.md" }]);`;
 ---
 
 <DocsLayout
   title="Records and operations"
-  description="Read, query, watch, create, update, move, and delete records with typed outcomes and revision preconditions."
+  description="Read, query, watch, create, update, rename and delete records. Writes are optimistic and merge field by field."
   active="operations"
   headings={[
-    { href: "#outcomes", label: "Typed outcomes" },
+    { href: "#outcomes", label: "Records and errors" },
     { href: "#read-query", label: "Read and query" },
-    { href: "#pagination", label: "Pagination" },
-    { href: "#write", label: "Write safely" },
+    { href: "#live", label: "Live queries" },
+    { href: "#write", label: "Write" },
+    { href: "#preconditions", label: "Preconditions" },
     { href: "#watch", label: "Watch changes" },
-    { href: "#preflight", label: "Preflight mutations" },
-    { href: "#recovery", label: "Interrupted writes" }
+    { href: "#preflight", label: "Check before writing" },
+    { href: "#files", label: "Attachments" }
   ]}
 >
-  <h2 id="outcomes">Typed outcomes</h2>
   <p>
-    Every operation returns a <code>ConnectOutcome</code>. Check{" "}
-    <code>ok</code>: a success has the typed <code>value</code> and any
-    non-fatal <code>diagnostics</code>; a failure has a <code>problem</code>{" "}
-    with a stable <code>code</code>, a <code>category</code>, a suggested{" "}
-    <code>recovery</code>, and, for mutations, whether the write was sent,
-    rejected or has an unknown outcome. Expected failures are data, not
-    exceptions; exceptions mean a programming error.
-  </p>
-  <p>
-    Record conditions have one code whichever authority holds the collection:
-    a stale revision is <code>concurrent_modification</code>, a missing record
-    is <code>file_not_found</code>, and invalid input is{" "}
-    <code>operation_invalid</code> with the mdbase diagnostics in its details.
+    All examples use <code>db</code>, an <code>MdbaseClient</code> from
+    {" "}<code>connect()</code> or from an app connection’s
+    {" "}<code>records</code>.
   </p>
 
-  <h2 id="read-query">Read one path or query a collection</h2>
-  <CodeBlock code={readQuery} language="ts" label="records.ts" />
+  <h2 id="outcomes">Records and errors</h2>
   <p>
-    Results contain effective frontmatter, raw frontmatter where applicable,
-    matched types, file metadata, and a revision. CEL evaluates against
-    effective values. Defaults and computed fields participate in evaluation;
-    the source file remains unchanged.
+    A record is a <code>RecordView</code>: <code>id</code>, <code>path</code>,
+    {" "}<code>revision</code>, <code>types</code>, <code>frontmatter</code>
+    {" "}(a <code>Map</code>), and <code>state</code>. Ask for more with the
+    {" "}<code>include</code> argument: <code>body</code>,
+    {" "}<code>effective</code> (values with type defaults applied),
+    {" "}<code>document</code>, <code>links</code> and
+    {" "}<code>diagnostics</code>.
+  </p>
+  <p>
+    Failures throw <code>MdbaseError</code>. Check them with
+    {" "}<code>isMdbaseError(e, code)</code>. Each error has a
+    {" "}<code>code</code>, a <code>recovery</code> that says what to do, and
+    often a <code>reason</code>. The full list is in the
+    {" "}<a href="/sdk/api/#errors">API reference</a>.
   </p>
 
-  <h2 id="pagination">Page large result sets against one snapshot</h2>
-  <CodeBlock code={pageQuery} language="ts" label="large-query.ts" />
+  <h2 id="read-query">Read and query</h2>
+  <CodeBlock code={read} language="ts" label="read.ts" />
   <p>
-    <code>queryPages()</code> yields one outcome per page. It preserves the
-    snapshot token returned by the first page and reports a changed token as
-    {" "}<code>query_snapshot_changed</code>. <code>queryAll()</code> provides the
-    same behavior when holding the complete result set in memory is acceptable.
+    Queries use the <a href="/spec/">mdbase query format</a>:
+    {" "}<code>types</code>, <code>where</code>, <code>order_by</code>,
+    {" "}<code>select</code>, <code>limit</code> and more. Reads answer from
+    the replica’s local view, including your pending writes.
+  </p>
+  <p>
+    A cursor can expire. <code>pages()</code> then throws
+    {" "}<code>invalid_request</code> with reason <code>cursor_expired</code>
+    {" "}or <code>cursor_stale</code>. Pass <code>&#123; onReset &#125;</code>
+    {" "}as its fourth argument to restart from the first page instead; clear
+    what you collected when it is called.
   </p>
 
-  <h2 id="write">Create and update with explicit revisions</h2>
-  <CodeBlock code={createUpdate} language="ts" label="write.ts" />
+  <h2 id="live">Live queries</h2>
   <p>
-    <code>patch</code> is the canonical v0.3 partial-frontmatter update. A
-    mismatched <code>ifRevision</code> produces{" "}
-    <code>concurrent_modification</code>. Refresh the record and ask the user or
-    domain logic to resolve the conflict before submitting another write.
+    A live query keeps its result current. The replica sends a snapshot, then
+    a diff for each change.
+  </p>
+  <CodeBlock code={live} language="ts" label="task-list.ts" />
+  <p>
+    Keep live lists cheap: use a <code>limit</code> window and leave bodies
+    out. <code>state.stale</code> is true until the first snapshot and after
+    a reset; the previous records stay visible meanwhile.
   </p>
 
+  <h2 id="write">Write</h2>
+  <CodeBlock code={write} language="ts" label="write.ts" />
   <p>
-    For a record people are typing into, use a{" "}
-    <a href="/sdk/editing/">record session</a> instead of issuing updates
-    yourself.
+    Every write returns a <code>Write</code> at once, in the
+    {" "}<code>pending</code> state. Your reads and live queries show it
+    straight away. Await <code>write.confirmed</code> if you need to know the
+    log accepted it; see <a href="/sdk/offline-sync/">Pending writes and sync status</a>.
+  </p>
+  <p>
+    When you pass a <code>RecordView</code> to <code>update()</code>, the SDK
+    sends the values you saw with the fields you change. A new body is sent as
+    edits against the body you read and merged with other changes. Patch keys
+    whose value didn’t change are dropped, so they can’t cause conflicts.
+  </p>
+  <p>
+    <code>replaceDocument(record, source)</code> replaces the whole Markdown
+    source when you need to. For a screen where people type into a record, use
+    a <a href="/sdk/editing/">record session</a> instead.
   </p>
 
-  <h2 id="watch">Resume changes by cursor</h2>
-  <CodeBlock code={watch} language="ts" label="watch.ts" />
+  <h2 id="preconditions">Preconditions</h2>
+  <ul>
+    <li>
+      <code>ifRevision: record.revision</code> applies the write only if the
+      record is still at that revision. Otherwise it is rejected with
+      {" "}<code>conflict</code> and reason <code>revision</code>.
+    </li>
+    <li>
+      <code>conflictMode: "reject"</code> in the write options rejects the
+      whole write if any part of it conflicts. The default,
+      {" "}<code>"record"</code>, applies what merges and records the rest as
+      conflicts.
+    </li>
+  </ul>
+
+  <h2 id="watch">Watch changes</h2>
   <p>
-    <code>watch()</code> starts within a bounded budget and returns a
-    subscription that lasts until <code>close()</code> or its lifetime signal.
-    It resumes from the collection authority's change cursor, reconnects
-    transient routes by default, and reports a <code>reset_required</code>{" "}
-    status when the consumer must refresh a complete view. To keep open
-    records current, pass the subscription to{" "}
-    <a href="/sdk/editing/#follow"><code>connection.records.follow()</code></a>.
+    The change feed lists what changed since a cursor. Use it to keep an
+    index or an export up to date.
+  </p>
+  <CodeBlock code={changes} language="ts" label="changes.ts" />
+  <p>
+    An expired cursor gives <code>reset: true</code>, not an error.
+    {" "}<code>db.changes(cursor, limit)</code> reads one batch without
+    watching.
   </p>
 
-  <h2 id="preflight">Show authoritative impact before destructive work</h2>
-  <CodeBlock code={preflight} language="ts" label="rename.ts" />
+  <h2 id="preflight">Check before writing</h2>
+  <CodeBlock code={preflight} language="ts" label="preflight.ts" />
   <p>
-    Preflight calculates the canonical operation's impact and preserves both
-    records and the change cursor. Reuse its result in{" "}
-    <code>renameWithProgress()</code> or <code>deleteWithProgress()</code> so
-    the confirmation shown to the user matches the operation that will run.
+    <code>dryRun: true</code> runs every check without writing.
+    {" "}<code>preflightRename()</code> and <code>preflightDelete()</code> show
+    what a rename or delete would touch, such as links in other records.
+    {" "}<code>validate()</code> checks records against their types.
   </p>
-  <h2 id="recovery">Recover interrupted writes exactly</h2>
-  <CodeBlock code={recover} language="ts" label="recover.ts" />
+
+  <h2 id="files">Attachments</h2>
   <p>
-    The SDK stores each mutation's exact encrypted request before sending it.
-    If the response is lost, the write fails with{" "}
-    <code>operation_outcome_unknown</code> and a durable handle appears in{" "}
-    <code>pendingMutations()</code>, including after a reload.{" "}
-    <code>recover()</code> resends the original request identity; never repeat
-    the write as a new mutation. Record sessions do this for you.
+    Files that aren’t records, such as images and PDFs, use
+    {" "}<code>db.files</code>.
   </p>
+  <CodeBlock code={`const upload = await db.files.upload("attachments/plan.pdf", file, {
+  onProgress: (p) => showProgress(p),
+});
+await upload.confirmed; // the bytes are stored
+
+const bytes = await db.files.download({ path: "attachments/plan.pdf" });
+
+for await (const f of db.files.list()) {
+  console.log(f.path, f.size, f.state); // state: "materialized", "remote", …
+}`} language="ts" label="files.ts" />
+  <ul>
+    <li>
+      Uploads go in 1 MiB chunks. To resume an interrupted upload, call
+      {" "}<code>upload()</code> again with the same <code>transferId</code>.
+      Pass <code>fileId</code> to replace an existing file.
+    </li>
+    <li>
+      <code>download()</code> reads up to 64 MiB into memory. For anything
+      larger, use <code>downloadStream()</code>, which also takes a byte
+      <code>range</code>.
+    </li>
+    <li>
+      <code>move()</code> and <code>delete()</code> take
+      {" "}<code>ifRevision</code>, like records.
+    </li>
+  </ul>
 </DocsLayout>

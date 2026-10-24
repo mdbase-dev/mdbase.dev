@@ -4,22 +4,23 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="Delete a Connect account"
-  description="How to delete an mdbase Connect account and its hosted data, including for TaskNotes users."
+  description="How to delete an mdbase Connect account and the collection data mdbase stores, including for TaskNotes users."
 >
+  <header class="page-intro">
+    <h1>Delete a Connect account</h1>
+    <p class="page-intro__lede">
+      Permanently delete your mdbase Connect account and the collection data
+      mdbase stores for it. These steps also apply if you use mdbase Connect
+      through TaskNotes.
+    </p>
+    <div class="button-row">
+      <a
+        class="button button--primary"
+        href="https://editor.mdbase.dev/connect/account"
+      >Open Connect account settings</a>
+    </div>
+  </header>
   <article class="legal">
-    <header>
-      <h1>Delete a Connect account</h1>
-      <p>
-        Permanently delete your mdbase Connect account and hosted data. These
-        steps also apply if you use mdbase Connect through TaskNotes.
-      </p>
-      <div class="button-row">
-        <a
-          class="button button--primary"
-          href="https://editor.mdbase.dev/connect/account"
-        >Open Connect account settings</a>
-      </div>
-    </header>
 
     <h2>How to delete your account</h2>
     <ol>
@@ -45,22 +46,31 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         Application access and grants, including access previously granted to
         TaskNotes.
       </li>
-      <li>Connected computers.</li>
+      <li>Registered devices.</li>
       <li>
-        Hosted collections and the records, files, and other hosted data stored
-        in them.
+        For collections you own, the data mdbase stores to sync them: the
+        encrypted changes, snapshots, and attachments, and, for Cloud copy
+        collections, the readable copy and mdbase’s copy of the collection key.
+      </li>
+      <li>
+        Your membership in collections other people own. Those collections stay
+        with their owners.
       </li>
     </ul>
     <p>
-      Hosted access and control-plane state are removed immediately. Durable
-      cleanup of hosted data then continues automatically in the background.
+      Access and control-plane state are removed immediately. Durable cleanup
+      of stored collection data then continues automatically in the background.
     </p>
 
     <h2>Data that is not deleted or may be retained</h2>
     <ul>
       <li>
-        Local collection and mirror files on your own computers are not deleted.
-        Delete those local copies yourself if you no longer want them.
+        Collection folders on your own devices are not deleted. Each device that
+        synced a collection keeps its copy as ordinary files. Delete those copies
+        yourself if you no longer want them.
+      </li>
+      <li>
+        People you shared a collection with keep the files they already had.
       </li>
       <li>
         Security or audit records necessary to document the deletion, prevent
@@ -72,7 +82,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
     <h2>Delete data without deleting your account</h2>
     <p>
-      You can delete individual records or files, or delete individual hosted
+      You can delete individual records or files, or delete individual
       collections, without deleting your mdbase Connect account. Use the
       relevant application or collection-management controls to remove only the
       data you choose.

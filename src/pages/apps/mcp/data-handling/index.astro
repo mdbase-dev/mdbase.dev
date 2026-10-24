@@ -18,17 +18,16 @@ import DocsLayout from "../../../../components/DocsLayout.astro";
   <h2 id="boundary">Why it is a separate service</h2>
   <p>
     The Connect control plane, which handles accounts and approvals, does not
-    see collection content. Requests to a collection on your computer are
-    encrypted before they reach the Connect relay, and only your Connector
-    decrypts them. A hosted collection is stored by the mdbase hosted
-    provider, a separate service that can read it to perform operations; it is
-    encrypted at rest.
+    see collection content. Requests to a Private collection are encrypted
+    before they reach the mdbase relay, and only your device decrypts them.
+    A Cloud copy collection is answered by the readable copy mdbase keeps,
+    held by a separate service that can read it to perform operations.
   </p>
   <p>
     An AI client cannot perform that encryption itself, so the MCP server does
     it on the client's behalf. That means the MCP server sees operation inputs
-    and results in memory while it handles a tool call, for local and hosted
-    collections alike. It runs as its own service, with its own database, so
+    and results in memory while it handles a tool call, for Cloud copy and
+    Private collections alike. It runs as its own service, with its own database, so
     that this access stays outside the control plane. It is not a
     zero-knowledge service.
   </p>
@@ -69,8 +68,8 @@ import DocsLayout from "../../../../components/DocsLayout.astro";
     <li>
       Revoking a collection on the{" "}
       <a href="https://editor.mdbase.dev/connect/applications">Applications</a>{" "}
-      page stops the next tool call. For a local collection, the Connector also
-      refuses a revoked approval on its own.
+      page stops the next tool call. Every copy of the collection, on your
+      devices or in the cloud copy, also refuses a revoked approval on its own.
     </li>
     <li>
       See the <a href="/privacy/">privacy notice</a> and{" "}

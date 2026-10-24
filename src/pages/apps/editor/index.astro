@@ -24,9 +24,10 @@ import DocsLayout from "../../../components/DocsLayout.astro";
     Obsidian or an AI client, can keep using.
   </p>
   <p>
-    It works with collections hosted by mdbase Connect and with collections
-    that stay on your computer and are served by the{" "}
-    <a href="/downloads/">Connector</a>.
+    It works with Cloud copy and Private collections. A Cloud copy collection
+    opens whenever you are online. The Editor reaches a Private collection
+    through one of your devices, so one of them must be online, such as a
+    computer running the <a href="/downloads/">desktop app</a>.
   </p>
 
   <h2 id="open">Open a collection</h2>
@@ -37,8 +38,7 @@ import DocsLayout from "../../../components/DocsLayout.astro";
       <a href="https://connect.mdbase.dev/signup">sign up</a> first.
     </li>
     <li>
-      Choose a collection. The list includes collections hosted by mdbase and
-      collections on your connected computers.
+      Choose a collection.
     </li>
     <li>
       Approve the Editor's access to that one collection. Reading is
@@ -73,11 +73,8 @@ import DocsLayout from "../../../components/DocsLayout.astro";
   <h2 id="status">Connection status</h2>
   <p>
     The rail shows whether the collection is connected or reconnecting. A
-    collection on your computer can only be read and saved while the Connector
-    on that computer is running and online. When you are on that computer,
-    <strong>Use this computer</strong> in the rail, or{" "}
-    <strong>Allow local access</strong> under Settings → Connection, lets the
-    browser reach the Connector directly.
+    Private collection can only be read and saved while one of your devices
+    is online to serve it.
   </p>
 
   <h2 id="switch">Switch collections</h2>
@@ -91,8 +88,8 @@ import DocsLayout from "../../../components/DocsLayout.astro";
   <h2 id="connect">The Connect workspace</h2>
   <p>
     <a href="https://editor.mdbase.dev/connect">editor.mdbase.dev/connect</a>{" "}
-    is where you manage your mdbase Connect account: collections, hosted
-    storage, sharing, connected applications, computers, sign-in methods and
+    is where you manage your mdbase Connect account: collections, storage and
+    sync, sharing, connected applications, devices, sign-in methods and
     browser sessions. It uses your account session, not a collection grant, so
     it can list your collections but cannot read their contents.
   </p>

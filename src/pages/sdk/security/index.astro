@@ -4,104 +4,102 @@ import DocsLayout from "../../../components/DocsLayout.astro";
 
 <DocsLayout
   title="Security model"
-  description="Design a least-privilege Connect integration that respects local authority, hosted-provider trust, credential storage, and private notification boundaries."
+  description="Who can read what, where your app’s key lives, and what to check before you release."
   active="security"
   headings={[
+    { href: "#payloads", label: "Who can read content" },
     { href: "#least-privilege", label: "Least privilege" },
-    { href: "#credentials", label: "Credentials" },
+    { href: "#credentials", label: "Your app’s key" },
     { href: "#origins", label: "Origins and callbacks" },
-    { href: "#portable", label: "Downloaded files" },
-    { href: "#payloads", label: "Payload boundaries" },
     { href: "#checklist", label: "Release checklist" }
   ]}
 >
-  <h2 id="least-privilege">Use contract scope by default</h2>
+  <h2 id="payloads">Who can read content</h2>
   <p>
-    Declare the domain contracts the application understands and request only
-    the operations needed for the current feature. Contract scope confines
-    records to types that provide those contracts. Use{" "}
-    <code>full_collection</code> only for genuine collection tools.
+    The collection’s log is encrypted in both sync options. The difference is
+    who holds the keys.
   </p>
-
-  <h2 id="credentials">Choose a storage boundary deliberately</h2>
-  <p>
-    Web-browser defaults retain authorization in <code>localStorage</code> and
-    relay keys as non-extractable IndexedDB keys. A portable manifest opened
-    from <code>file://</code> uses process-memory token and key storage instead.
-    Applications with another isolation boundary can supply a custom
-    {" "}<code>Storage</code> and <code>GrantKeyStore</code>. Native shells should
-    use platform-protected application storage where possible.
-  </p>
-  <p>
-    Store Connect refresh credentials, hosted provider capabilities, and mirror
-    replica tokens in application-protected storage outside the collection.
-  </p>
-
-  <h2 id="origins">Keep origins and callbacks exact</h2>
-  <ul>
-    <li>Production homepage, icon, and browser callbacks use HTTPS.</li>
-    <li>Browser callbacks stay on the manifest homepage origin.</li>
-    <li>Native callback schemes match or extend the reverse-domain application ID.</li>
-    <li>PKCE remains mandatory for browser and native authorization.</li>
-    <li>The loopback connector validates the exact approved browser origin.</li>
-    <li>Portable files declare no web origin and use a key-bound short-code flow.</li>
-  </ul>
-
-  <h2 id="portable">Treat downloaded application code as authorized code</h2>
-  <p>
-    Every local file has the opaque browser origin <code>null</code>. Connect
-    does not trust that origin by itself. For a local grant, the connector also
-    requires the P-256 application key and encrypted relay envelope. For a
-    hosted grant, the provider requires a short-lived bearer capability scoped
-    to one grant, collection, operation set, record scope, expiry, and that
-    exact opaque origin. Both refresh credentials and provider capabilities
-    remain in process memory for <code>file://</code>.
-  </p>
-  <p>
-    Code already running in an approved page has that page's access. Keep
-    untrusted scripts out of the file, pin every CDN dependency to an exact
-    version with Subresource Integrity, and expect reauthorization after reload.
-  </p>
-
-  <h2 id="payloads">Understand each payload boundary</h2>
   <table class="api-table">
     <thead>
       <tr>
-        <th>Route</th>
-        <th>Record payload visibility</th>
+        <th></th>
+        <th>Can read records</th>
+        <th>Sees</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td>Direct local</td>
-        <td>Application and local connector</td>
+        <td>Your app</td>
+        <td>Yes, within its grant</td>
+        <td>What it reads</td>
       </tr>
       <tr>
-        <td>Encrypted relay</td>
-        <td>Application and local connector; relay sees routing metadata and sizes</td>
+        <td>The user’s devices</td>
+        <td>Yes</td>
+        <td>Everything the user can see</td>
       </tr>
       <tr>
-        <td>Hosted</td>
-        <td>Application and hosted provider receive record bodies directly</td>
+        <td>mdbase, Cloud copy</td>
+        <td>Yes: it keeps a readable copy</td>
+        <td>Content and metadata</td>
       </tr>
       <tr>
-        <td>Notification</td>
-        <td>Authority evaluates private event data; delivery receives an opaque wake-up signal</td>
+        <td>mdbase, Private</td>
+        <td>No</td>
+        <td>
+          Metadata: which app connects to which device, message sizes and
+          timing, and timer times and counts
+        </td>
       </tr>
     </tbody>
   </table>
+  <p>
+    Your app’s session with the replica is end-to-end encrypted with Noise,
+    whether it runs through the relay or straight to mdbase’s hosted replica.
+    Both sides prove their keys. TLS runs underneath on every hop. See
+    {" "}<a href="/sdk/routing/">How apps reach a collection</a>.
+  </p>
 
-  <h2 id="checklist">Application release checklist</h2>
+  <h2 id="least-privilege">Ask for least privilege</h2>
   <ul>
-    <li>Validate the production manifest with default settings and omit <code>--allow-local</code>.</li>
-    <li>For portable files, test popup blocking, expiry, cancellation, reload, a second unrelated local file, and both local and hosted collection routes.</li>
-    <li>Pin portable CDN assets to exact versions and verify their SRI values.</li>
-    <li>Test narrowing, pause, revocation, token rotation, and reauthorization.</li>
-    <li>Test direct-to-relay failover and verify one durable mutation outcome.</li>
-    <li>Pass revisions on every destructive or overwriting operation.</li>
-    <li>Present preflight reference impact before rename and delete.</li>
-    <li>Keep notification presentation free of private interpolated content.</li>
-    <li>Deduplicate signed webhook deliveries before side effects.</li>
-    <li>Document the hosted provider as a trusted data processor.</li>
+    <li>Request only the capabilities you use. Mark the rest optional.</li>
+    <li>Ask for file access to named folders, not the whole collection.</li>
+    <li>Check <code>db.hello.grant</code> and hide what the user didn’t approve.</li>
+  </ul>
+
+  <h2 id="credentials">Your app’s key</h2>
+  <p>
+    Your app’s grant is bound to a key. In a browser,
+    {" "}<code>loadOrCreateClientKey()</code> keeps it in IndexedDB as a
+    non-extractable key where the browser supports it. Pass
+    {" "}<code>requireNonExtractable: true</code> to refuse to fall back to a
+    raw key.
+  </p>
+  <p>
+    Non-extractable means script can’t copy the key out. It does not stop
+    script on your origin from using it. Any code running in your page has your
+    app’s access, so keep third-party scripts out and fix cross-site scripting
+    bugs as access bugs.
+  </p>
+
+  <h2 id="origins">Origins and callbacks</h2>
+  <ul>
+    <li>Your homepage, icon and browser callbacks use HTTPS.</li>
+    <li>Browser callbacks stay on the homepage’s origin.</li>
+    <li>Native callback schemes match or extend your application ID.</li>
+    <li>The <code>origin</code> you give <code>MdbaseConnect</code> is the exact origin you serve from.</li>
+  </ul>
+
+  <h2 id="checklist">Release checklist</h2>
+  <ul>
+    <li>Validate your manifest with the production parser.</li>
+    <li>Test revocation and narrowed grants: your app should ask the user to reconnect, not retry.</li>
+    <li>Test a Private collection with no device online.</li>
+    <li>Show pending writes, holds and conflicts. Never present a pending write as saved.</li>
+    <li>Pass <code>ifRevision</code> on overwrites and deletes where losing a concurrent edit matters.</li>
+    <li>Show what a rename or delete will touch before doing it.</li>
+    <li>Keep record content out of timer IDs and notification text.</li>
+    <li>Deduplicate signed webhook deliveries before acting on them.</li>
+    <li>Tell your users that in a Cloud copy collection, mdbase can read their content.</li>
   </ul>
 </DocsLayout>

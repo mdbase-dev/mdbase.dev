@@ -5,7 +5,7 @@ import DocsLayout from "../../../../components/DocsLayout.astro";
 <DocsLayout
   section="editor"
   title="Sharing a collection"
-  description="Invite other people to view or edit a hosted collection, and manage their access."
+  description="Invite other people to view or edit a collection, and manage their access."
   active="sharing"
   headings={[
     { href: "#which", label: "Which collections" },
@@ -18,9 +18,9 @@ import DocsLayout from "../../../../components/DocsLayout.astro";
 >
   <h2 id="which">Which collections can be shared</h2>
   <p>
-    Sharing is for collections hosted by mdbase Connect. A collection that
-    stays on your computer is not shared this way. Sharing is managed in the
-    Connect workspace at{" "}
+    Cloud copy and Private collections can both be shared. Sharing covers the
+    whole collection; to share part of one, make a separate collection.
+    Sharing is managed in the Connect workspace at{" "}
     <a href="https://editor.mdbase.dev/connect">editor.mdbase.dev/connect</a>.
     Open the collection and find <strong>People &amp; sharing</strong>. Only
     the collection's owner sees it.
@@ -34,11 +34,12 @@ import DocsLayout from "../../../../components/DocsLayout.astro";
     <tbody>
       <tr><td>Owner</td><td>Everything, including inviting and removing people.</td></tr>
       <tr><td>Editor</td><td>Edit notes, manage types, rename the collection, and connect apps.</td></tr>
-      <tr><td>Viewer</td><td>Read the collection and connect read-only apps or synced folders.</td></tr>
+      <tr><td>Viewer</td><td>Read the collection and connect read-only apps.</td></tr>
     </tbody>
   </table>
   <p>
-    A viewer who opens the collection in mdbase Editor sees it read-only.
+    Each member’s devices keep a full copy of the collection, like yours. A
+    viewer who opens the collection in mdbase Editor sees it read-only.
   </p>
 
   <h2 id="invite">Invite someone</h2>
@@ -75,12 +76,18 @@ import DocsLayout from "../../../../components/DocsLayout.astro";
     <strong>Accept</strong> to add the collection to your collections, then
     open it in the Editor or approve other apps to use it.
   </p>
+  <p>
+    In a Private collection, an owner or editor approves the new member’s
+    first device. You and the new member compare a six-digit code, in person
+    or on a call, before that device gets the collection’s keys.
+  </p>
 
   <h2 id="manage">Change or remove access</h2>
   <p>
     In <strong>People &amp; sharing</strong>, change a person's role from the
-    list, or choose <strong>Remove</strong>. Removing someone also revokes the
-    apps and synced folders they connected to the collection. Invitations that
+    list, or choose <strong>Remove</strong>. Removing someone also revokes
+    their devices and the apps they connected to the collection. They keep
+    the files they already had, but get no further changes. Invitations that
     have not been accepted are listed under <strong>Pending invitations</strong>,
     where you can cancel them.
   </p>

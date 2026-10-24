@@ -3,8 +3,8 @@
 .catalogue-section__header { display: block; margin-bottom: 1.5rem; }
 .catalogue-section__header p { margin-top: 0.5rem; color: var(--ink-soft); }
 .app-list { margin: 0; }
-.app-entry { max-width: var(--reading); margin-bottom: 1.75rem; }
-.app-entry h3 { margin-bottom: 0.25rem; }
+.app-entry { max-width: var(--reading); margin-bottom: 2.5rem; }
+.app-entry h2 { margin-bottom: 0.25rem; font-size: 1.05rem; font-weight: 600; }
 .app-entry__description p { color: var(--ink-soft); }
 .app-entry__links { display: flex; margin-top: 0.35rem; flex-wrap: wrap; gap: 0.25rem 1rem; }
 .app-meta { display: grid; margin-top: 0.6rem; }

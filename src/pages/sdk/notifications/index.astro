@@ -5,61 +5,48 @@ import CodeBlock from "../../../components/CodeBlock.astro";
 const criterion = `{
   "notifications": {
     "criteria": [{
-      "id": "task.changed",
+      "id": "task.reminder",
       "event": {
-        "id": "mdbase.record.modified",
-        "version": "1.0.0"
+        "id": "mdbase.runtime.timer.fired",
+        "version": "1.0.0",
+        "digest": "sha256:41105be7a7abf33b31ced47e1e1965242236e40ccaea286b959b0a8c591f5642"
       },
-      "if": {
-        "$expr": "\\"task\\" in event.data.types"
-      },
-      "debounce": "5s",
-      "minimum_interval": "1m",
       "presentation": {
-        "title": "Tasks changed",
-        "body": "Open Worklog to see the latest changes.",
-        "tag": "task-changes"
+        "title": "Task reminder",
+        "body": "Open Worklog to see what’s due.",
+        "tag": "task-reminder"
       }
     }]
   }
 }`;
 
-const browser = `const worker = await navigator.serviceWorker.register(
-  "/service-worker.js"
-);
+const timers = `const timers = connection.timers;
+if (!timers) throw new Error("This connection has no timer access");
 
-await connection.registerNotifications({
-  serviceWorker: worker,
-  criteria: ["task.changed"]
-});`;
-
-const serviceWorker = `import { showMdbasePushNotification } from "@mdbase-dev/connect";
-
-self.addEventListener("push", (event) => {
-  event.waitUntil(
-    showMdbasePushNotification(
-      self.registration,
-      event.data?.json()
-    )
-  );
-});`;
-
-const timers = `await connection.reconcileTimers({
+// Replace this app’s whole set of reminders in one call.
+const result = await timers.reconcile({
   namespace: "task-reminders",
-  criterion_id: "task.reminder",
-  timers: [{
-    id: "task-123:reminder-1",
-    fire_at: "2026-07-25T10:00:00Z",
-    data: { kind: "task_reminder" }
-  }]
+  criterionId: "task.reminder",
+  timers: reminders.map((r) => ({
+    id: r.timerId,          // opaque: don’t put record IDs or titles here
+    fireAt: r.at.toISOString(),
+  })),
+});
+console.log(result.cancelledIds);`;
+
+const browser = `const worker = await navigator.serviceWorker.register("/service-worker.js");
+
+await connection.timers?.registerWebPush({
+  serviceWorker: worker,
+  criteria: ["task.reminder"],
 });`;
 
 const webhook = `import { verifyNotificationWebhook } from "@mdbase-dev/connect-webhooks";
 
 const event = verifyNotificationWebhook({
-  body: rawRequestBody,
+  body: rawRequestBody,          // the exact bytes, before JSON parsing
   headers: request.headers,
-  keys: cachedConnectSigningKeys
+  keys: cachedSigningKeys,
 });
 
 if (await deliveries.claim(event.delivery_id)) {
@@ -69,91 +56,100 @@ if (await deliveries.claim(event.delivery_id)) {
 
 <DocsLayout
   title="Notifications and timers"
-  description="Declare private criteria at the collection authority, deliver opaque wake-up signals, and schedule generation-fenced one-shot timers."
+  description="Schedule reminders that fire even when every device is off. mdbase learns when they fire, never what they are about."
   active="notifications"
   headings={[
-    { href: "#criteria", label: "Declare criteria" },
+    { href: "#criteria", label: "Declare notifications" },
+    { href: "#timers", label: "Schedule timers" },
     { href: "#browser", label: "Browser push" },
-    { href: "#timers", label: "Authority timers" },
     { href: "#webhooks", label: "Signed webhooks" },
-    { href: "#privacy", label: "Privacy boundary" }
+    { href: "#privacy", label: "What mdbase sees" }
   ]}
 >
   <p>
-    Notification evaluation runs at the local connector or hosted provider.
-    Connect receives an opaque signal, grant, criterion, and cursor. Static
-    presentation comes from the manifest. Matching record paths, frontmatter,
-    bodies, and runtime event payloads remain at the collection authority.
+    Timers live with mdbase, not in the collection. They fire whether or not
+    any of the user’s devices are on, for Cloud copy and Private collections
+    alike. When a timer fires, mdbase sends a notification with the fixed text
+    from your manifest.
   </p>
+  <div class="callout">
+    <strong>Timer access comes from the app connection.</strong>
+    <p>
+      <code>connection.timers</code> is part of <code>MdbaseConnect</code>,
+      which is not available yet. See
+      {" "}<a href="/sdk/connect-quickstart/">Connect a browser app</a>.
+    </p>
+  </div>
 
-  <h2 id="criteria">Declare criteria in the application manifest</h2>
+  <h2 id="criteria">Declare notifications in the manifest</h2>
   <CodeBlock code={criterion} language="json" label="Manifest fragment" />
   <p>
-    Criteria use canonical Runtime 0.2 event contracts and CEL over CloudEvent
-    {" "}<code>data</code>. Presentation is static manifest data, so private
-    record content cannot be interpolated into a push. The approved grant
-    stores an exact snapshot of each selected criterion.
+    Timer notifications use the event <code>mdbase.runtime.timer.fired</code>
+    {" "}at version <code>1.0.0</code>. The title (up to 80 characters) and body
+    (up to 160) are fixed in the manifest, so no record content can reach a
+    notification. You also need the <code>background.schedule</code>
+    capability.
   </p>
+
+  <h2 id="timers">Schedule timers</h2>
+  <CodeBlock code={timers} language="ts" label="reminders.ts" />
+  <ul>
+    <li>
+      <code>reconcile()</code> replaces the active timers in a namespace in one
+      step. Unchanged timers are kept. Changed ones are rescheduled. Ones you
+      leave out are cancelled and returned in <code>cancelledIds</code>. An
+      empty list cancels the namespace.
+    </li>
+    <li>
+      <code>put()</code>, <code>cancel()</code> and <code>list()</code> handle
+      one timer at a time.
+    </li>
+    <li>
+      Times are UTC instants. There is no recurrence: work out local times on
+      the device and reconcile again when they change.
+    </li>
+    <li>
+      A timer that is due while mdbase is catching up fires once, late.
+    </li>
+    <li>
+      Namespaces are 1–64 characters, IDs 1–128, and one reconcile holds at
+      most 10,000 timers.
+    </li>
+  </ul>
 
   <h2 id="browser">Register browser push from a user action</h2>
   <CodeBlock code={browser} language="ts" label="enable-notifications.ts" />
-  <CodeBlock code={serviceWorker} language="ts" label="service-worker.ts" />
   <p>
-    Treat the signal as a prompt to refresh current authorized state.
-    Re-registering atomically replaces the selected criteria for the
-    installation. Call <code>unregisterNotifications(worker)</code> when the
-    user opts out.
+    Native apps use <code>registerFcm(&#123; token &#125;)</code>.
+    {" "}<code>unregisterWebPush()</code> and <code>unregisterFcm()</code> stop
+    delivery when the user opts out.
   </p>
 
-  <h2 id="timers">Reconcile one-shot timers at the authority</h2>
-  <CodeBlock code={timers} language="ts" label="reminders.ts" />
+  <h2 id="webhooks">Signed webhooks</h2>
   <p>
-    Reconciliation is atomic. Unchanged timers keep their generation and fired
-    state, changed timers receive a new generation, new timers are scheduled,
-    and omitted active timers are cancelled. IDs and optional private data
-    remain at the collection authority. Signals carry the timer criterion and
-    cursor metadata.
-  </p>
-
-  <h2 id="webhooks">Use signed webhooks for developer-managed delivery</h2>
-  <p>
-    Distributed applications should normally keep Apple and Firebase sender
-    credentials in their own infrastructure. Declare one HTTPS webhook and
-    verify the signature over the exact raw body before parsing it.
+    If your app sends its own pushes, declare an HTTPS webhook as
+    {" "}<code>notifications.native_delivery</code> with
+    {" "}<code>"mode": "webhook"</code>. Verify each delivery against the exact
+    raw body before parsing it.
   </p>
   <CodeBlock code={webhook} language="ts" label="notification-webhook.ts" />
   <p>
-    Cache keys from{" "}
-    <code>/v1/notifications/webhook-signing-keys</code>, enforce the built-in
-    five-minute replay window, and store <code>delivery_id</code> before doing
-    work because Connect retries until the endpoint succeeds.
+    Cache the signing keys from
+    {" "}<code>/v1/notifications/webhook-signing-keys</code>. Deliveries older
+    than five minutes are refused. Store <code>delivery_id</code> before doing
+    any work: mdbase retries until your endpoint succeeds.
   </p>
 
-  <h2 id="privacy">Delivery choices change the trust boundary</h2>
-  <table class="api-table">
-    <thead>
-      <tr>
-        <th>Mode</th>
-        <th>Best fit</th>
-        <th>Additional trust</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Web Push</td>
-        <td>Browser and installed PWA</td>
-        <td>Browser push service and Connect delivery storage</td>
-      </tr>
-      <tr>
-        <td>Managed FCM</td>
-        <td>Personal or single-owner native application</td>
-        <td>Connect sender identity can address the application's Firebase project</td>
-      </tr>
-      <tr>
-        <td>Signed webhook</td>
-        <td>Broadly distributed application</td>
-        <td>Developer backend holds its own platform sender credentials</td>
-      </tr>
-    </tbody>
-  </table>
+  <h2 id="privacy">What mdbase sees</h2>
+  <p>
+    mdbase stores each timer’s namespace, ID, criterion and time, under your
+    app’s grant. It learns when reminders are due and how many there are. It
+    never sees record content or record IDs, unless you put them in timer IDs.
+    Use opaque IDs, such as a hash.
+  </p>
+  <p>
+    In a Private collection, timers need a grant the user has approved on one
+    of their devices, with <code>background.schedule</code> kept. Opening the
+    app from a notification still needs one of their devices to be online.
+  </p>
 </DocsLayout>

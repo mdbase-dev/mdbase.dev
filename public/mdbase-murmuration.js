@@ -3,7 +3,9 @@
       const canvas = document.querySelector("#diagram");
       const context = canvas.getContext("2d", { alpha: true });
       const chapters = [...document.querySelectorAll(".chapter")];
-      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const motionPreference = matchMedia("(prefers-reduced-motion: reduce)");
+      let reduceMotion = motionPreference.matches;
+      let refined = true;
       const particleCount = 361;
       const cellSize = 104;
       const particles = [];
@@ -22,7 +24,12 @@
       let previousTime = 0;
       let animationFrame = 0;
       let isAnimating = false;
+      let previewPaused = false;
       let scrollFrame = 0;
+      let simulationTime = 0;
+      let sceneStartedAt = 0;
+      let introInitialized = false;
+      let flockBounds;
       const palette = {
         paper: "rgb(252 252 251)",
         surface: "rgb(252 252 251)",
@@ -35,7 +42,8 @@
         accent: "rgb(42 104 143)",
         particle: "rgb(25 27 31 / 0.88)",
         particleIntro: "rgb(25 27 31 / 0.88)",
-        replica: "rgb(81 87 95 / 0.62)"
+        replica: "rgb(81 87 95 / 0.62)",
+        warning: "rgb(150 110 40)"
       };
 
       function syncPalette() {
@@ -59,6 +67,7 @@
         palette.particleIntro = dark
           ? styles.getPropertyValue("--color-text-soft").trim() || palette.soft
           : styles.getPropertyValue("--color-text").trim() || palette.ink;
+        palette.warning = styles.getPropertyValue("--color-warning-text").trim() || palette.warning;
         palette.replica =
           styles.getPropertyValue("--color-text-muted").trim() || palette.muted;
       }
@@ -75,6 +84,14 @@
           this.ty = this.y;
           this.phase = Math.random();
           this.scale = 0.78 + Math.random() * 0.44;
+          this.depth = Math.random();
+          this.response = 0.022 + Math.random() * 0.015;
+          this.releaseAt = 0;
+          this.group = 'flock';
+          this.px = this.x; this.py = this.y;
+          this.pvx = this.vx; this.pvy = this.vy;
+          this.nearest = [];
+          this.distances = [];
           this.role = "record";
           this.path = null;
         }
@@ -88,7 +105,7 @@
             x: width * 0.07,
             y: top,
             w: width * 0.86,
-            h: Math.max(170, Math.min(height * 0.44 - top, 280))
+            h: Math.max(190, Math.min(height * 0.45 - top, 300))
           };
         }
 
@@ -98,6 +115,11 @@
           w: width * 0.43,
           h: height * 0.68
         };
+      }
+
+      function introBounds() {
+        if (width <= 820) return diagramBounds();
+        return { x: width * 0.45, y: height * 0.08, w: width * 0.53, h: height * 0.84 };
       }
 
       function rect(bounds, x, y, w, h) {
@@ -124,7 +146,7 @@
         const availableHeight = Math.max(1, box.h - padding * 2);
         let lines = [];
         let size = compact ? 14 : 17;
-        for (; size >= 11; size--) {
+        for (; size >= (compact ? 11 : 12); size--) {
           context.font = `${size}px "Atkinson Hyperlegible", sans-serif`;
           lines = [];
           let line = "";
@@ -139,7 +161,7 @@
           if (lines.every((line) => context.measureText(line).width <= availableWidth)
             && lines.length * Math.ceil(size * 1.15) <= availableHeight) break;
         }
-        size = Math.max(11, size);
+        size = Math.max(compact ? 11 : 12, size);
         const lineHeight = Math.ceil(size * 1.15);
         const maxLines = Math.max(1, Math.floor(availableHeight / lineHeight));
         const overflow = lines.length > maxLines;
@@ -194,6 +216,7 @@
           particle.tx = area.x + (column + 0.5) * area.w / columns;
           particle.ty = area.y + (row + 0.5) * area.h / rows;
           particle.role = role;
+          particle.group = node.id;
           particle.path = null;
         }
       }
@@ -202,6 +225,7 @@
         for (let localIndex = 0; localIndex < count; localIndex++) {
           const particle = particles[start + localIndex];
           particle.role = role;
+          particle.group = `path-${start}`;
           particle.path = points;
           particle.phase = localIndex / count;
         }
@@ -216,9 +240,11 @@
 
         particles.forEach((particle, index) => {
           particle.role = "record";
+          particle.group = 'flock';
           particle.path = null;
+          particle.releaseAt = 0;
 
-          if (reduceMotion) {
+          if (reduceMotion || previewPaused) {
             const angle = index * 2.399963;
             const radius = Math.sqrt(index / particleCount);
             particle.tx = centerX + Math.cos(angle) * bounds.w * 0.34 * radius;
@@ -297,467 +323,244 @@
         gridParticles(241, 120, notes);
       }
 
-      function layoutAuthority(bounds) {
-        const mainCopy = addNode(
-          "main-copy",
-          "Main copy",
-          "source of truth",
-          rect(bounds, 0.04, 0.14, 0.58, 0.72),
-          "authority"
-        );
-        const workingCopy = addNode(
-          "working-copy",
-          "Working copy",
-          "follows the main copy",
-          rect(bounds, 0.73, 0.31, 0.26, 0.38),
-          "replica"
-        );
-        const syncPath = [
-          pointOnNode(mainCopy, "right"),
-          pointOnNode(workingCopy, "left")
-        ];
-
-        addEdge(syncPath, null, "stays in step", true);
-        gridParticles(0, 301, mainCopy);
-        gridParticles(301, 60, workingCopy, "replica");
+      // Cards carry real text: a file, an edit, a permission. Lines are plain
+      // strings or { text, tone } where tone is add · remove · held · faint.
+      function addCard(id, label, lines, box, kind = "card") {
+        const node = addNode(id, label, "", box, kind);
+        node.lines = lines.map((line) => typeof line === "string" ? { text: line, tone: "" } : line);
+        node.mono = fitCardLines(node);
+        const needed = node.heading.height + 10 + node.lines.length * node.mono.lineHeight + node.heading.padding;
+        // Shrink or grow around the centre so text is never clipped at the size floor.
+        box.y += (box.h - needed) / 2;
+        box.h = needed;
+        return node;
       }
 
-      function layoutModes(bounds) {
-        const local = addNode(
-          "mode-local",
-          "On your computer",
-          "your Markdown folder",
-          rect(bounds, 0.01, 0.18, 0.43, 0.66),
-          "authority"
-        );
-        const hosted = addNode(
-          "mode-hosted",
-          "Hosted by mdbase",
-          "available online",
-          rect(bounds, 0.56, 0.18, 0.43, 0.66),
-          "authority"
-        );
-        addNote("or", bounds.x + bounds.w * 0.50, bounds.y + bounds.h * 0.51);
-        gridParticles(0, 181, local);
-        gridParticles(181, 180, hosted);
+      function fitCardLines(node) {
+        const compact = width <= 820;
+        const padding = node.heading.padding;
+        const available = Math.max(1, node.box.w - padding * 2 - 8);
+        const room = Math.max(1, node.box.h - node.heading.height - padding - 4);
+        const floor = compact ? 11 : 12;
+        let size = compact ? 12 : 13;
+        for (; size > floor; size--) {
+          context.font = `${size}px "Azeret Mono", ui-monospace, monospace`;
+          const widest = Math.max(...node.lines.map((line) => context.measureText(line.text).width));
+          if (widest <= available && node.lines.length * Math.ceil(size * 1.55) <= room) break;
+        }
+        return { size, lineHeight: Math.ceil(size * 1.55) };
       }
 
-      function layoutIdentity(bounds) {
-        const collection = addNode(
-          "identity-collection",
-          "Your collection",
-          "the same data for every app",
-          rect(bounds, 0.01, 0.13, 0.46, 0.72),
-          "authority"
-        );
-        const connect = addNode(
-          "identity-connect",
-          "Connect",
-          "permission gate",
-          rect(bounds, 0.52, 0.33, 0.18, 0.34),
-          "service"
-        );
-        const planner = addNode(
-          "identity-planner",
-          "Project planner",
-          "one experience",
-          rect(bounds, 0.78, 0.05, 0.21, 0.18),
-          "app"
-        );
-        const notes = addNode(
-          "identity-notes",
-          "Notes app",
-          "another experience",
-          rect(bounds, 0.78, 0.41, 0.21, 0.18),
-          "app"
-        );
-        const assistant = addNode(
-          "identity-assistant",
-          "AI assistant",
-          "another experience",
-          rect(bounds, 0.78, 0.77, 0.21, 0.18),
-          "app"
-        );
-        const plannerPath = [
-          pointOnNode(planner, "left"),
-          pointOnNode(connect, "right", 0.22)
-        ];
-        const notesPath = [
-          pointOnNode(notes, "left"),
-          pointOnNode(connect, "right", 0.50)
-        ];
-        const assistantPath = [
-          pointOnNode(assistant, "left"),
-          pointOnNode(connect, "right", 0.78)
-        ];
-
-        addEdge(plannerPath, null, "connect", true);
-        addEdge(notesPath, null, "", true);
-        addEdge(assistantPath, null, "", true);
-        gridParticles(0, 301, collection);
-        pathParticles(301, 20, plannerPath);
-        pathParticles(321, 20, notesPath);
-        pathParticles(341, 20, assistantPath);
+      function ambient(start, count = particleCount - start) {
+        for (let index = start; index < start + count; index++) {
+          const particle = particles[index];
+          particle.role = "ambient";
+          particle.group = "ambient";
+          particle.path = null;
+          const bounds = diagramBounds();
+          const angle = index * 2.399963;
+          const radius = Math.sqrt((index - start + .5) / count);
+          particle.tx = bounds.x + bounds.w * (.5 + Math.cos(angle) * radius * .46);
+          particle.ty = bounds.y + bounds.h * (.5 + Math.sin(angle) * radius * .46);
+        }
       }
 
-      function layoutRequest(bounds) {
-        const collection = addNode(
-          "request-collection",
-          "Your collection",
-          "still private",
-          rect(bounds, 0.01, 0.13, 0.48, 0.72),
-          "authority"
-        );
-        const request = addNode(
-          "request-gate",
-          "Permission request",
-          "waiting for you",
-          rect(bounds, 0.57, 0.38, 0.18, 0.22),
-          "service"
-        );
-        const app = addNode(
-          "request-app",
-          "The app",
-          "asks first",
-          rect(bounds, 0.81, 0.32, 0.18, 0.34),
-          "app"
-        );
-        const requestPath = [
-          pointOnNode(app, "left"),
-          pointOnNode(request, "right")
-        ];
-
-        addEdge(requestPath, null, "asks to connect", true);
-        gridParticles(0, 321, collection);
-        pathParticles(321, 40, requestPath);
+      function layoutMerge(bounds) {
+        const compact = bounds.w < 480;
+        const laptop = addCard("merge-laptop", "Laptop · text editor", [
+          { text: "status: active", tone: "remove" },
+          { text: "status: done", tone: "add" }
+        ], compact ? rect(bounds, 0.00, 0.00, 0.48, 0.36) : rect(bounds, 0.00, 0.06, 0.40, 0.28));
+        const phone = addCard("merge-phone", "Phone · TaskNotes", [
+          { text: "due: 2026-11-02", tone: "add" }
+        ], compact ? rect(bounds, 0.52, 0.00, 0.48, 0.36) : rect(bounds, 0.00, 0.66, 0.40, 0.28));
+        const result = addCard("merge-result", "website-redesign.md", [
+          { text: "---", tone: "faint" },
+          "title: Website redesign",
+          { text: "status: done", tone: "add" },
+          'owner: "[[people/sam.md]]"',
+          { text: "due: 2026-11-02", tone: "add" },
+          { text: "---", tone: "faint" }
+        ], compact ? rect(bounds, 0.14, 0.50, 0.72, 0.50) : rect(bounds, 0.53, 0.25, 0.47, 0.50));
+        const fromLaptop = compact
+          ? [pointOnNode(laptop, "bottom"), pointOnNode(result, "top", 0.3)]
+          : [pointOnNode(laptop, "right"), pointOnNode(result, "left", 0.3)];
+        const fromPhone = compact
+          ? [pointOnNode(phone, "bottom"), pointOnNode(result, "top", 0.7)]
+          : [pointOnNode(phone, "right"), pointOnNode(result, "left", 0.7)];
+        addEdge(fromLaptop, null, "one field", true);
+        addEdge(fromPhone, null, "another field", true);
+        if (!compact) addNote("both changes kept", result.box.x + result.box.w / 2, result.box.y + result.box.h + 26);
+        pathParticles(0, 10, fromLaptop);
+        pathParticles(10, 10, fromPhone);
+        ambient(20);
       }
 
-      function layoutActions(bounds) {
-        const collection = addNode(
-          "actions-collection",
-          "Your collection",
-          "still private",
-          rect(bounds, 0.01, 0.13, 0.43, 0.72),
-          "authority"
-        );
-        const read = addNode(
-          "action-read",
-          "Read records",
-          "see their contents",
-          rect(bounds, 0.53, 0.09, 0.27, 0.20),
-          "service"
-        );
-        const search = addNode(
-          "action-search",
-          "Search records",
-          "find matches",
-          rect(bounds, 0.53, 0.40, 0.27, 0.20),
-          "service"
-        );
-        const change = addNode(
-          "action-change",
-          "Change records",
-          "only if needed",
-          rect(bounds, 0.53, 0.71, 0.27, 0.20),
-          "service"
-        );
-        const app = addNode(
-          "actions-app",
-          "The app",
-          "names each action",
-          rect(bounds, 0.85, 0.29, 0.14, 0.42),
-          "app"
-        );
-        const readPath = [
-          pointOnNode(app, "left", 0.22),
-          pointOnNode(read, "right")
-        ];
-        const searchPath = [
-          pointOnNode(app, "left", 0.50),
-          pointOnNode(search, "right")
-        ];
-        const changePath = [
-          pointOnNode(app, "left", 0.78),
-          pointOnNode(change, "right")
-        ];
+      function lockedLines(count) {
+        return Array.from({ length: count }, (_, index) =>
+          ({ text: "▒▒▒▒▒▒▒▒  locked", tone: index === count - 1 ? "add" : "faint" }));
+      }
 
-        addEdge(readPath, null, "", true);
-        addEdge(searchPath, null, "", true);
-        addEdge(changePath, null, "", true);
-        addNote("the request", bounds.x + bounds.w * 0.665, bounds.y + bounds.h * 0.02);
-        gridParticles(0, 301, collection);
-        pathParticles(301, 20, readPath);
-        pathParticles(321, 20, searchPath);
-        pathParticles(341, 20, changePath);
+      function layoutApps(bounds) {
+        const compact = bounds.w < 480;
+        const collection = addNode("apps-collection", "one collection", "",
+          compact ? rect(bounds, 0.00, 0.00, 0.40, 1.00) : rect(bounds, 0.01, 0.13, 0.42, 0.74), "standard");
+        const apps = [
+          ["Editor", "any collection"],
+          ["TaskNotes", "tasks"],
+          ["Reader", "papers · web pages"],
+          ["Writer", "long documents"]
+        ];
+        let next = 0;
+        const step = compact ? 0.255 : 0.235;
+        const top = compact ? 0.0 : 0.04;
+        apps.forEach(([label, line], index) => {
+          const card = addCard(`app-${index}`, label, [{ text: line, tone: "faint" }],
+            compact ? rect(bounds, 0.52, top + index * step, 0.48, 0.22) : rect(bounds, 0.62, top + index * step, 0.38, 0.19), "app");
+          const path = [pointOnNode(card, "left"), pointOnNode(collection, "right", 0.2 + index * 0.2)];
+          addEdge(path, null, "", true);
+          pathParticles(260 + next, 6, index % 2 ? path.slice().reverse() : path);
+          next += 6;
+        });
+        gridParticles(0, 260, collection);
+        ambient(260 + next);
+      }
+
+      function layoutSync(bounds) {
+        const compact = bounds.w < 480;
+        const log = addCard("sync-log", "mdbase sync", lockedLines(3),
+          compact ? rect(bounds, 0.27, 0.36, 0.46, 0.30) : rect(bounds, 0.31, 0.36, 0.38, 0.28), "log");
+        const devices = [
+          ["sync-laptop", "Laptop", rect(bounds, 0.00, 0.00, 0.27, 0.30), "right", 0.15, "standard"],
+          ["sync-phone", "Phone", rect(bounds, 0.73, 0.00, 0.27, 0.30), "left", 0.15, "standard"],
+          ["sync-desktop", "Work desktop", rect(bounds, 0.00, 0.70, 0.27, 0.30), "right", 0.85, "standard"],
+          ["sync-tablet", "Tablet · offline", rect(bounds, 0.73, 0.70, 0.27, 0.30), "left", 0.85, "replica"]
+        ].map(([id, label, box, side, offset, kind]) => ({ node: addNode(id, label, "", box, kind), side, offset }));
+        let next = 0;
+        devices.forEach(({ node, side, offset }, index) => {
+          const corner = pointOnNode(node, side === "right" ? "right" : "left", 0.5);
+          const logPoint = pointOnNode(log, side === "right" ? "left" : "right", offset < 0.5 ? 0.3 : 0.7);
+          const offline = index === 3;
+          addEdge([corner, logPoint], null, "", true).relationship = offline;
+          gridParticles(next, 64, node, offline ? "replica" : "record");
+          next += 64;
+          if (!offline) {
+            // Each online device sends sealed entries and receives everyone else's.
+            pathParticles(next, 6, index % 2 ? [logPoint, corner] : [corner, logPoint]);
+            next += 6;
+          }
+        });
+        if (!compact) addNote("passes changes along,\ncan’t read them", log.box.x + log.box.w / 2, log.box.y + log.box.h + 24);
+        ambient(next);
+      }
+
+      function layoutOptions(bounds) {
+        const compact = bounds.w < 480;
+        const panels = [
+          ["cloud", "Cloud copy", 0.00],
+          ["private", "Private", 0.53]
+        ];
+        let next = 0;
+        panels.forEach(([id, label, x]) => {
+          addNode(`${id}-panel`, label, "", rect(bounds, x, 0.02, 0.47, 0.96), "boundary");
+          const devices = addNode(`${id}-devices`, "your devices", "", rect(bounds, x + 0.04, 0.14, 0.39, 0.22), "standard");
+          const log = addCard(`${id}-log`, "mdbase sync", [{ text: "▒▒▒▒▒▒  locked", tone: "faint" }],
+            rect(bounds, x + 0.04, 0.47, 0.39, 0.15), "log");
+          const cloud = id === "cloud"
+            ? addNode(`${id}-copy`, compact ? "readable copy" : "readable copy · apps work while devices are off", "", rect(bounds, x + 0.04, 0.70, 0.39, 0.24), "accent")
+            : addCard(`${id}-copy`, compact ? "locked" : "locked · only your devices", [{ text: "apps go through", tone: "faint" }, { text: "your devices", tone: "faint" }],
+              rect(bounds, x + 0.04, 0.70, 0.39, 0.24), "replica");
+          const up = [pointOnNode(devices, "bottom"), pointOnNode(log, "top")];
+          addEdge(up, null, "", false).relationship = true;
+          gridParticles(next, 90, devices);
+          next += 90;
+          pathParticles(next, 6, up);
+          next += 6;
+          if (id === "cloud") {
+            const down = [pointOnNode(log, "bottom"), pointOnNode(cloud, "top")];
+            addEdge(down, null, "", false).relationship = true;
+            gridParticles(next, 90, cloud, "metadata");
+            next += 90;
+            pathParticles(next, 6, down);
+            next += 6;
+          }
+        });
+        ambient(next);
       }
 
       function layoutGrant(bounds) {
         const compact = bounds.w < 480;
-        const collection = addNode(
-          "grant-collection",
-          "Chosen collection",
-          "source of truth",
-          rect(bounds, 0.01, 0.13, 0.48, 0.72),
-          "authority"
-        );
-        const grant = addNode(
-          "grant",
-          "Your permission",
-          "one app · one collection",
-          compact
-            ? rect(bounds, 0.64, 0.13, 0.35, 0.28)
-            : rect(bounds, 0.57, 0.35, 0.19, 0.28),
-          "service"
-        );
-        const app = addNode(
-          "grant-app",
-          "The app",
-          "approved access",
-          compact
-            ? rect(bounds, 0.64, 0.57, 0.35, 0.28)
-            : rect(bounds, 0.82, 0.31, 0.17, 0.36),
-          "app"
-        );
+        const collection = addNode("grant-collection", "projects", "",
+          compact ? rect(bounds, 0.00, 0.00, 0.44, 1.00) : rect(bounds, 0.01, 0.13, 0.40, 0.72), "standard");
+        const grant = addCard("grant", "Project planner may", [
+          { text: "find projects", tone: "add" },
+          { text: "create projects", tone: "add" },
+          { text: "edit projects", tone: "add" },
+          { text: "delete records", tone: "blocked" }
+        ], compact ? rect(bounds, 0.54, 0.00, 0.46, 0.62) : rect(bounds, 0.52, 0.22, 0.30, 0.48));
+        const app = addNode("grant-app", "Project planner", "",
+          compact ? rect(bounds, 0.54, 0.76, 0.46, 0.24) : rect(bounds, 0.86, 0.36, 0.14, 0.20), "app");
         const askPath = compact
           ? [pointOnNode(app, "top"), pointOnNode(grant, "bottom")]
-          : [pointOnNode(app, "left", 0.38), pointOnNode(grant, "right", 0.38)];
-        const accessPath = [
-          pointOnNode(grant, "left", 0.66),
-          pointOnNode(collection, "right", compact ? 0.20 : 0.54)
-        ];
-
-        addEdge(askPath, null, "asks", true);
-        addEdge(accessPath, null, "allowed actions", false);
-        gridParticles(0, 321, collection);
-        pathParticles(321, 20, askPath);
-        pathParticles(341, 20, accessPath);
-      }
-
-      function layoutRoutes(bounds) {
-        const localBoundary = addNode(
-          "access-local",
-          "Local collection",
-          "on your computer",
-          rect(bounds, 0.01, 0.08, 0.36, 0.84),
-          "boundary"
-        );
-        const connector = addNode(
-          "access-connector",
-          "mdbase connector",
-          "checks each request",
-          rect(bounds, 0.05, 0.19, 0.28, 0.18),
-          "service"
-        );
-        const localFiles = addNode(
-          "access-files",
-          "Markdown folder",
-          "main copy",
-          rect(bounds, 0.05, 0.56, 0.28, 0.23),
-          "authority"
-        );
-        const app = addNode(
-          "access-app",
-          "Approved app",
-          "allowed actions only",
-          rect(bounds, 0.43, 0.35, 0.14, 0.30),
-          "app"
-        );
-        const hostedBoundary = addNode(
-          "access-hosted",
-          "Hosted collection",
-          "available online",
-          rect(bounds, 0.63, 0.08, 0.36, 0.84),
-          "boundary"
-        );
-        const hosting = addNode(
-          "access-hosting",
-          "mdbase hosting",
-          "main copy",
-          rect(bounds, 0.67, 0.20, 0.28, 0.25),
-          "authority"
-        );
-        const mirror = addNode(
-          "access-mirror",
-          "Markdown copy",
-          "optional local mirror",
-          rect(bounds, 0.67, 0.62, 0.28, 0.18),
-          "replica"
-        );
-
-        const localPath = [
-          pointOnNode(app, "left", 0.38),
-          pointOnNode(connector, "right"),
-          pointOnNode(connector, "bottom"),
-          pointOnNode(localFiles, "top")
-        ];
-        const hostedPath = [
-          pointOnNode(app, "right", 0.38),
-          pointOnNode(hosting, "left")
-        ];
-        const mirrorPath = [
-          pointOnNode(hosting, "bottom"),
-          pointOnNode(mirror, "top")
-        ];
-
-        addEdge(localPath, null, "checked locally", false);
-        addEdge(hostedPath, null, "checked online", false);
-        addEdge(mirrorPath, null, "optional sync", true);
-        gridParticles(0, 151, localFiles);
-        gridParticles(151, 150, hosting);
-        gridParticles(301, 30, mirror, "replica");
-        pathParticles(331, 10, localPath);
-        pathParticles(341, 10, hostedPath);
-        pathParticles(351, 10, mirrorPath);
+          : [pointOnNode(app, "left"), pointOnNode(grant, "right", 0.38)];
+        const accessPath = [pointOnNode(grant, "left", 0.5), pointOnNode(collection, "right", 0.5)];
+        addEdge(askPath, null, "", true);
+        addEdge(accessPath, null, "", false);
+        gridParticles(0, 200, collection);
+        pathParticles(200, 8, askPath);
+        pathParticles(208, 8, accessPath);
+        ambient(216);
       }
 
       function layoutSharing(bounds) {
-        const collection = addNode(
-          "sharing-collection", "Hosted collection", "one shared collection",
-          rect(bounds, 0.01, 0.13, 0.48, 0.72), "authority"
-        );
-        const viewer = addNode(
-          "sharing-viewer", "Viewer", "can read",
-          rect(bounds, 0.64, 0.13, 0.35, 0.28), "service"
-        );
-        const editor = addNode(
-          "sharing-editor", "Editor", "can read and edit",
-          rect(bounds, 0.64, 0.57, 0.35, 0.28), "service"
-        );
-        // These are membership relationships, not directional data transfers.
-        const viewerPath = [pointOnNode(collection, "right", 0.20), pointOnNode(viewer, "left")];
-        const editorPath = [pointOnNode(collection, "right", 0.80), pointOnNode(editor, "left")];
-        addEdge(viewerPath, null, "", false).relationship = true;
-        addEdge(editorPath, null, "", false).relationship = true;
-        gridParticles(0, particleCount, collection);
+        const collection = addNode("sharing-collection", "shared collection", "",
+          rect(bounds, 0.01, 0.13, 0.42, 0.72), "standard");
+        const viewer = addNode("sharing-viewer", "Viewer · reads", "",
+          rect(bounds, 0.60, 0.00, 0.40, 0.24), "standard");
+        const editor = addNode("sharing-editor", "Editor · reads and edits", "",
+          rect(bounds, 0.60, 0.31, 0.40, 0.24), "standard");
+        addCard("sharing-removed", "Member removed", [
+          { text: "keeps files they had", tone: "faint" },
+          { text: "no new changes", tone: "remove" }
+        ], rect(bounds, 0.60, 0.66, 0.40, 0.30), "replica");
+        const viewerPath = [pointOnNode(collection, "right", 0.15), pointOnNode(viewer, "left")];
+        const editorPath = [pointOnNode(collection, "right", 0.50), pointOnNode(editor, "left")];
+        addEdge(viewerPath, null, "", false);
+        addEdge(editorPath, null, "", false);
+        gridParticles(0, 160, collection);
+        gridParticles(160, 48, viewer, "replica");
+        gridParticles(208, 48, editor);
+        pathParticles(256, 6, viewerPath);
+        pathParticles(262, 8, editorPath.slice().reverse());
+        ambient(270);
       }
 
-      function layoutAccess(bounds) {
-        const collection = addNode(
-          "retained-collection", "Hosted collection", "your records remain",
-          rect(bounds, 0.01, 0.13, 0.48, 0.72), "authority"
-        );
-        addNode(
-          "removed-app", "App removed", "no connection to the collection",
-          rect(bounds, 0.64, 0.13, 0.35, 0.28), "replica"
-        );
-        const app = addNode(
-          "retained-app", "Approved app", "still has access",
-          rect(bounds, 0.64, 0.57, 0.35, 0.28), "app"
-        );
-        const path = [pointOnNode(app, "left"), pointOnNode(collection, "right", 0.80)];
-        addEdge(path, null);
-        // The records do not disappear or become packets when access ends.
-        // Preserve the sharing scene's exact formation in the same collection.
-        gridParticles(0, particleCount, collection);
-      }
-
-      function layoutLocal(bounds) {
-        const computer = addNode(
-          "computer",
-          "your computer",
-          "where your files live",
-          rect(bounds, 0.01, 0.06, 0.62, 0.88),
-          "boundary"
-        );
-        const connector = addNode(
-          "connector",
-          "mdbase connector",
-          "checks your permission",
-          rect(bounds, 0.08, 0.13, 0.48, 0.14),
-          "service"
-        );
-        const collection = addNode(
-          "local-collection",
-          "Your Markdown files",
-          "source of truth",
-          rect(bounds, 0.08, 0.34, 0.48, 0.49),
-          "authority"
-        );
-        const app = addNode(
-          "local-app",
-          "Approved app",
-          "direct or encrypted",
-          rect(bounds, 0.76, 0.34, 0.23, 0.28),
-          "app"
-        );
-        const accessPath = [
-          pointOnNode(app, "left"),
-          pointOnNode(connector, "right", 0.50),
-          pointOnNode(collection, "top", 0.70)
-        ];
-
-        addEdge(accessPath, null, "permission checked here", false);
-        gridParticles(0, 321, collection);
-        pathParticles(321, 40, accessPath);
-      }
-
-      function layoutHosted(bounds) {
-        const provider = addNode(
-          "provider",
-          "mdbase hosting",
-          "source of truth",
-          rect(bounds, 0.02, 0.11, 0.49, 0.72),
-          "authority"
-        );
-        const app = addNode(
-          "hosted-app",
-          "Approved app",
-          "allowed actions",
-          rect(bounds, 0.70, 0.04, 0.27, 0.18),
-          "app"
-        );
-        const cache = addNode(
-          "cache",
-          "Offline copy",
-          "for this app",
-          rect(bounds, 0.67, 0.38, 0.30, 0.20),
-          "replica"
-        );
-        const mirror = addNode(
-          "mirror",
-          "Markdown copy",
-          "optional on your computer",
-          rect(bounds, 0.64, 0.72, 0.33, 0.20),
-          "replica"
-        );
-
-        const appPath = [pointOnNode(app, "left"), pointOnNode(provider, "right", 0.24)];
-        const cachePath = [pointOnNode(provider, "right", 0.50), pointOnNode(cache, "left")];
-        const mirrorPath = [pointOnNode(provider, "right", 0.76), pointOnNode(mirror, "left")];
-
-        addEdge(appPath, null, "approved access", false);
-        addEdge(cachePath, null, "sync", true);
-        addEdge(mirrorPath, null, "sync", true);
-        gridParticles(0, 211, provider);
-        gridParticles(211, 55, cache, "replica");
-        gridParticles(266, 55, mirror, "replica");
-        pathParticles(321, 14, appPath);
-        pathParticles(335, 13, cachePath);
-        pathParticles(348, 13, mirrorPath);
-      }
-
-      function buildScene(name) {
+      function buildScene(name, stagger = false) {
         const bounds = diagramBounds();
         diagram = { nodes: [], edges: [], notes: [] };
-        diagramAlpha = 0;
+        if (stagger) {
+          diagramAlpha = 0;
+          sceneStartedAt = simulationTime;
+        }
 
-        if (name === "intro") layoutIntro(bounds);
-        else if (name === "collection") layoutCollection(bounds);
-        else if (name === "structure") layoutStructure(bounds);
-        else if (name === "authority") layoutAuthority(bounds);
-        else if (name === "modes") layoutModes(bounds);
-        else if (name === "identity") layoutIdentity(bounds);
-        else if (name === "request") layoutRequest(bounds);
-        else if (name === "actions") layoutActions(bounds);
-        else if (name === "grant") layoutGrant(bounds);
-        else if (name === "sharing") layoutSharing(bounds);
-        else if (name === "access") layoutAccess(bounds);
-        else if (name === "routes") layoutRoutes(bounds);
-        else if (name === "local") layoutLocal(bounds);
-        else layoutHosted(bounds);
+        const layouts = {
+          intro: layoutIntro, collection: layoutCollection, structure: layoutStructure,
+          apps: layoutApps, merge: layoutMerge, sync: layoutSync, options: layoutOptions,
+          grant: layoutGrant, sharing: layoutSharing
+        };
+        (layouts[name] || layoutIntro)(bounds);
+
+        if (stagger && name !== 'intro') {
+          const groups = new Map();
+          particles.forEach(particle => {
+            if (particle.role === "ambient") { particle.releaseAt = 0; return; }
+            if (!groups.has(particle.group)) groups.set(particle.group, groups.size);
+            particle.releaseAt = simulationTime + (refined ? groups.get(particle.group) * 115 + particle.depth * 110 + particle.index % 11 * 8 : 0);
+          });
+        }
 
         if (reduceMotion) {
-          updateMovingTargets(0);
+          updateMovingTargets(simulationTime);
           particles.forEach((particle) => {
             particle.x = particle.tx;
             particle.y = particle.ty;
@@ -772,6 +575,7 @@
       function resize() {
         const previousWidth = width || innerWidth;
         const previousHeight = height || innerHeight;
+        const previousBounds = width ? diagramBounds() : null;
         width = innerWidth;
         height = innerHeight;
         ratio = Math.max(
@@ -788,10 +592,29 @@
         gridRows = Math.max(1, Math.ceil(height / cellSize));
         grid.length = gridColumns * gridRows;
 
+        const nextBounds = diagramBounds();
         particles.forEach((particle) => {
-          particle.x = particle.x / previousWidth * width;
-          particle.y = particle.y / previousHeight * height;
+          if (refined && previousBounds) {
+            particle.x = nextBounds.x + (particle.x - previousBounds.x) / previousBounds.w * nextBounds.w;
+            particle.y = nextBounds.y + (particle.y - previousBounds.y) / previousBounds.h * nextBounds.h;
+            particle.vx *= nextBounds.w / previousBounds.w;
+            particle.vy *= nextBounds.h / previousBounds.h;
+          } else {
+            particle.x = particle.x / previousWidth * width;
+            particle.y = particle.y / previousHeight * height;
+          }
         });
+        flockBounds = nextBounds;
+        if (!introInitialized && refined && activeScene === 'intro') {
+          const bounds = diagramBounds();
+          particles.forEach((p, index) => {
+            const angle = index * 2.399963;
+            const radius = Math.sqrt((index + .5) / particleCount);
+            p.x = bounds.x + bounds.w * (.52 + Math.cos(angle) * radius * .34);
+            p.y = bounds.y + bounds.h * (.50 + Math.sin(angle) * radius * .26);
+          });
+        }
+        introInitialized = true;
         buildScene(activeScene);
       }
 
@@ -801,6 +624,10 @@
         }
 
         particles.forEach((particle, index) => {
+          // Every bird steers from the same previous-frame state, not partially
+          // updated neighbours. This removes index-order bias in the flock.
+          particle.px = particle.x; particle.py = particle.y;
+          particle.pvx = particle.vx; particle.pvy = particle.vy;
           const column = Math.max(0, Math.min(gridColumns - 1, Math.floor(particle.x / cellSize)));
           const row = Math.max(0, Math.min(gridRows - 1, Math.floor(particle.y / cellSize)));
           const gridIndex = row * gridColumns + column;
@@ -902,6 +729,94 @@
         particle.y += particle.vy * step;
       }
 
+      function updateRefinedParticle(particle, now, step) {
+        const nearest = particle.nearest, distances = particle.distances;
+        nearest.length = 0; distances.length = 0;
+        let separationX = 0, separationY = 0;
+        const compact = width <= 820;
+        const separationRadiusSquared = compact ? 144 : 324;
+        const column = Math.max(0, Math.min(gridColumns - 1, Math.floor(particle.px / cellSize)));
+        const row = Math.max(0, Math.min(gridRows - 1, Math.floor(particle.py / cellSize)));
+        for (let dy = -1; dy <= 1; dy++) {
+          const r = row + dy;
+          if (r < 0 || r >= gridRows) continue;
+          for (let dx = -1; dx <= 1; dx++) {
+            const c = column + dx;
+            if (c < 0 || c >= gridColumns) continue;
+            for (const index of grid[r * gridColumns + c] || []) {
+              const other = particles[index];
+              if (other === particle) continue;
+              const x = other.px - particle.px, y = other.py - particle.py;
+              const distance = x * x + y * y;
+              if (distance < separationRadiusSquared && distance > .01) {
+                const pressure = .72 / Math.max(distance, 70);
+                separationX -= x * pressure; separationY -= y * pressure;
+              }
+              if (distance >= 10400) continue;
+              // Seven nearest neighbours carry a turn locally instead of
+              // averaging the entire surrounding patch into a rigid blob.
+              let slot = 0;
+              while (slot < distances.length && distances[slot] < distance) slot++;
+              if (slot < 7) {
+                distances.splice(slot, 0, distance); nearest.splice(slot, 0, index);
+                if (nearest.length > 7) { nearest.pop(); distances.pop(); }
+              }
+            }
+          }
+        }
+        let ax = separationX, ay = separationY;
+        if (nearest.length) {
+          let x = 0, y = 0, vx = 0, vy = 0;
+          nearest.forEach(index => {
+            const p = particles[index]; x += p.px; y += p.py;
+            vx += p.pvx; vy += p.pvy;
+          });
+          const count = nearest.length;
+          ax += (vx / count - particle.pvx) * particle.response + (x / count - particle.px) * .00042;
+          ay += (vy / count - particle.pvy) * particle.response + (y / count - particle.py) * .00042;
+        }
+        const bounds = flockBounds;
+        const t = now / 1000;
+        const centerX = bounds.x + bounds.w * (.52 + Math.sin(t * .17) * .06);
+        const centerY = bounds.y + bounds.h * (.50 + Math.sin(t * .23 + 1) * .08);
+        const nx = (particle.px - centerX) / (bounds.w * .44);
+        const ny = (particle.py - centerY) / (bounds.h * .37);
+        const wind = window.mdbaseAtmosphere?.wind(particle.px / width, particle.py / height)
+          || { x: Math.sin(t * .22 + ny * 2), y: Math.cos(t * .19 + nx * 2) * .6 };
+        const depthSpeed = (.85 + particle.depth * .3) * (compact ? .72 : 1);
+        let targetX = (wind.x * .75 - ny * 1.1 + Math.sin(t * .6 + ny * 3) * .45) * depthSpeed;
+        let targetY = (wind.y * .75 + nx * .85 + Math.cos(t * .43 + nx * 3) * .28) * depthSpeed;
+        const targetSpeed = Math.hypot(targetX, targetY);
+        if (targetSpeed > 1.3) { targetX *= 1.3 / targetSpeed; targetY *= 1.3 / targetSpeed; }
+        ax += (targetX - particle.pvx) * .027;
+        ay += (targetY - particle.pvy) * .027;
+        // Very weak central cohesion; soft walls protect the reading column
+        // without prescribing the flock's silhouette or teleporting a bird.
+        ax += (centerX - particle.px) * .00006;
+        ay += (centerY - particle.py) * .00006;
+        const paddingX = bounds.w * .09, paddingY = bounds.h * .09;
+        const wallStrength = compact ? .0024 : .0012;
+        ax += Math.max(0, bounds.x + paddingX - particle.px) * wallStrength;
+        ax -= Math.max(0, particle.px - (bounds.x + bounds.w - paddingX)) * wallStrength;
+        ay += Math.max(0, bounds.y + paddingY - particle.py) * wallStrength;
+        ay -= Math.max(0, particle.py - (bounds.y + bounds.h - paddingY)) * wallStrength;
+        if (pointer.active) {
+          const x = particle.px - pointer.x, y = particle.py - pointer.y;
+          const distance = Math.hypot(x, y);
+          if (distance > 1 && distance < 150) {
+            const force = (1 - distance / 150) * .12;
+            ax += x / distance * force; ay += y / distance * force;
+          }
+        }
+        const acceleration = Math.hypot(ax, ay);
+        if (acceleration > .11) { ax *= .11 / acceleration; ay *= .11 / acceleration; }
+        particle.vx += ax * step; particle.vy += ay * step;
+        const speed = Math.hypot(particle.vx, particle.vy);
+        const maximum = 1.55 + particle.depth * .3;
+        if (speed > maximum) { particle.vx *= maximum / speed; particle.vy *= maximum / speed; }
+        particle.x += particle.vx * step; particle.y += particle.vy * step;
+      }
+
       function updateMovingTargets(now) {
         particles.forEach((particle) => {
           if (!particle.path) return;
@@ -920,9 +835,19 @@
       }
 
       function updateFormationParticle(particle, step) {
+        if (particle.role === "ambient" && !reduceMotion && !previewPaused) {
+          updateRefinedParticle(particle, simulationTime, step);
+          return;
+        }
+        if (refined && simulationTime < particle.releaseAt) {
+          updateRefinedParticle(particle, simulationTime, step);
+          return;
+        }
         const dx = particle.tx - particle.x;
         const dy = particle.ty - particle.y;
-        const strength = particle.role === "packet" ? 0.020 : 0.013;
+        const progress = refined ? Math.min(1, Math.max(0, (simulationTime - particle.releaseAt) / 280)) : 1;
+        const ease = progress * progress * (3 - 2 * progress);
+        const strength = (particle.role === "packet" ? 0.020 : 0.013) * ease;
         particle.vx += dx * strength * step;
         particle.vy += dy * strength * step;
 
@@ -989,11 +914,10 @@
         const x = (midpoint.x + next.x) / 2;
         const y = (midpoint.y + next.y) / 2 - 8;
         context.save();
-        context.font =
-          `${compact ? 8 : 9}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
+        context.font = `${compact ? 11 : 12}px "Azeret Mono", ui-monospace, monospace`;
         const metrics = context.measureText(edge.label);
         context.fillStyle = palette.surface;
-        context.fillRect(x - metrics.width / 2 - 4, y - 7, metrics.width + 8, 12);
+        context.fillRect(x - metrics.width / 2 - 5, y - 10, metrics.width + 10, 17);
         context.fillStyle = palette.muted;
         context.textAlign = "center";
         context.fillText(edge.label, x, y + 2);
@@ -1002,10 +926,13 @@
 
       function drawNodeSurface(node, compact) {
         const { x, y, w, h } = node.box;
+        const solid = ["card", "log", "held", "app", "accent"].includes(node.kind) || node.lines;
         context.save();
         context.fillStyle = palette.surface;
-        context.strokeStyle = node.kind === "authority" ? palette.muted : palette.lineSoft;
-        context.globalAlpha *= node.kind === "authority" ? 0.78 : 0.64;
+        context.strokeStyle = node.kind === "held" ? palette.warning
+          : node.kind === "log" || node.kind === "accent" ? palette.accent
+          : node.kind === "boundary" ? palette.lineSoft : palette.muted;
+        context.globalAlpha *= node.kind === "boundary" ? 0.5 : 0.94;
         context.lineWidth = 1;
         context.setLineDash(
           node.kind === "boundary" || node.kind === "replica" ? [3, 5] : []
@@ -1028,7 +955,7 @@
         context.textAlign = "left";
         context.textBaseline = "top";
         context.fillStyle = palette.ink;
-        context.globalAlpha *= 0.78;
+        context.globalAlpha *= 0.95;
         context.font = `${size}px "Atkinson Hyperlegible", sans-serif`;
         lines.forEach((line, index) => {
           context.fillText(line, x + padding, y + padding + index * lineHeight);
@@ -1036,13 +963,47 @@
         context.restore();
       }
 
+      function drawCardLines(node) {
+        if (!node.lines) return;
+        const { x, y, w, h } = node.box;
+        const { size, lineHeight } = node.mono;
+        const padding = node.heading.padding;
+        context.save();
+        context.beginPath();
+        context.rect(x, y, w, h);
+        context.clip();
+        context.textBaseline = "top";
+        context.font = `${size}px "Azeret Mono", ui-monospace, monospace`;
+        node.lines.forEach((line, index) => {
+          const lineX = x + padding + 8;
+          const lineY = y + node.heading.height + 6 + index * lineHeight;
+          const colour = line.tone === "add" ? palette.accent
+            : line.tone === "held" ? palette.warning
+            : line.tone === "remove" || line.tone === "faint" || line.tone === "blocked" ? palette.muted
+            : palette.ink;
+          context.fillStyle = colour;
+          context.globalAlpha = diagramAlpha;
+          if (line.tone === "blocked") context.fillText("×", x + padding - 2, lineY);
+          if (line.tone === "add" || line.tone === "held") {
+            context.fillRect(x + padding, lineY + 1, 2, size + 1);
+          }
+          context.fillText(line.text, lineX, lineY);
+          if (line.tone === "remove") {
+            const textWidth = context.measureText(line.text).width;
+            context.fillRect(lineX, lineY + size * 0.55, textWidth, 1);
+          }
+        });
+        context.restore();
+      }
+
       function drawNote(note, compact) {
         context.save();
         context.fillStyle = palette.muted;
-        context.globalAlpha *= 0.68;
+
         context.font = `${compact ? 14 : 17}px "Atkinson Hyperlegible", sans-serif`;
         context.textAlign = "center";
-        context.fillText(note.text, note.x, note.y);
+        note.text.split("\n").forEach((line, index) =>
+          context.fillText(line, note.x, note.y + index * (compact ? 18 : 22)));
         context.restore();
       }
 
@@ -1055,30 +1016,21 @@
             ? palette.accent
             : palette.particleIntro;
         }
-        if (activeScene === "modes" && particle.index >= 181) {
-          return palette.accent;
-        }
-        if (
-          activeScene === "routes"
-          && particle.index >= 151
-          && particle.index < 301
-        ) {
-          return palette.accent;
-        }
         return palette.particle;
       }
 
       function drawParticle(particle, compact) {
         const baseSize = compact ? 1.8 : 2.25;
-        const size =
-          particle.role === "packet"
-            ? baseSize * 1.35
-            : baseSize * particle.scale;
-        const x = Math.round(particle.x - size / 2);
-        const y = Math.round(particle.y - size / 2);
+        const depthBlend = !refined ? 0 : activeScene === 'intro' ? 1 : 1 - Math.min(1, Math.max(0, (simulationTime - particle.releaseAt) / 750));
+        const depthScale = 1 + (particle.depth - .5) * .42 * depthBlend;
+        const size = (particle.role === "packet" ? baseSize * 1.35 : baseSize * particle.scale) * depthScale;
+        const x = refined ? particle.x - size / 2 : Math.round(particle.x - size / 2);
+        const y = refined ? particle.y - size / 2 : Math.round(particle.y - size / 2);
 
         context.save();
-        context.globalAlpha = particle.role === "packet" ? 0.82 : 0.62;
+        context.globalAlpha = particle.role === "packet" ? 0.82
+          : particle.role === "ambient" ? 0.16 + particle.depth * 0.12
+          : .62 + (particle.depth - .5) * .30 * depthBlend;
         if (particle.role === "replica") {
           context.strokeStyle = palette.replica;
           context.lineWidth = 0.8;
@@ -1095,6 +1047,9 @@
         const compact = width <= 820;
 
         if (activeScene !== "intro") {
+          particles.forEach((particle) => {
+            if (particle.role === "ambient") drawParticle(particle, compact);
+          });
           context.save();
           context.globalAlpha = diagramAlpha;
           diagram.edges.forEach((edge) => drawEdge(edge, compact));
@@ -1102,12 +1057,16 @@
           context.restore();
         }
 
-        particles.forEach((particle) => drawParticle(particle, compact));
+        particles.forEach((particle) => {
+          if (activeScene === "intro" || particle.role !== "ambient") drawParticle(particle, compact);
+        });
 
         if (activeScene !== "intro") {
           context.save();
           context.globalAlpha = diagramAlpha;
           diagram.nodes.forEach((node) => drawNodeLabel(node, compact));
+          diagram.nodes.forEach((node) => drawCardLines(node));
+          diagram.edges.forEach((edge) => drawEdgeLabel(edge, compact));
           diagram.notes.forEach((note) => drawNote(note, compact));
           context.restore();
         }
@@ -1119,16 +1078,21 @@
         const elapsed = Math.min(32, now - previousTime || 16.67);
         const step = elapsed / 16.67;
         previousTime = now;
+        simulationTime += elapsed;
+        flockBounds = activeScene === "intro" ? introBounds() : diagramBounds();
 
         if (activeScene === "intro") {
           rebuildGrid();
           particles.forEach((particle, index) => {
-            updateFreeParticle(particle, index, now, step);
+            if (refined) updateRefinedParticle(particle, simulationTime, step);
+            else updateFreeParticle(particle, index, simulationTime, step);
           });
         } else {
-          updateMovingTargets(now);
+          rebuildGrid();
+          updateMovingTargets(simulationTime);
           particles.forEach((particle) => updateFormationParticle(particle, step));
-          diagramAlpha += (1 - diagramAlpha) * 0.045 * step;
+          const age = simulationTime - sceneStartedAt;
+          if (!refined || age > 180) diagramAlpha += (1 - diagramAlpha) * (refined ? .026 : .045) * step;
         }
 
         draw(now);
@@ -1142,7 +1106,11 @@
         chapters.forEach((chapter, chapterIndex) => {
           chapter.classList.toggle("is-active", chapterIndex === index);
         });
-        buildScene(scene);
+        document.querySelectorAll(".chapter-index a").forEach((link, linkIndex) => {
+          if (linkIndex === index) link.setAttribute("aria-current", "step");
+          else link.removeAttribute("aria-current");
+        });
+        buildScene(scene, true);
       }
 
       function updateScrollState() {
@@ -1171,7 +1139,11 @@
         const chapter = chapters[nearestIndex];
         setScene(chapter.dataset.scene, nearestIndex);
 
-        if (reduceMotion) draw(0);
+        if (reduceMotion || previewPaused) {
+          particles.forEach(p => { p.x = p.tx; p.y = p.ty; });
+          diagramAlpha = 1;
+          draw(0);
+        }
       }
 
       function scheduleScrollUpdate() {
@@ -1180,7 +1152,7 @@
       }
 
       function startAnimation() {
-        if (reduceMotion || isAnimating) return;
+        if (reduceMotion || previewPaused || isAnimating || document.hidden) return;
         isAnimating = true;
         previousTime = performance.now();
         animationFrame = requestAnimationFrame(frame);
@@ -1200,6 +1172,25 @@
       for (let index = 0; index < particleCount; index++) {
         particles.push(new Particle(index));
       }
+
+      // Preview controls and acceptance tests share this narrow bridge.
+      window.murmurationPreview = {
+        particles,
+        get scene() { return activeScene; },
+        get refined() { return refined; },
+        get time() { return simulationTime; },
+        setRefined(value) {
+          if (refined === value) return;
+          refined = value;
+          particles.forEach(p => { p.releaseAt = simulationTime; });
+          draw(simulationTime);
+        },
+        pause(value) {
+          previewPaused = value;
+          if (value) stopAnimation();
+          else startAnimation();
+        }
+      };
 
       // Font loading can change measured line breaks after the first paint.
       document.fonts.ready.then(() => buildScene(activeScene));
@@ -1227,7 +1218,12 @@
       addEventListener("mdbase:themechange", () => {
         syncPalette();
         buildScene(activeScene);
-        if (reduceMotion) draw(0);
+        if (reduceMotion || previewPaused) draw(0);
+      });
+      motionPreference.addEventListener('change', event => {
+        reduceMotion = event.matches;
+        if (reduceMotion) { stopAnimation(); buildScene(activeScene); }
+        else startAnimation();
       });
       addEventListener("pagehide", stopAnimation);
     })();

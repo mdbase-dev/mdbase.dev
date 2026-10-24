@@ -2,129 +2,212 @@
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
-const createReplica = `import {
-  IndexedDbReplicaStore,
-  OfflineReplica,
-  type ReplicaData
-} from "@mdbase-dev/connect-sync";
+const receipts = `import { isMdbaseError } from "@mdbase-dev/sdk";
 
-const sync = connection.sync();
-if (!sync) {
-  throw new Error("Authorize the sync operation first.");
-}
+const write = await db.update(task, { patch: { status: "done" } });
+// write.state === "pending": reads and live queries already show the change.
 
-const initial: ReplicaData<Task> = {
-  replicaId: sync.replicaId,
-  records: {},
-  pending: [],
-  conflicts: {}
-};
+try {
+  const receipt = await write.confirmed;
+  console.log(\`Confirmed at log position \${receipt.seq}\`);
+} catch (e) {
+  if (isMdbaseError(e, "outcome_unknown")) {
+    // Rare: the replica can't tell whether this write was applied.
+    const current = await db.find(task.id);
+    askUserToCheck(current);
+  } else if (isMdbaseError(e)) {
+    // Rejected: the local view has already dropped the change.
+    showProblem(e.code, e.reason);
+  } else {
+    throw e;
+  }
+}`;
 
-const store = new IndexedDbReplicaStore<Task>(
-  \`tasks:\${sync.collectionId}\`,
-  initial
-);
+const status = `import { summarizeStatus } from "@mdbase-dev/sdk";
 
-const replica = new OfflineReplica(sync.transport, store);
-await replica.initialize();`;
+const stop = db.onStatus((status) => {
+  const summary = summarizeStatus(status);
+  // summary.kind: "local" | "synced" | "catching_up" | "offline" | "installing"
+  statusLine.textContent = summary.text; // e.g. "Offline; synced through 3, 1 change waiting"
+  holdsBadge.hidden = summary.holds === 0;
+  conflictsBadge.hidden = summary.conflicts === 0;
+});`;
 
-const mutate = `const optimistic = await replica.queueCreate({
-  path: "tasks/offline.md",
-  frontmatter: {
-    type: "task",
-    title: "Written offline",
-    status: "open"
-  },
-  types: ["task"]
+const holds = `import { describeHold } from "@mdbase-dev/sdk";
+
+db.onHolds((holds) => {
+  for (const hold of holds) {
+    const view = describeHold(hold, { collectionId });
+    // view.title is "mdbase protected your edit"; view.cause and view.detail explain why.
+    renderHold(view.path, view.cause, view.actions.map((a) => a.label));
+  }
 });
 
-render(await replica.records());
+// When the user picks an action for one hold:
+await db.resolveHold(holdId, "keep_mine");`;
 
-// Run now and again when connectivity returns.
-await replica.sync();`;
+const conflicts = `import { toPlain } from "@mdbase-dev/sdk";
 
-const conflict = `for (const { recordId, receipt } of await replica.conflictEntries()) {
-  const choice = await askUserToResolve(receipt.conflict);
-  await replica.resolveConflict(recordId, choice); // "local" or "remote"
-}
-
-await replica.sync();`;
-
-const promote = `mdbase-mirror promote ./worklog-mirror`;
+for (const entry of await db.listConflicts(recordId)) {
+  const { kind, field, kept, lost } = entry.conflict;
+  // kept and lost are tagged by form; a frontmatter value is { form: "value", value }.
+  if (kind === "field" && field && lost.form === "value" && await userPrefers(field, kept, lost)) {
+    await db.resolveConflict(entry, field, toPlain(lost.value));
+  } else {
+    await db.dismissConflict(entry); // keep what the record has now
+  }
+}`;
 ---
 
 <DocsLayout
-  title="Offline sync"
-  description="Build an offline-first cache for any sync-capable collection authority with durable mutation IDs, explicit conflicts, and provider-neutral replication."
+  title="Pending writes and sync status"
+  description="Writes return at once and confirm later. Show the user where their changes are, and handle the cases where mdbase keeps an edit back instead of overwriting it."
   active="offline-sync"
   headings={[
-    { href: "#requirements", label: "Requirements" },
-    { href: "#replica", label: "Create a replica" },
-    { href: "#mutations", label: "Queue mutations" },
-    { href: "#conflicts", label: "Resolve conflicts" },
-    { href: "#mirrors", label: "Markdown mirrors" },
-    { href: "#promote", label: "Move authority to local" }
+    { href: "#model", label: "What your app sees" },
+    { href: "#receipts", label: "Write receipts" },
+    { href: "#offline", label: "Offline" },
+    { href: "#status", label: "Sync status" },
+    { href: "#holds", label: "Holds" },
+    { href: "#conflicts", label: "Conflicts" },
+    { href: "#resets", label: "Resets" }
   ]}
 >
-  <h2 id="requirements">Require sync access</h2>
+  <h2 id="model">What your app sees</h2>
   <p>
-    Request the <code>sync</code> operation, then call{" "}
-    <code>connection.sync()</code>. The returned transport is the same whether
-    the collection authority is remote, directly connected, or reached through
-    Connect's relay. Add <code>"collection_kind": "hosted"</code> only when the
-    application specifically requires an always-online hosted authority.
-  </p>
-  <p>
-    Add both packages:
-    <code>@mdbase-dev/connect</code> and <code>@mdbase-dev/connect-sync</code>.
+    Each replica applies changes in the order the collection’s log confirms
+    them. Reads return the replica’s <strong>local view</strong>: everything
+    confirmed so far, plus writes that are still pending. Each record says
+    which it is: <code>record.state.state</code> is
+    {" "}<code>"confirmed"</code> or <code>"pending"</code>.
   </p>
 
-  <h2 id="replica">Create a persistent replica</h2>
-  <CodeBlock code={createReplica} language="ts" label="replica.ts" />
+  <h2 id="receipts">Write receipts</h2>
   <p>
-    The SDK keeps authority credentials and route selection private. The sync
-    package receives only the provider-neutral transport.
+    Every write returns a <code>Write</code> with a receipt. Its
+    {" "}<code>state</code> moves from <code>pending</code> to one of:
+  </p>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>State</th>
+        <th>Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>confirmed</code></td>
+        <td>The log accepted it. <code>receipt.seq</code> is its position.</td>
+      </tr>
+      <tr>
+        <td><code>rejected</code></td>
+        <td>
+          It was not applied, and the local view drops it.
+          {" "}<code>receipt.problem</code> says why.
+        </td>
+      </tr>
+      <tr>
+        <td><code>unknown</code></td>
+        <td>
+          Rare. The replica can’t tell whether it was applied. Read the
+          record again and let the user decide.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <CodeBlock code={receipts} language="ts" label="save.ts" />
+  <ul>
+    <li>
+      Each write has a mutation ID. Submitting the same ID again returns the
+      existing receipt and does nothing else, so retries are safe. Pass your
+      own <code>mutationId</code> if you need to keep it across a reload.
+    </li>
+    <li>
+      <code>write.onReceipt(fn)</code> calls you on every receipt change.
+      {" "}<code>db.pendingWrites()</code> lists the writes still waiting.
+    </li>
+    <li>
+      Pass <code>wait: "confirmed"</code> if the call itself should wait for
+      the log. That suits scripts, not interactive screens.
+    </li>
+  </ul>
+
+  <h2 id="offline">Offline</h2>
+  <p>
+    There are two kinds of offline, and they behave differently.
+  </p>
+  <ul>
+    <li>
+      <strong>The replica can’t reach the log.</strong> Writes still succeed as
+      {" "}<code>pending</code> and confirm when it reconnects. Status shows
+      the backlog. This is not an error.
+    </li>
+    <li>
+      <strong>Your app can’t reach the replica.</strong> An app connected
+      through the relay keeps no copy of its own. While the link is down,
+      reads and writes wait for it to come back. Pass a <code>signal</code>
+      to give up after a while. A write that never left your app was not
+      saved.
+    </li>
+  </ul>
+  <p>
+    For a Private collection, your app can only reach a replica while one of
+    the user’s devices is online. See
+    {" "}<a href="/sdk/routing/#waiting">When no device is online</a>.
   </p>
 
-  <h2 id="mutations">Queue optimistic local mutations</h2>
-  <CodeBlock code={mutate} language="ts" label="offline-write.ts" />
+  <h2 id="status">Sync status</h2>
   <p>
-    The replica applies the local overlay immediately and keeps a durable
-    mutation ID. Each record carries a stable record identity independent of
-    its path. Unrelated records continue synchronizing when one record
-    conflicts.
+    Status is a count, not a guess: “confirmed through position N, plus k
+    changes waiting”. <code>db.getStatus()</code> reads it once;
+    {" "}<code>db.onStatus()</code> pushes changes, at most four times a
+    second. <code>summarizeStatus()</code> turns it into a short line of
+    text.
+  </p>
+  <CodeBlock code={status} language="ts" label="status.ts" />
+  <p>
+    Holds and conflicts are counted separately, so an edit that needs the
+    user never looks like sync is stuck.
   </p>
 
-  <h2 id="conflicts">Make conflict resolution explicit</h2>
-  <CodeBlock code={conflict} language="ts" label="conflicts.ts" />
+  <h2 id="holds">Holds</h2>
   <p>
-    Keeping the local version rebases it as a new idempotent mutation against
-    the current authority revision. Keeping the authority version discards only
-    that record's queued mutations. Neither choice silently affects other
-    records.
+    A replica that writes to real files, such as the desktop app, can
+    <strong>hold</strong> an edit instead of overwriting it. The file stays
+    as the user left it, and the change is not synced until they choose what
+    to keep. Reasons are <code>conflict</code>,
+    {" "}<code>unknown_provenance</code>, <code>deleted_elsewhere</code>,
+    {" "}<code>read_only</code>, <code>editor_busy</code> and
+    {" "}<code>suspect_write</code>.
+  </p>
+  <CodeBlock code={holds} language="ts" label="holds.ts" />
+  <p>
+    <code>describeHold()</code> gives you the cause in plain words and the
+    actions that apply: <code>keep_mine</code>, <code>take_theirs</code>,
+    {" "}<code>use</code> (with merged text), <code>delete</code> and
+    {" "}<code>keep_both</code>. Resolving is an ordinary write, so the earlier
+    version stays in the collection’s history.
   </p>
 
-  <h2 id="mirrors">Filesystem mirrors use the same protocol</h2>
+  <h2 id="conflicts">Conflicts</h2>
   <p>
-    <code>mdbase-mirror</code> materializes a remotely authoritative collection
-    as Markdown, either receive-only or writable. On first connection to an
-    existing directory it compares the complete remote snapshot before writing
-    or uploading. Differing paths stop for explicit review.
+    When two devices change the same field at the same time, the replica keeps
+    one value and records the other as a conflict. Conflicts sync to every
+    device. Nothing is lost: show them, and let the user choose.
+  </p>
+  <CodeBlock code={conflicts} language="ts" label="conflicts.ts" />
+  <p>
+    To refuse a write instead of merging it, pass
+    {" "}<code>conflictMode: "reject"</code>, or <code>ifRevision</code> to
+    require the exact revision you read.
   </p>
 
-  <h2 id="promote">Move remote authority to a complete local mirror</h2>
-  <CodeBlock code={promote} language="sh" label="Remote-to-local transfer" />
+  <h2 id="resets">Resets</h2>
   <p>
-    Promotion starts from a converged full writable mirror and opens a
-    short-lived approval in Connect. Approval freezes remote writes at a final
-    sequence. The CLI pulls through that sequence, proves the exact record and
-    resource manifest, registers the folder with the local connector, and then
-    advances the collection authority epoch.
-  </p>
-  <p>
-    Old remote grants, authority capabilities, and replicas are revoked at
-    cutover. Applications authorize the new local authority explicitly.
-    Cancellation or expiry before completion restores remote writes. The
-    command is resumable after local materialization.
+    A live query can be reset, for example while a replica reinstalls a
+    snapshot. <code>live.stale</code> is true until the next snapshot arrives,
+    and the previous records stay visible meanwhile. The change feed answers
+    an expired cursor with <code>reset: true</code> instead of an error: drop
+    what you built from it and read again.
   </p>
 </DocsLayout>

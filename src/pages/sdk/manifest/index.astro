@@ -2,110 +2,96 @@
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
-const contractManifest = `{
+const webManifest = `{
   "manifest_version": 1,
   "id": "dev.example.worklog",
   "name": "Worklog",
   "homepage": "https://worklog.example",
+  "icon": "https://worklog.example/icon.png",
   "redirect_uris": [
-    "https://worklog.example/auth/mdbase/callback"
+    "https://worklog.example/auth/mdbase/callback",
+    "dev.example.worklog://auth/mdbase/callback"
   ],
-  "requirements": {
-    "contracts": [
-      { "id": "example.work-item", "version": "1.0.0" }
-    ]
-  },
-  "provisions": {
-    "type_packs": [
-      {
-        "provides": [
-          { "id": "example.work-item", "version": "1.0.0" }
-        ],
-        "manifest": {
-          "kind": "mdbase.type-pack",
-          "id": "example.work-items",
-          "version": "1.0.0",
-          "name": "Work items",
-          "resources": [
-            {
-              "kind": "contract",
-              "source": "contracts/example.work-item.md",
-              "target": "_contracts/example.work-item.md",
-              "digest": "sha256:9cd7f8e4b23ba20aaeaec3f7e209c6ba8de3fa5cd224204f2baef4e14dd69936"
-            },
-            {
-              "kind": "type",
-              "source": "types/work-item.md",
-              "target": "_types/work-item.md",
-              "digest": "sha256:2be7d8a5cd316fe2e4d31fa49b1d09f2d26a584846392b3ef21ff0219893230b"
-            }
-          ]
-        },
-        "resources": [
-          {
-            "source": "contracts/example.work-item.md",
-            "document": "---\\nkind: mdbase.contract\\ncontract_type: record\\nid: example.work-item\\nversion: 1.0.0\\nrecord_schema:\\n  dialect: json-schema-2020-12\\n  value:\\n    $schema: https://json-schema.org/draft/2020-12/schema\\n    type: object\\n    additionalProperties: false\\n    properties:\\n      title: { type: string }\\n    required: [title]\\n---\\n"
-          },
-          {
-            "source": "types/work-item.md",
-            "document": "---\\nkind: mdbase.type\\nname: work-item\\nversion: 1\\nschema:\\n  dialect: json-schema-2020-12\\n  value:\\n    type: object\\n    additionalProperties: true\\n    properties:\\n      title: { type: string }\\n    required: [title]\\nimplements:\\n  - contract: example.work-item\\n    version: 1.0.0\\n    fields:\\n      title: title\\n---\\n"
-          }
-        ]
-      }
-    ]
-  }
-}`;
-
-const nativeManifest = `{
-  "manifest_version": 1,
-  "id": "dev.example.workouts",
-  "name": "Example Workouts",
-  "homepage": "https://workouts.example",
-  "redirect_uris": [
-    "https://workouts.example/auth/mdbase/callback",
-    "dev.example.workouts://auth/mdbase/callback"
-  ],
-  "requirements": { "contracts": [] }
-}`;
-
-const portableManifest = `{
-  "manifest_version": 1,
-  "distribution": "portable",
-  "id": "dev.example.portable-worklog",
-  "name": "Portable worklog",
-  "project_url": "https://worklog.example/source",
   "requirements": {
     "access": "full_collection",
-    "contracts": []
+    "contracts": [
+      {
+        "id": "example.work-item",
+        "version": "1.0.0",
+        "digest": "sha256:9cd7f8e4b23ba20aaeaec3f7e209c6ba8de3fa5cd224204f2baef4e14dd69936"
+      }
+    ],
+    "capabilities": {
+      "contract_version": 2,
+      "required": ["collection.read", "records.create", "records.edit"],
+      "optional": ["records.delete"]
+    }
   }
+}`;
+
+const provision = `"provisions": {
+  "type_packs": [
+    {
+      "provides": [
+        {
+          "id": "example.work-item",
+          "version": "1.0.0",
+          "digest": "sha256:9cd7f8e4…"
+        }
+      ],
+      "manifest": {
+        "kind": "mdbase.type-pack",
+        "id": "example.work-items",
+        "version": "1.0.0",
+        "name": "Work items",
+        "resources": [
+          {
+            "kind": "contract",
+            "source": "contracts/example.work-item.md",
+            "target": "_contracts/example.work-item.md",
+            "digest": "sha256:9cd7f8e4…"
+          },
+          {
+            "kind": "type",
+            "source": "types/work-item.md",
+            "target": "_types/work-item.md",
+            "digest": "sha256:2be7d8a5…"
+          }
+        ]
+      },
+      "resources": [
+        { "source": "contracts/example.work-item.md", "document": "---\\nkind: mdbase.contract\\n…" },
+        { "source": "types/work-item.md", "document": "---\\nkind: mdbase.type\\n…" }
+      ]
+    }
+  ]
 }`;
 ---
 
 <DocsLayout
   title="Application manifest"
-  description="Declare application identity, callback routes, collection compatibility, provisioning, and notification criteria in one bundled v1 file."
+  description="One JSON file says who your app is, which collections suit it, and what it may do."
   active="manifest"
   headings={[
-    { href: "#identity", label: "Shared identity" },
-    { href: "#web", label: "Web manifests" },
-    { href: "#portable", label: "Portable manifests" },
+    { href: "#identity", label: "Identity" },
+    { href: "#web", label: "Web apps" },
     { href: "#requirements", label: "Requirements" },
     { href: "#provisioning", label: "Provisioning" },
-    { href: "#native", label: "Native callbacks" },
-    { href: "#changes", label: "Manifest changes" }
+    { href: "#portable", label: "Notifications" },
+    { href: "#native", label: "Native apps" },
+    { href: "#changes", label: "Changing it" }
   ]}
 >
   <p>
-    Bundle the manifest with the application, load it through the SDK, and
-    validate it as part of the build. Connect identifies its canonical JSON by
-    digest.
+    Ship the manifest with your app and pass it to
+    {" "}<code>MdbaseConnect</code>. The SDK validates it with the same parser
+    mdbase uses. Schema:
+    {" "}<a href="/connect/schemas/mdbase-app.v1.json"><code>mdbase-app.v1.json</code></a>.
+    The whole file may be at most 512 KiB.
   </p>
-  <p>
-    Canonical schema:{" "}
-    <a href="/connect/schemas/mdbase-app.v1.json"><code>mdbase-app.v1.json</code></a>
-  </p>
+  <CodeBlock code={webManifest} language="json" label="mdbase-app.json" />
 
-  <h2 id="identity">Shared identity fields</h2>
+  <h2 id="identity">Identity</h2>
   <table class="api-table">
     <thead>
       <tr>
@@ -114,53 +100,22 @@ const portableManifest = `{
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td><code>manifest_version</code></td>
-        <td><code>1</code> throughout the current Connect pre-release</td>
-      </tr>
-      <tr>
-        <td><code>distribution</code></td>
-        <td><code>web</code> when omitted, or explicit <code>portable</code></td>
-      </tr>
-      <tr>
-        <td><code>id</code></td>
-        <td>Stable lowercase reverse-domain identifier with at least three labels</td>
-      </tr>
-      <tr>
-        <td><code>name</code></td>
-        <td>Human-readable name shown during authorization</td>
-      </tr>
+      <tr><td><code>manifest_version</code></td><td><code>1</code></td></tr>
+      <tr><td><code>id</code></td><td>Lowercase reverse-domain name with at least three parts, such as <code>dev.example.worklog</code>. It is a label, not proof of who publishes the app.</td></tr>
+      <tr><td><code>name</code></td><td>Shown to the user when they approve your app; up to 100 characters</td></tr>
+      <tr><td><code>icon</code></td><td>Optional HTTPS URL</td></tr>
     </tbody>
   </table>
 
-  <h2 id="web">Web and native-shell manifests</h2>
+  <h2 id="web">Web apps</h2>
   <p>
-    Existing v1 manifests may omit <code>distribution</code>; that means
-    {" "}<code>web</code>. They declare an HTTPS <code>homepage</code> and at least
-    one <code>redirect_uris</code> entry on the same origin. An optional icon stays on
-    the homepage origin.
+    A web app declares an HTTPS <code>homepage</code> and up to ten
+    {" "}<code>redirect_uris</code> on the homepage’s origin.
+    {" "}<code>distribution</code> may be left out; it defaults to
+    {" "}<code>"web"</code>.
   </p>
 
-  <h2 id="portable">Downloaded HTML manifests</h2>
-  <p>
-    A downloaded file declares <code>distribution: "portable"</code> and omits
-    {" "}<code>homepage</code> and <code>redirect_uris</code>. Its optional
-    {" "}<code>project_url</code> is HTTPS presentation metadata, not publisher
-    verification. An optional icon must share that project URL's origin.
-  </p>
-  <CodeBlock code={portableManifest} language="json" label="Portable manifest example" />
-  <p>
-    Portable manifests use key-bound short-code authorization, can accept local
-    or hosted collections, and keep their credentials in memory when opened
-    from <code>file://</code>. See the
-    {" "}<a href="/sdk/portable-apps/">portable HTML application guide</a>.
-  </p>
-
-  <h2 id="requirements">Collection requirements</h2>
-  <p>
-    Requirements identify compatible collections. The user grants access in a
-    separate authorization step.
-  </p>
+  <h2 id="requirements">Requirements</h2>
   <table class="api-table">
     <thead>
       <tr>
@@ -170,71 +125,82 @@ const portableManifest = `{
     </thead>
     <tbody>
       <tr>
+        <td><code>access</code></td>
+        <td>Required. Always <code>"full_collection"</code>.</td>
+      </tr>
+      <tr>
         <td><code>contracts</code></td>
-        <td>Exact contract IDs and semantic versions the app understands</td>
+        <td>
+          Required, may be empty. Each entry names a contract by
+          {" "}<code>id</code>, <code>version</code> and exact
+          {" "}<code>digest</code>. A collection suits your app when its types
+          implement them. See <a href="/sdk/contracts/">Contracts and adapters</a>.
+        </td>
       </tr>
       <tr>
-        <td><code>access: "contract"</code></td>
-        <td>Default. Limit record access to types that provide required contracts</td>
+        <td><code>capabilities</code></td>
+        <td>
+          What your app may do. See <a href="/sdk/authorization/">Authorization</a>.
+          Without it, your app gets read-only access.
+        </td>
       </tr>
       <tr>
-        <td><code>access: "full_collection"</code></td>
-        <td>Request collection-wide features such as saved views or type administration</td>
+        <td><code>files</code></td>
+        <td>File actions and the folders they apply to</td>
       </tr>
       <tr>
-        <td><code>collection_kind: "hosted"</code></td>
-        <td>Offer only provider-backed collections, including to portable files</td>
+        <td><code>people</code></td>
+        <td>
+          <code>identity</code> (who the user is) and <code>members</code>
+          {" "}(the collection’s members), as <code>required</code> or
+          {" "}<code>optional</code>, with <code>"version": 1</code>
+        </td>
+      </tr>
+      <tr>
+        <td><code>configuration</code></td>
+        <td>
+          Values the collection’s settings must contain, each with an
+          {" "}<code>id</code>, a <code>path</code>, the predicate
+          {" "}<code>"contains"</code> and a <code>value</code>
+        </td>
       </tr>
     </tbody>
   </table>
-  <div class="callout">
-    <strong>Leave collection_kind out when either authority is acceptable.</strong>
-    <p>
-      The SDK selects direct, relay, or hosted transport automatically after
-      approval.
-    </p>
-  </div>
 
-  <h2 id="provisioning">Provision a missing contract safely</h2>
+  <h2 id="provisioning">Provisioning</h2>
   <p>
-    A manifest may carry a complete transactional type pack. During approval,
-    the authority validates every declared digest, preflights the contract,
-    types, and referenced schemas together, and writes all resources or none.
-    It then reopens the collection and pins the exact contract and
-    implementation digests before creating the grant.
-    General type administration requires a separate{" "}
-    <code>create_type</code> grant.
+    If a collection lacks the contract you need, your manifest can carry a
+    type pack that adds it. Every resource is pinned by digest. The pack is
+    checked as a whole and written all at once or not at all. A pack may only
+    provide contracts listed in <code>requirements.contracts</code>. A target
+    file that already exists with different bytes is a conflict, never
+    overwritten.
   </p>
-  <CodeBlock code={contractManifest} language="json" label="Work-item contract example" />
+  <CodeBlock code={provision} language="json" label="Manifest fragment (digests shortened)" />
   <p>
-    A pack may only claim contracts listed in{" "}
-    <code>requirements.contracts</code>. A target with different bytes is a
-    conflict, not an implicit overwrite. Repeating the same pack is idempotent.
+    <code>provisions.configuration</code> can likewise add a value to the
+    collection’s settings, with the operation <code>"set_add"</code>, to meet a
+    {" "}<code>configuration</code> requirement.
   </p>
 
-  <h2 id="native">Native application callbacks</h2>
+  <h2 id="portable">Notifications</h2>
   <p>
-    Native shells open authorization in the system browser and may list a
-    private-use scheme that exactly matches, or extends, the application ID.
+    <code>notifications.criteria</code> declares the notifications your app
+    may send, with fixed titles and text. See
+    {" "}<a href="/sdk/notifications/">Notifications and timers</a>.
   </p>
-  <CodeBlock code={nativeManifest} language="json" label="Native callback example" />
+
+  <h2 id="native">Native apps</h2>
   <p>
-    Pass a <code>navigate</code> adapter to <code>MdbaseConnect</code>, then
-    call <code>completeAuthorization(callbackUrl)</code> when the deep link
-    returns to the application.
+    A native app can list a private-use URI scheme in
+    {" "}<code>redirect_uris</code>. The scheme must match or extend the
+    application ID, as in <code>dev.example.worklog://auth/mdbase/callback</code>.
   </p>
 
   <h2 id="changes">Changing the manifest</h2>
   <p>
-    Any canonical manifest change creates a new application identity digest. It
-    cannot silently broaden an existing grant. The existing installation stays
-    bound to its approved declaration until the user completes authorization
-    for the changed one.
-  </p>
-  <p>
-    This is especially important for new contracts, notification criteria, and
-    changed callback routes. Handle{" "}
-    <code>notification_reauthorization_required</code> by starting
-    authorization again.
+    A changed manifest never widens an existing grant on its own. If your new
+    version needs more, such as a new capability or contract, the user
+    approves it again.
   </p>
 </DocsLayout>

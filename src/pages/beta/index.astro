@@ -3,72 +3,64 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout
-  title="Join the mdbase Connect open beta"
-  description="Create an mdbase Connect account with a verified email address and start using local or hosted Markdown collections."
+  title="Create a Connect account"
+  description="Create an mdbase Connect account with a verified email address, then sync your first collection with Cloud copy or Private."
   current="connect"
 >
-  <section class="content-section" aria-label="Connect open beta">
-    <h1 class="sr-only">Connect open beta</h1>
+  <header class="page-intro">
+    <h1>Create a Connect account</h1>
+    <p class="page-intro__lede">
+      A Connect account syncs and shares your collections. One synced
+      collection is free.
+    </p>
+    <div class="button-row">
+      <a class="button button--primary" href="https://connect.mdbase.dev/signup">Sign up</a>
+      <a class="button" href="https://connect.mdbase.dev/login">Sign in</a>
+    </div>
+  </header>
+
+  <section class="content-section" aria-labelledby="sign-up">
+    <h2 id="sign-up">Sign up</h2>
     <p>
-      Public signup for the Connect open beta is available. Create an account
-      with your email address and a
-      password. Connect will prepare a small hosted Markdown collection so you
-      can open the editor and start exploring.
+      Enter your email address, and Connect sends a one-time verification
+      link. The link expires after one hour. Connect then asks for your name, a
+      password, and your agreement to the service terms.
     </p>
     <p>
-      A one-time verification link is sent before Connect asks for your name,
-      password, and agreement to the service terms. Verification links expire
-      after one hour.
-    </p>
-    <p>
-      <a href="https://connect.mdbase.dev/signup">Create a Connect account</a>
-      {" · "}<a href="https://connect.mdbase.dev/login">Sign in</a>
+      Then choose <a href="/connect/#sync-options">Cloud copy or Private</a>{" "}
+      for your first collection and open it in any <a href="/apps/">app</a>.
+      Apps receive no access until you choose a collection and approve the
+      operations they ask for.
     </p>
   </section>
 
-  <section class="content-section" aria-label="Beta availability and account limits">
+  <section class="content-section" aria-labelledby="beta-status">
+    <h2 id="beta-status">Beta</h2>
     <p>
-      Connect has no availability guarantee during the open beta. Keep
-      independent backups of important collections.
+      Connect is in beta and has no availability guarantee. Keep independent
+      backups of important collections.
     </p>
-    <dl class="glossary-list">
-      <div>
-        <dt>Hosted allowance</dt>
-        <dd>
-          Open-beta accounts include 1 GiB of hosted storage and up to three
-          hosted collections. The starter collection uses one of those slots.
-          Local collections do not use this allowance.
-        </dd>
-      </div>
-      <div>
-        <dt>App permissions</dt>
-        <dd>
-          Applications receive no collection access until you choose a
-          collection and approve their requested operations.
-        </dd>
-      </div>
-      <div>
-        <dt>Existing invitations</dt>
-        <dd>
-          Invitation links already delivered remain valid until the expiry
-          shown in the invitation email.
-        </dd>
-      </div>
-    </dl>
+    <p>
+      Accounts created during the beta keep their beta allowance, now counted
+      in synced collections. An open-beta account can sync up to three
+      collections and store 1 GiB, and each collection can be Cloud copy or
+      Private.
+    </p>
   </section>
 
-  <section class="content-section" aria-label="Further information">
+  <section class="content-section" aria-labelledby="more">
+    <h2 id="more">More information</h2>
     <p>
-      Read <a href="/connect/">how local and hosted collections differ</a>,
-      including which components can read record contents. The{" "}
+      Read <a href="/connect/">how Connect works</a> and{" "}
+      <a href="/security/">what mdbase can read</a> in each option. The{" "}
       <a href="/privacy/">privacy policy</a> and <a href="/terms/">service terms</a>{" "}
       apply when you create an account.
     </p>
     <p>
-      The <a href="/spec/">mdbase specification</a> and local tools remain open
-      source and do not require a Connect account. You can also{" "}
-      <a href="/downloads/">download Connect</a> or{" "}
-      <a href="/sdk/quickstart/">try the SDK locally</a>.
+      The <a href="/spec/">mdbase specification</a> and local tools are open
+      source and need no account. You can also{" "}
+      <a href="/downloads/">download the desktop app</a> or{" "}
+      <a href="/sdk/quickstart/">try the SDK</a>.
     </p>
   </section>
 </BaseLayout>

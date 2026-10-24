@@ -4,113 +4,176 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="Security"
-  description="The mdbase Connect trust model for local collections, hosted collections, application grants, relay encryption, and notifications."
+  description="What mdbase stores and can read for Cloud copy and Private collections, how devices, apps and members get access, the known limits, and how to report a security issue."
 >
-  <section class="page-hero">
-    <div class="page-hero__inner">
-      <div>
-        <p class="eyebrow"><i></i> Connect protocol 1</p>
-        <h1>Connect trust boundaries</h1>
-      </div>
-      <div class="page-hero__aside">
-        <p>
-          Connect keeps authorization enforcement at the local connector or
-          hosted provider. It minimizes control-plane data, encrypts local relay
-          payloads end to end, and names the hosted provider's trust boundary
-          directly.
-        </p>
-        <div class="button-row">
-          <a class="button button--primary" href="/sdk/security/">Developer guidance</a>
-          <a class="button" href="https://github.com/mdbase-dev/mdbase-connect/tree/main/docs">
-            Architecture documents
-          </a>
-        </div>
-      </div>
-    </div>
+  <header class="page-intro">
+    <h1>Security</h1>
+    <p class="page-intro__lede">
+      What mdbase stores and can read for each kind of collection, who holds
+      the keys, how access is granted and removed, and the limits that apply.
+    </p>
+  </header>
+
+  <section class="content-section" aria-labelledby="every-collection">
+    <h2 id="every-collection">In every synced collection</h2>
+    <p>
+      Each change is encrypted and signed on the device that made it before it
+      leaves. Changes are encrypted with the collection key using
+      ChaCha20-Poly1305 and signed with the device’s Ed25519 key. mdbase stores
+      the encrypted changes, snapshots and attachments, puts changes in order,
+      and passes them to the other devices. The service that stores them never
+      holds the collection key, and every device checks each change’s signature
+      and permissions for itself.
+    </p>
+    <p>
+      Apps connect to a copy of the collection over an encrypted session (Noise)
+      that ends at that copy. When the session passes through mdbase’s relay,
+      the relay forwards encrypted traffic and sees who connects to which
+      device, along with sizes and timing.
+    </p>
   </section>
 
-  <section class="content-section">
-    <h2>Data boundaries</h2>
+  <section class="content-section" aria-labelledby="by-option">
+    <h2 id="by-option">Cloud copy and Private</h2>
     <table class="trust-table">
       <thead>
         <tr>
-          <th>Data</th>
-          <th>Local collection</th>
-          <th>Hosted collection</th>
+          <th>Question</th>
+          <th>Cloud copy</th>
+          <th>Private</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>Markdown records</td>
-          <td>Remain on the registered computer</td>
-          <td>Encrypted at rest in the hosted provider</td>
+          <td>Who holds the collection key</td>
+          <td>
+            Your devices, plus mdbase’s hosted service and key escrow. Their keys
+            are wrapped by a key management service and unwrapped only in memory.
+          </td>
+          <td>Only your devices, and your account key if you use one (below)</td>
         </tr>
         <tr>
-          <td>Absolute paths</td>
-          <td>Remain at the local connector</td>
-          <td>Hosted records use provider identifiers</td>
+          <td>Record contents, paths, field names and attachments</td>
+          <td>Readable by mdbase’s hosted service, which serves apps from its copy</td>
+          <td>Never readable by mdbase</td>
         </tr>
         <tr>
-          <td>Operation payloads</td>
-          <td>Encrypted app to connector across relay</td>
-          <td>Sent directly to the grant-bound provider</td>
+          <td>Where apps connect</td>
+          <td>mdbase’s hosted copy</td>
+          <td>One of your devices, through the relay</td>
         </tr>
         <tr>
-          <td>Grant policy</td>
-          <td>Cached and rechecked locally</td>
-          <td>Rechecked by the hosted provider</td>
+          <td>A new app permission takes effect</td>
+          <td>When you approve it in Connect</td>
+          <td>When you approve it in Connect and one of your devices confirms it</td>
         </tr>
         <tr>
-          <td>Notification signals</td>
-          <td colspan="2">Opaque signal, criterion, grant, and cursor metadata; no record path or content</td>
+          <td>A new device of yours gets the key</td>
+          <td>After you sign in; mdbase delivers the key once your account approves the device</td>
+          <td>After you enter your encryption password or recovery key, or approve it from another device in strict mode</td>
         </tr>
       </tbody>
     </table>
+    <p>
+      In both, mdbase can see your account, a collection’s members and their
+      roles, its devices, app permissions, the number and padded sizes of
+      changes and attachments, when they were made, and connection details such
+      as IP addresses. If an app sets reminders, mdbase stores each reminder’s
+      time and a random ID. For a Private collection, it stores no reminder
+      content.
+    </p>
   </section>
 
-  <section class="content-section">
-    <h2>Application responsibilities</h2>
-    <div class="steps">
-      <div class="step">
-        <div>
-          <h3>Operation scope</h3>
-          <p>
-            Start with contract-scoped access. Collection-wide types and saved
-            views require full collection access. Ask for additional operations
-            when the user opens the relevant feature.
-          </p>
-        </div>
-      </div>
-      <div class="step">
-        <div>
-          <h3>Credential storage</h3>
-          <p>
-            Browser defaults use localStorage plus non-extractable IndexedDB
-            keys. Native shells should provide storage and navigation adapters
-            that match their platform security model.
-          </p>
-        </div>
-      </div>
-      <div class="step">
-        <div>
-          <h3>Notifications</h3>
-          <p>
-            Treat each signal as a prompt to refresh. Open the application,
-            renew authorization if needed, and read the latest authorized
-            collection state.
-          </p>
-        </div>
-      </div>
-      <div class="step">
-        <div>
-          <h3>Revision preconditions</h3>
-          <p>
-            Preserve the revision returned by a read or write, then pass{" "}
-            <code>ifRevision</code> to update, rename, and delete operations.
-            Resolve conflicts explicitly.
-          </p>
-        </div>
-      </div>
-    </div>
+  <section class="content-section" aria-labelledby="private-keys">
+    <h2 id="private-keys">Private collection keys</h2>
+    <p>
+      By default, your devices share an account key. Your device generates it
+      and shows it to you once as a recovery key, and mdbase stores a copy
+      locked with your encryption password using Argon2id. mdbase never sees
+      the password or the recovery key. A new device that you sign in gets the
+      collection keys once you enter either one.
+    </p>
+    <p>
+      Strict mode removes that stored copy. Each new device is then approved
+      from a device you already have, by checking that both show the same
+      six-digit code. The code mixes a random value from each device, and the
+      new device commits to its value first, so a device substituted by someone
+      else would match only by chance, about one in a million per attempt. An
+      owner or editor approves a new member’s first device the same way.
+    </p>
+  </section>
+
+  <section class="content-section" aria-labelledby="removing-access">
+    <h2 id="removing-access">Removing access</h2>
+    <p>
+      Removing a device or member changes the collection key. Changes made after
+      that are encrypted with a key the removed device never receives. A removed
+      device or member keeps whatever it already had, including its copy of the
+      files.
+    </p>
+    <p>
+      Revoking an app permission ends its sessions. Every copy of the collection
+      stops accepting the app’s requests once it sees the revocation.
+    </p>
+  </section>
+
+  <section class="content-section" aria-labelledby="sync-off">
+    <h2 id="sync-off">Collections with sync off</h2>
+    <p>
+      Collections moved from the Connector start with sync off, and any
+      collection can be set to sync off in its advanced settings. mdbase stores
+      none of their contents. Apps reach them through mdbase’s relay to the
+      computer that holds them, while it’s running.
+    </p>
+    <p>
+      For these collections, the background service on your computer trusts the
+      app permissions that mdbase issues. It notifies you when a new app gains
+      access and keeps a list of apps you can review and revoke. To require your
+      approval on the computer as well, turn on{" "}
+      <code>mdbase settings --require-approval on</code>.
+    </p>
+  </section>
+
+  <section class="content-section" aria-labelledby="limits">
+    <h2 id="limits">Known limits</h2>
+    <ul>
+      <li>
+        mdbase can’t read a Private collection, but it does deliver its changes.
+        Devices assume that mdbase delivers changes in order and hides none. A
+        compromised service that withheld a device removal could keep that
+        device receiving new changes. Devices don’t yet detect this.
+      </li>
+      <li>
+        When a collection switches from Cloud copy to Private, content stored
+        before the switch remains readable with the keys mdbase held until it is
+        re-encrypted. You’re offered a step that re-encrypts it.
+      </li>
+      <li>
+        The web apps that mdbase publishes see what they show you. Private
+        protects what mdbase stores and relays, and relies on the app you run
+        being the one you expect.
+      </li>
+      <li>
+        If the copy of your account key that mdbase stores were stolen, a weak
+        encryption password could be guessed offline. Choose a strong one, or use
+        strict mode.
+      </li>
+      <li>
+        Obsidian plugins run in the same process as the mdbase plugin and have
+        full access to the vault and its collections.
+      </li>
+    </ul>
+  </section>
+
+  <section class="content-section" aria-labelledby="report">
+    <h2 id="report">Report a security issue</h2>
+    <p>
+      Use GitHub’s private vulnerability reporting on the{" "}
+      <a href="https://github.com/mdbase-dev/mdbase-connect/security">mdbase-connect repository</a>.
+      Don’t open a public issue. Include the affected component and version, the
+      steps to reproduce, and the impact, with credentials, paths and record
+      contents removed. Developers building apps should also read the{" "}
+      <a href="/sdk/security/">SDK security guidance</a>.
+    </p>
   </section>
 </BaseLayout>

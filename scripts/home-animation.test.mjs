@@ -26,18 +26,19 @@ function harness(width, height, reducedMotion = true) {
     querySelector: selector => selector === '#diagram' ? canvas : {
       getBoundingClientRect: () => ({ bottom: width <= 350 ? 137 : 107 }),
     },
-    querySelectorAll: () => chapters,
+    querySelectorAll: selector => selector.includes('chapter-index') ? [] : chapters,
     documentElement: { style: { setProperty() {} }, addEventListener() {}, scrollHeight: height * 8 },
     fonts: { ready: { then() {} } },
     addEventListener() {},
   };
   const sandbox = {
     document, innerWidth: width, innerHeight: height, devicePixelRatio: 1,
-    scrollY: 0, matchMedia: () => ({ matches: reducedMotion }),
+    scrollY: 0, matchMedia: () => ({ matches: reducedMotion, addEventListener() {} }),
     getComputedStyle: () => ({ colorScheme: 'light', getPropertyValue: () => '' }),
     requestAnimationFrame: () => 1, cancelAnimationFrame() {}, addEventListener() {},
     performance: { now: () => 0 },
   };
+  sandbox.window = sandbox;
   vm.runInNewContext(source.replace('      syncPalette();\n      resize();', `
       globalThis.inspect = () => ({ diagram, particles, activeScene });
       globalThis.select = name => setScene(name, chapters.findIndex(c => c.dataset.scene === name));
@@ -73,28 +74,34 @@ for (const [width, height] of [[320, 640], [390, 844], [820, 1000], [821, 900], 
   });
 }
 
-test('sharing is hosted-only, has two non-directional memberships, and no data-transfer particles', () => {
+test('sharing shows both roles connected and a removed member with no connection', () => {
   const app = harness(1440, 1000);
   app.select('sharing');
-  const { diagram, particles } = app.inspect();
-  assert.deepEqual(Array.from(diagram.nodes, node => node.label), ['Hosted collection', 'Viewer', 'Editor']);
+  const { diagram } = app.inspect();
+  assert.deepEqual(Array.from(diagram.nodes, node => node.label),
+    ['shared collection', 'Viewer · reads', 'Editor · reads and edits', 'Member removed']);
   assert.equal(diagram.edges.length, 2);
-  assert.ok(diagram.edges.every(edge => edge.relationship));
-  assert.ok(particles.every(particle => particle.path === null));
+  const removed = diagram.nodes.find(node => node.id === 'sharing-removed');
+  assert.equal(removed.kind, 'replica');
+  for (const edge of diagram.edges) {
+    const end = edge.from.at(-1);
+    assert.ok(!(end.x >= removed.box.x && end.y >= removed.box.y && end.y <= removed.box.y + removed.box.h));
+  }
 });
 
-test('removing an app preserves every record and leaves only the approved app connected', () => {
-  for (const reducedMotion of [true, false]) {
-    const app = harness(390, 844, reducedMotion);
-    app.select('sharing');
-    const targets = Array.from(app.inspect().particles, particle => [particle.tx, particle.ty]);
-    app.select('access');
-    const { diagram, particles } = app.inspect();
-    assert.deepEqual(Array.from(particles, particle => [particle.tx, particle.ty]), targets);
-    assert.equal(diagram.edges.length, 1);
-    const approved = diagram.nodes.find(node => node.id === 'retained-app');
-    assert.equal(diagram.edges[0].from[0].x, approved.box.x);
-    assert.ok(particles.every(particle => particle.path === null));
+test('the sync note sits under the log, clear of every edge', () => {
+  const app = harness(1440, 1000);
+  app.select('sync');
+  const { diagram } = app.inspect();
+  const log = diagram.nodes.find(node => node.id === 'sync-log');
+  assert.equal(diagram.notes.length, 1);
+  const note = diagram.notes[0];
+  assert.ok(note.y > log.box.y + log.box.h);
+  // Each wrapped line is narrower than the log, and every edge ends on the log's sides.
+  for (const line of note.text.split('\n')) assert.ok(line.length * 17 * 0.5 < log.box.w);
+  for (const edge of diagram.edges) {
+    const end = edge.from.at(-1);
+    assert.ok(Math.abs(end.x - log.box.x) < 1 || Math.abs(end.x - (log.box.x + log.box.w)) < 1);
   }
 });
 

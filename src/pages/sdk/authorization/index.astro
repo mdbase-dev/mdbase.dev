@@ -2,104 +2,71 @@
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
-const stepUp = `const granted = await session.ensureCapabilities(["records.create"]);
-if (!granted.ok) renderProblem(granted.problem);`;
-
-const listen = `const stop = session.subscribe(() => {
-  const snapshot = session.getSnapshot();
-  switch (snapshot.status) {
-    case "ready":
-      renderConnection({ collectionId: snapshot.collectionId, route: snapshot.info.route });
-      break;
-    case "authorization_required":
-      renderReconnect();
-      break;
-    case "unavailable":
-      renderUnavailable(snapshot.reason);
-      break;
-    default:
-      renderStatus(snapshot.status);
+const requirements = `"requirements": {
+  "access": "full_collection",
+  "contracts": [],
+  "capabilities": {
+    "contract_version": 2,
+    "required": ["collection.read", "records.edit"],
+    "optional": ["records.create"]
+  },
+  "files": {
+    "required": ["list", "read", "replace", "move"],
+    "optional": ["add"],
+    "scope": { "kind": "selected_folders", "folders": ["attachments"] }
   }
-});
-// Call stop() when the owning UI is destroyed.`;
-
-const recover = `const updated = await connection.update(input);
-if (updated.ok) return;
-switch (updated.problem.recovery) {
-  case "reauthorize":
-    await session.authorize("selected");
-    break;
-  case "refresh":
-    await refreshVisibleState();
-    break;
-  case "resolve_outcome":
-    for (const pending of connection.pendingMutations()) await pending.recover();
-    break;
-  default:
-    renderProblem(updated.problem);
 }`;
 
-const portableAuthorize = `const controller = new AbortController();
-const authorized = await session.authorize("choose", {
-  onDeviceCode: ({ userCode, verificationUriComplete }) => {
-    renderApprovalCode(userCode, verificationUriComplete);
-  },
-  signal: controller.signal
-});
-if (!authorized.ok) renderProblem(authorized.problem);`;
+const check = `const { capabilities, role, fileFolders } = db.hello.grant;
+
+newEntryButton.hidden = !capabilities.includes("records.create");
+
+try {
+  await db.create({ type: "task", frontmatter: { title } });
+} catch (e) {
+  if (isMdbaseError(e, "forbidden") || isMdbaseError(e, "unauthenticated")) {
+    showReconnectPrompt(); // recovery: "reauthorize"
+  } else {
+    throw e;
+  }
+}`;
 ---
 
 <DocsLayout
   title="Authorization"
-  description="Declare capabilities, request more at the point of use, and handle narrowing, pause, or revocation."
+  description="Your app gets a grant: access to one collection with the capabilities the user approved. Ask for what you use, and check what you got."
   active="authorization"
   headings={[
-    { href: "#flows", label: "Authorization flows" },
+    { href: "#flows", label: "Grants" },
     { href: "#capabilities", label: "Capabilities" },
-    { href: "#step-up", label: "Step-up authorization" },
-    { href: "#connection", label: "Connection state" },
-    { href: "#recovery", label: "Recovery" },
-    { href: "#disconnect", label: "Disconnect" }
+    { href: "#files", label: "Files" },
+    { href: "#step-up", label: "Check what you got" },
+    { href: "#private", label: "Private collections" },
+    { href: "#disconnect", label: "Revocation" }
   ]}
 >
+  <h2 id="flows">Grants</h2>
   <p>
-    A Connect grant binds one application installation, one canonical manifest,
-    one collection, one scope, and an exact operation set. The collection
-    authority checks the grant again for every request.
+    When a user connects your app to a collection, mdbase records a
+    {" "}<strong>grant</strong>: your app, one collection, the capabilities the
+    user approved, and your app’s session key. The replica checks the grant
+    on every session.
   </p>
   <p>
-    One application installation may retain several independent grants. The
-    manager lists them with <code>connections()</code>; every operation is made
-    through a <code>MdbaseConnection</code> bound to one collection ID.
-  </p>
-
-  <h2 id="flows">Use the flow selected by the manifest</h2>
-  <p>
-    Web and native-shell manifests use an authorization-code redirect with
-    PKCE. <code>session.authorize()</code> navigates away, and the callback
-    route calls <code>session.completeAuthorization()</code>.
-  </p>
-  <p>
-    A <code>distribution: "portable"</code> manifest uses short-code device
-    authorization with PKCE and a P-256 application key.
-    <code>session.authorize()</code> opens the approval page, polls at the
-    server interval, and resolves after approval.
-  </p>
-  <CodeBlock code={portableAuthorize} language="ts" label="portable-authorization.ts" />
-  <p>
-    The abort signal stops polling and discards the unapproved in-memory key.
-    Use <code>openVerification</code> when a shell owns the approval window.
-    See the <a href="/sdk/portable-apps/">portable HTML application guide</a>{" "}
-    for the complete downloaded-file boundary.
+    A grant never exceeds the user’s own role in the collection. A viewer
+    can’t give your app write access. When the grant or the role doesn’t allow
+    a request, it fails with <code>forbidden</code>; <code>details</code>
+    {" "}names the capability.
   </p>
 
-  <h2 id="capabilities">Declare capabilities by feature</h2>
+  <h2 id="capabilities">Capabilities</h2>
   <p>
-    The manifest's <code>requirements.capabilities</code> lists what the
-    application may do. <code>required</code> groups are always requested;
-    {" "}<code>optional</code> groups are requested when a feature needs them.
-    An application never requests a capability its manifest does not declare.
+    Declare capabilities in your manifest. The user can’t turn off a
+    {" "}<code>required</code> one without declining your app. Each
+    {" "}<code>optional</code> one gets its own switch; destructive ones start
+    switched off.
   </p>
+  <CodeBlock code={requirements} language="json" label="Manifest fragment" />
   <table class="api-table">
     <thead>
       <tr>
@@ -108,68 +75,66 @@ if (!authorized.ok) renderProblem(authorized.problem);`;
       </tr>
     </thead>
     <tbody>
-      <tr><td><code>collection.read</code></td><td>Describe the collection, read, query and watch records, use saved views, read types, validate</td></tr>
+      <tr><td><code>collection.read</code></td><td>Describe the collection; read, query and watch records; list and run saved views; read types; validate</td></tr>
       <tr><td><code>records.create</code></td><td>Create records</td></tr>
       <tr><td><code>records.edit</code></td><td>Update and rename records</td></tr>
       <tr><td><code>records.delete</code></td><td>Delete records</td></tr>
-      <tr><td><code>views.manage</code></td><td>Create, update and delete saved view sources</td></tr>
-      <tr><td><code>definitions.manage</code></td><td>Create and update types, assess and apply type packs</td></tr>
-      <tr><td><code>background.schedule</code></td><td>Authority timers</td></tr>
-      <tr><td><code>offline.replica</code></td><td>Offline sync</td></tr>
+      <tr><td><code>views.manage</code></td><td>Create, update and delete saved views</td></tr>
+      <tr><td><code>definitions.manage</code></td><td>Create and update types; check and apply type packs</td></tr>
+      <tr><td><code>background.schedule</code></td><td>Timers; see <a href="/sdk/notifications/">Notifications and timers</a></td></tr>
+      <tr><td><code>offline.replica</code></td><td>Keep a replica of the collection in the app. Not granted to other apps at launch.</td></tr>
     </tbody>
   </table>
-
-  <h2 id="step-up">Request optional capabilities at the point of use</h2>
   <p>
-    Begin with the required capabilities. When a user opens a feature that
-    needs an optional one, ensure it then.
-  </p>
-  <CodeBlock code={stepUp} language="ts" label="feature-entry.ts" />
-  <p>
-    <code>ensureCapabilities()</code> returns <code>unchanged</code> when the
-    current grant already covers the request. Otherwise it asks for the
-    existing grant plus the new capabilities, and refuses capabilities the
-    manifest does not declare.
+    A manifest without <code>capabilities</code> asks for read-only access.
   </p>
 
-  <h2 id="connection">Render current connection state</h2>
-  <CodeBlock code={listen} language="ts" label="connection-state.ts" />
+  <h2 id="files">Files</h2>
   <p>
-    The session snapshot names its state: <code>unselected</code>,
-    {" "}<code>authorization_required</code>, <code>checking_setup</code>,
-    {" "}<code>setup_review_required</code>, <code>ready</code>,
-    {" "}<code>unavailable</code>, <code>blocked</code>, and the start-up
-    states. The route is <code>direct</code>, <code>relay</code>, or
-    {" "}<code>hosted</code>; display it as status information, as the SDK
-    selects it. Browser back and forward selection changes also notify
-    subscribers.
+    Files that aren’t records, such as images and PDFs, are requested under
+    {" "}<code>requirements.files</code>. Each file action pairs with a record
+    capability, and you must declare both halves:
+  </p>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Capability</th>
+        <th>File actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>collection.read</code></td><td><code>list</code>, <code>read</code></td></tr>
+      <tr><td><code>records.create</code></td><td><code>add</code></td></tr>
+      <tr><td><code>records.edit</code></td><td><code>replace</code>, <code>move</code></td></tr>
+      <tr><td><code>records.delete</code></td><td><code>delete</code></td></tr>
+    </tbody>
+  </table>
+  <p>
+    The scope is the whole collection
+    {" "}(<code>&#123; "kind": "collection" &#125;</code>) or named folders. Ask
+    for folders when you can.
   </p>
 
-  <h2 id="recovery">Use structured recovery actions</h2>
+  <h2 id="step-up">Check what you got</h2>
   <p>
-    A failed outcome's <code>problem</code> has a machine-readable
-    {" "}<code>code</code>, a <code>category</code>, and a suggested
-    {" "}<code>recovery</code>, such as <code>retry</code>,
-    {" "}<code>reauthorize</code>, <code>refresh</code>,
-    {" "}<code>resolve_outcome</code>, <code>resolve_conflict</code>,
-    {" "}<code>fix_request</code>, or <code>contact_support</code>.
+    The user may approve less than you asked for. Read the grant from
+    {" "}<code>db.hello</code> and hide what your app can’t do.
   </p>
-  <CodeBlock code={recover} language="ts" label="recovery.ts" />
-  <div class="callout">
-    <strong>A local rejection is authoritative.</strong>
-    <p>
-      When the connector definitively rejects an encrypted grant, the SDK
-      removes the stale credential. The local decision governs direct and relay
-      routes.
-    </p>
-  </div>
+  <CodeBlock code={check} language="ts" label="grant.ts" />
 
-  <h2 id="disconnect">Disconnecting an application</h2>
+  <h2 id="private">Private collections</h2>
   <p>
-    <code>connection.forget()</code> clears only that collection's local
-    authorization state. <code>mdbase.forgetAll()</code> clears the saved set.
-    Neither replaces user-controlled revocation at the
-    collection authority. Provide a clear path to the Connect controller when a
-    user needs to review, narrow, pause, or revoke a grant.
+    In a Private collection, mdbase can’t read the content, and it can’t
+    decide on its own that your app may. The user must also approve the grant
+    on one of their devices, and can narrow it there. Until they do, your app
+    can’t reach the collection.
+  </p>
+
+  <h2 id="disconnect">Revocation</h2>
+  <p>
+    The user can revoke your app’s access at any time. Open sessions close
+    straight away, and requests fail with <code>unauthenticated</code>. Treat
+    both <code>unauthenticated</code> and <code>forbidden</code> as a reason to
+    ask the user to reconnect, never to retry in a loop.
   </p>
 </DocsLayout>

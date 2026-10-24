@@ -2,23 +2,21 @@
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
-const generic = `const description = await connection.describe();
+const generic = `const description = await db.describe();
 
-const workItemContract = description.contracts.find(
-  (contract) =>
-    contract.id === "example.work-item" &&
-    contract.version === "1.0.0"
+const workItem = description.contracts.find(
+  (c) => c.id === "example.work-item" && c.version === "1.0.0",
 );
-
-if (!workItemContract) {
-  throw new Error("The approved collection lacks example.work-item 1.0.0");
+if (!workItem) {
+  throw new Error("This collection has no example.work-item 1.0.0 contract");
 }
 
-for (const implementation of workItemContract.implementations) {
-  console.log(
-    implementation.type_name,
-    implementation.fields
-  );
+for (const type of description.types) {
+  for (const impl of type.implements) {
+    if (impl.contract === workItem.id && impl.version === workItem.version) {
+      console.log(type.name, Object.fromEntries(impl.fields)); // contract field → type field
+    }
+  }
 }`;
 
 const typeImplementation = `kind: mdbase.type
@@ -42,117 +40,86 @@ implements:
       status:
         completed_values: [done, cancelled]`;
 
-const domainFunction = `import type { MdbaseCollectionClient } from "@mdbase-dev/connect";
+const domainFunction = `import { toPlain, type MdbaseClient } from "@mdbase-dev/sdk";
 
-export class WorklogCollection {
-  constructor(
-    private readonly client: MdbaseCollectionClient<WorkItem>,
-    private readonly contract: WorkItemContract
-  ) {}
-
-  list() {
-    return this.client.queryAll({
-      contract: {
-        id: "example.work-item",
-        version: "1.0.0"
-      }
-    });
-  }
+export async function listWorkItems(db: MdbaseClient) {
+  const result = await db.queryContract(
+    { id: "example.work-item", version: "1.0.0" },
+    { pageSize: 100 },
+  );
+  // Each record lists one projection per type that implements the contract.
+  return result.records.map((record) => ({
+    id: record.id,
+    fields: toPlain(record.implementations[0].fields),
+  }));
 }`;
 ---
 
 <DocsLayout
   title="Contracts and adapters"
-  description="Build domain behavior on declared contracts across different frontmatter fields and path conventions."
+  description="Build on shared contracts, so your app works with collections that use their own field names."
   active="contracts"
   headings={[
     { href: "#type-file", label: "Implement in a type" },
     { href: "#contract", label: "Read a contract" },
-    { href: "#own-adapter", label: "Your own adapter" },
-    { href: "#ownership", label: "Adapter ownership" },
-    { href: "#scope", label: "Contract scope" }
+    { href: "#own-adapter", label: "Query through a contract" },
+    { href: "#ownership", label: "Adapter ownership" }
   ]}
 >
   <p>
-    Every <code>mdbase.contract</code> has a stable ID, semantic version, exact
-    digest, and JSON Schema. Its <code>contract_type</code> says what it
-    describes: a portable <strong>record</strong> view, an emitted{" "}
-    <strong>event</strong>, or an invocable <strong>action</strong>.
+    Every <code>mdbase.contract</code> has a stable ID, a semantic version, an
+    exact digest and a JSON Schema. Its <code>contract_type</code> says what it
+    describes: a <strong>record</strong> view, an <strong>event</strong>, or an
+    {" "}<strong>action</strong>. Browse published ones in the
+    {" "}<a href="/contracts/">contract catalog</a>.
   </p>
   <p>
-    Only record contracts are implemented by type files. A type opts in through{" "}
-    <code>implements</code> and maps contract field names to its own
-    frontmatter fields. Contracts should usually be compact semantic interfaces,
-    not copies of a storage or interchange format. This is intentionally
-    many-to-many: one type can implement several contracts, reads union every
-    approved implementing type, and several applications can consume the same
-    portable record view.
+    Only record contracts are implemented by type files. A type opts in with
+    {" "}<code>implements</code> and maps contract field names to its own
+    frontmatter fields. One type can implement several contracts, and several
+    apps can read the same contract.
   </p>
 
   <h2 id="type-file">Implement a contract in the type file</h2>
   <CodeBlock code={typeImplementation} language="yaml" label="_types/project_item.md" />
   <p>
-    The type schema above governs stored frontmatter. The <code>fields</code>{" "}
-    object is a direct mapping from contract fields to local type fields; it does
-    not transform values. The optional <code>binding</code> object records
-    behavior and vocabulary choices defined by the contract's{" "}
-    <code>binding_schema</code>. For example, a task contract can let a
-    collection declare several status values as complete without changing the
-    stored status value.
-  </p>
-  <p>
-    General-purpose editors can safely expose both objects because their shapes
-    come from the contract's JSON Schemas. Domain applications may offer more
-    tailored controls and write the same <code>implements</code> entry. Unknown
-    fields and extensions should be preserved.
+    The type’s schema governs what is stored. <code>fields</code> maps
+    contract fields to the type’s fields; it does not transform values. The
+    optional <code>binding</code> records choices the contract allows, such as
+    which status values count as complete, without changing what is stored.
+    Keep unknown fields and extensions when you edit a type.
   </p>
 
-  <h2 id="contract">Read the approved collection description</h2>
+  <h2 id="contract">Read the collection’s contracts</h2>
   <CodeBlock code={generic} language="ts" label="contract.ts" />
   <p>
-    <code>describe()</code> returns each exact record-contract version, schema,
-    digest, and complete{" "}<code>implementations</code> list. Each implementation
-    includes its concrete type, field mapping, binding metadata, and digest. Use
-    this data after authorization; do not look for semantic meaning in{" "}
-    <code>x-*</code> extensions.
+    <code>describe()</code> lists each contract with its <code>id</code>,
+    {" "}<code>version</code>, <code>digest</code>, <code>contractType</code>
+    {" "}and the types that implement it. Each type lists its
+    {" "}<code>implements</code> entries with the field mapping and binding. Don’t
+    look for meaning in <code>x-*</code> extensions.
   </p>
 
-  <h2 id="own-adapter">Keep your adapter on the transport-neutral client</h2>
-  <CodeBlock code={domainFunction} language="ts" label="worklog-collection.ts" />
+  <h2 id="own-adapter">Query through a contract</h2>
+  <CodeBlock code={domainFunction} language="ts" label="work-items.ts" />
   <p>
-    Domain adapters that use collection operations should accept{" "}
-    <code>MdbaseCollectionClient</code>. This makes the adapter usable with
-    Connect, <code>createSandbox()</code>, offline transports, and conforming
-    providers.
-  </p>
-  <p>
-    A contract query returns normalized contract fields and unions every
-    approved implementation. If a record exposes several approved views, pass
-    the exact{" "}<code>{"{ id, version, type }"}</code> selector. Creates also need
-    an exact provider when more than one implementation is available.
+    <code>queryContract()</code> returns records under the contract’s field
+    names, across every type that implements it. Each projection carries the
+    type name and any validation <code>issues</code>. It returns one page at a
+    time, up to 128 records; pass <code>cursor</code> for the next. To write,
+    use the type’s own fields with <code>create()</code> and
+    {" "}<code>update()</code>.
   </p>
 
-  <h2 id="ownership">Keep domain behavior with its application</h2>
+  <h2 id="ownership">Keep domain behaviour with its app</h2>
   <p>
-    Connect publishes application-neutral authorization, transport, schemas,
-    and operation clients. A domain application owns its contract vocabulary,
-    model, and adapter package. This keeps application conventions out of the
-    Connect protocol and lets more than one app interpret the same generic
-    collection independently.
-  </p>
-
-  <h2 id="scope">Contract scope and full collection access</h2>
-  <p>
-    Contract-scoped grants expose only normalized mapped fields. Markdown
-    bodies, unmapped frontmatter, unrelated types, and collection-wide features
-    stay private. Filtering and sorting normalized fields happens in the
-    application. Request{" "}<code>full_collection</code> only for genuine
-    whole-record or collection-level behavior such as body-aware task tools,
-    arbitrary saved views, schema editors, or general-purpose collection tools.
+    The SDK is application-neutral. An app owns its contract vocabulary, model
+    and adapter code. That keeps app conventions out of the protocol and lets
+    more than one app read the same collection in its own way.
   </p>
   <p>
-    Event sources and action providers declare executable implementations
-    through the <a href="https://github.com/mdbase-dev/mdbase-spec/blob/main/interop/0.1.md">interoperability bridge</a>, not
-    through a type file.
+    Event sources and action providers declare their implementations through
+    the <a href="https://github.com/mdbase-dev/mdbase-spec/blob/main/interop/0.1.md">interoperability profile</a>,
+    not through a type file.
   </p>
 </DocsLayout>

@@ -83,7 +83,9 @@ body {
 }
 
 .wordmark {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
   margin-bottom: 18px;
   color: var(--color-text);
   font-weight: 400;
@@ -228,5 +230,45 @@ body {
 
   .site-footer__nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* The square-bar mark beside the wordmark, with the apps' hover ripple. */
+.brand-mark {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  overflow: visible;
+}
+
+.brand-mark__accent {
+  fill: #005c88;
+}
+
+:root[data-theme="dark"] .brand-mark__accent {
+  fill: #63b1e2;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .brand-mark__accent {
+    fill: #63b1e2;
+  }
+}
+
+/* Lift is in mark units: 5 at 24px matches the 3px lift on the apps' 42px mark. */
+.wordmark:hover .brand-mark__bar,
+.wordmark:focus-visible .brand-mark__bar {
+  animation: brand-mark-wave 420ms cubic-bezier(0.45, 0, 0.55, 1) calc(var(--step) * 30ms) 1 both;
+}
+
+@keyframes brand-mark-wave {
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark__bar {
+    animation: none !important;
   }
 }

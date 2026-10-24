@@ -34,7 +34,7 @@ test("Every documentation navigation entry resolves to a site page", () => {
     const page = new URL(`src/pages${href}index.astro`, root);
     assert.ok(existsSync(page), `Missing navigation target: ${fileURLToPath(page)}`);
   }
-  assert.match(sections, /value: release\.sdkVersion/);
+  assert.match(sections, /meta: { label: "@mdbase-dev\/sdk"/);
 });
 
 test("Five sample recordings have local playable files, posters and text equivalents", () => {

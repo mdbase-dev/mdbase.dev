@@ -20,12 +20,12 @@ const advancedPacks = catalog.packs.filter((pack) => pack.installation.visibilit
   description="Browse versioned data contracts and installable starter type packs for mdbase collections."
   current="sdk"
 >
-  <section class="content-section" aria-label="Contracts and type packs">
-    <h1 class="sr-only">Contracts and type packs</h1>
-    <p>
-      Contracts give applications a small shared vocabulary without requiring
-      every collection to use the same field names or storage format. Type
-      packs install a contract together with a local, editable type.
+  <header class="page-intro">
+    <h1>Contracts and type packs</h1>
+    <p class="page-intro__lede">
+      Contracts give apps a small shared vocabulary, without every collection
+      having to use the same field names. A type pack installs a contract
+      together with a local type you can edit.
     </p>
     <div class="button-row">
       <a class="button button--primary" href="/contracts/catalog.json">Catalog JSON</a>
@@ -33,14 +33,13 @@ const advancedPacks = catalog.packs.filter((pack) => pack.installation.visibilit
         Source repository
       </a>
     </div>
-  </section>
+  </header>
 
-  <section class="content-section contract-explainer">
-    <h2>How contracts map local fields</h2>
+  <section class="content-section contract-explainer" aria-labelledby="mapping">
+    <h2 id="mapping">How contracts map local fields</h2>
     <p class="section-intro">
-      A type remains the source of truth for what your Markdown records store.
-      Its <code>implements</code> entries explain how compatible applications
-      should read those fields.
+      A type is still the source of truth for what your Markdown records store.
+      Its <code>implements</code> entries tell apps how to read those fields.
     </p>
     <ol>
       <li>
@@ -53,19 +52,19 @@ const advancedPacks = catalog.packs.filter((pack) => pack.installation.visibilit
       </li>
       <li>
         <span>3</span>
-        <div><strong>Contract settings</strong><p>Optionally describe behavior, such as which status values mean complete, using another JSON Schema.</p></div>
+        <div><strong>Contract settings</strong><p>Optionally describe behaviour, such as which status values mean complete, using another JSON Schema.</p></div>
       </li>
     </ol>
     <p class="contract-explainer__note">
-      One type can implement several contracts, and any number of applications
-      can consume the same contract. Interchange formats such as JSContact and
-      vCard belong in import and export adapters unless a collection
-      intentionally stores that wire format.
+      One type can implement several contracts, and any number of apps can read
+      the same contract. Interchange formats such as JSContact and vCard belong
+      in import and export tools, unless a collection deliberately stores that
+      format.
     </p>
   </section>
 
-  <section class="content-section">
-    <h2>Published contracts</h2>
+  <section class="content-section" aria-labelledby="published">
+    <h2 id="published">Published contracts</h2>
     <table class="profile-table">
       <thead>
         <tr>
@@ -102,13 +101,13 @@ const advancedPacks = catalog.packs.filter((pack) => pack.installation.visibilit
     </table>
   </section>
 
-  <section class="content-section">
-    <h2>Ready-made types</h2>
+  <section class="content-section" aria-labelledby="ready-made">
+    <h2 id="ready-made">Ready-made types</h2>
     <p class="section-intro">
       Add these from <strong>Types → Add a type</strong> in mdbase-editor.
-      Each pack creates a local, editable type with its portable contract and
-      initial field mapping. You can rename fields later; the editor keeps the
-      mapping visible and aligned.
+      Each pack creates a local type you can edit, with its contract and a
+      starting field mapping. You can rename fields later; the editor keeps the
+      mapping in step.
     </p>
     <div class="pack-grid">
       {
@@ -172,9 +171,9 @@ const advancedPacks = catalog.packs.filter((pack) => pack.installation.visibilit
     <div class="callout">
       <strong>Published versions are immutable.</strong>
       <p>
-        Catalog discovery may move forward, but an installation always selects
-        one exact pack version and verifies every embedded resource digest
-        before changing the collection.
+        The catalog may list newer versions, but an installation always picks
+        one exact pack version and checks every resource’s digest before
+        changing the collection.
       </p>
     </div>
   </section>
