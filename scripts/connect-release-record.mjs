@@ -13,7 +13,7 @@ export function buildConnectReleaseRecord({ tag, sourceRevision, release, channe
   assert.equal(channel.tag, tag, "channel manifest tag differs from requested tag");
   assert.equal(channel.channel, version.includes("-") ? "beta" : "stable", "channel differs from semantic version");
   assert.equal(channel.release_url, `https://github.com/${CONNECT_REPOSITORY}/releases/tag/${tag}`, "channel release URL differs from tag");
-  assert.equal(npmVersion, version, "published SDK version differs from client release");
+  assert.ok(compareSemanticVersions(npmVersion, version) <= 0, "published SDK version is newer than client release");
   assert.match(sourceRevision, /^[0-9a-f]{40}$/, "release source must be a full commit SHA");
   assert.ok(Number.isFinite(Date.parse(release.published_at)), "GitHub release has no publication time");
 
@@ -59,7 +59,7 @@ export function buildConnectReleaseRecord({ tag, sourceRevision, release, channe
     schemaVersion: 1,
     channel: channel.channel,
     version,
-    sdkVersion: version,
+    sdkVersion: npmVersion,
     tag,
     sourceRevision,
     publishedAt: release.published_at,
