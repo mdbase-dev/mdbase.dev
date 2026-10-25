@@ -2,115 +2,187 @@
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
-const direct = `const status = await connection.checkDirectAccess();
+const waiting = `const db = await connect({
+  connector,
+  app: { name: "dev.example.worklog", version: "1.4.0" },
+  // Private collections: keep retrying until one of the user's devices is online.
+  waitForDevice: true,
+  onWaiting: () => showBanner("Open mdbase on one of your devices to continue."),
+});
 
-if (status === "permission_required") {
-  directAccessButton.onclick = async () => {
-    await connection.requestDirectAccess();
-  };
-}
-
-connection.onConnectionChange((info) => {
-  // "direct", "relay", or "remote"
-  renderRoute(info?.route);
+db.onLink((state, why) => {
+  // "open", "reconnecting" or "closed"
+  renderConnection(state, why?.reason);
 });`;
 
-const options = `const mdbase = new MdbaseConnect({
-  serverUrl: "https://connect.mdbase.dev",
-  manifest,
-  redirectUri,
-  directAccess: "auto",
-  relayEncryption: "required"
+const local = `import { connect } from "@mdbase-dev/sdk";
+import { connectDaemonLocalhost } from "@mdbase-dev/sdk/node";
+
+const db = await connect({
+  connector: connectDaemonLocalhost({ collection: collectionId }),
+  app: { name: "dev.example.export-script", version: "0.1.0" },
 });`;
 ---
 
 <DocsLayout
-  title="Authority routes"
-  description="The SDK selects direct, encrypted relay, or remote-authority transport behind one operation interface."
+  title="How apps reach a collection"
+  description="Your app always talks to a replica. Which replica depends on the collection’s sync option: mdbase’s copy for Cloud copy, one of your devices for Private."
   active="routing"
   headings={[
-    { href: "#automatic", label: "Automatic routing" },
-    { href: "#direct", label: "Direct access" },
-    { href: "#relay", label: "Encrypted relay" },
-    { href: "#remote", label: "Remote authority" },
-    { href: "#portable", label: "Portable files" },
-    { href: "#native", label: "Native shells" }
+    { href: "#automatic", label: "Apps talk to a replica" },
+    { href: "#cloud-copy", label: "Cloud copy" },
+    { href: "#private", label: "Private" },
+    { href: "#relay", label: "The relay" },
+    { href: "#waiting", label: "When no device is online" },
+    { href: "#local", label: "On the same computer" },
+    { href: "#first-party", label: "mdbase’s own apps" }
   ]}
 >
-  <h2 id="automatic">Automatic route selection</h2>
+  <h2 id="automatic">Apps talk to a replica</h2>
   <p>
-    A collection has one write authority: either a local connector for a
-    filesystem folder or a hosted provider. For a local authority, the SDK
-    prefers the fixed same-computer endpoint and falls back to the encrypted
-    relay. The user chooses the collection authority. The SDK selects the
-    network route for each request.
+    Every client connects to one <strong>replica</strong>: a full copy of the
+    collection that checks your app’s grant and answers its requests. Your
+    code is the same whichever replica it reaches. The collection’s sync
+    option decides which one that is. You don’t choose a route.
   </p>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Sync option</th>
+        <th>Your app reaches</th>
+        <th>Works while the user’s devices are off</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Cloud copy (the default)</td>
+        <td>mdbase’s hosted replica</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td>Private</td>
+        <td>One of the user’s own devices, through the relay</td>
+        <td>No</td>
+      </tr>
+    </tbody>
+  </table>
   <p>
-    Routing state belongs to a collection-bound <code>MdbaseConnection</code>.
-    Different saved collections can be remote, direct, or relayed at the same
-    time.
-  </p>
-  <CodeBlock code={options} language="ts" label="connect-options.ts" />
-
-  <h2 id="direct">Request same-computer browser access from a user gesture</h2>
-  <CodeBlock code={direct} language="ts" label="direct-access.ts" />
-  <p>
-    Browser local-network permission must be requested from a user action. Once
-    available, grantable operations prefer{" "}
-    <code>http://127.0.0.1:28485/v1/operations</code>. The connector checks the
-    exact approved web origin, or the exact opaque
-    {" "}<code>null</code> origin for a portable grant. It also checks the Host
-    header, protocol version, grant, and application-key proof.
-  </p>
-  <p>
-    Set <code>directAccess: "disabled"</code> for embedding environments that
-    cannot make loopback requests.
-  </p>
-
-  <h2 id="relay">Encrypted relay fallback</h2>
-  <p>
-    Protocol 1 uses a non-extractable P-256 key and atomic message counter in
-    IndexedDB for a web application. An opaque portable file keeps both in
-    process memory. The SDK encrypts operation inputs for the local connector
-    and decrypts results in the application. The control plane receives opaque
-    bodies plus operation and delivery metadata.
-  </p>
-  <p>
-    New authorizations require encrypted relay by default. Encrypted grants use
-    encrypted relay exclusively. The{" "}
-    <code>relayEncryption: "disabled"</code> option supports development stacks
-    that intentionally lack end-to-end relay encryption.
+    The log is encrypted in both options. What differs is who holds the keys.
   </p>
 
-  <h2 id="remote">Remote-authority route</h2>
+  <h2 id="cloud-copy">Cloud copy</h2>
   <p>
-    Authorization may return a short-lived, grant-bound remote-authority
-    capability. The SDK sends operations directly to that authority, binds
-    browser requests to the approved callback origin, and refreshes the
-    capability as needed.
-  </p>
-  <p>
-    An mdbase hosted provider is one remote-authority deployment. Its operations
-    go directly from the application to the provider. The provider decrypts
-    records to execute canonical mdbase operations and acts as a trusted data
-    processor.
+    mdbase keeps a readable copy of the collection and runs a replica for it.
+    Your app connects to that replica over an encrypted session. It works at
+    any time, including when every one of the user’s devices is off. mdbase
+    can read the content of a Cloud copy collection.
   </p>
 
-  <h2 id="portable">Portable files use the same route-neutral connection</h2>
+  <h2 id="private">Private</h2>
   <p>
-    A downloaded file can use direct, encrypted-relay, or remote-authority
-    access after its short-code approval. For remote access, its short-lived
-    capability is bound to the exact grant, collection, scope, operations,
-    expiry, and opaque <code>Origin: null</code>, and remains in process
-    memory. The consuming operation API is identical across all three routes.
+    Only the user’s devices hold the keys, so only they can run a replica.
+    Your app connects to whichever of the user’s devices is online, through
+    mdbase’s relay. mdbase cannot read the content. If no device is online,
+    your app cannot reach the collection.
+  </p>
+  <p>
+    The user approves your app once, in mdbase. A signed-in device applies
+    that grant automatically; there is no second approval on the device.
   </p>
 
-  <h2 id="native">Native shells</h2>
+  <h2 id="relay">The relay</h2>
   <p>
-    Supply <code>navigate</code> to open authorization in the system browser,
-    list a private-use callback scheme in the bundled manifest, and provide the
-    received deep link to <code>completeAuthorization(callbackUrl)</code>.
-    Native shells may also supply custom authorization storage and grant key
-    stores.
+    The relay is a pipe, not storage. It pairs your app’s connection with the
+    device’s and forwards encrypted messages. It sees which app connects to
+    which device, and the sizes and timing of messages. It never sees content.
+  </p>
+  <p>
+    The session inside is end-to-end between your app and the replica. It uses
+    the Noise protocol (<code>Noise_IK_25519_ChaChaPoly_SHA256</code>), and
+    both sides prove their keys:
+  </p>
+  <ul>
+    <li>
+      your app’s key is the one registered with its grant when the user
+      approved it;
+    </li>
+    <li>
+      the replica’s key is the one enrolled for that device.
+    </li>
+  </ul>
+  <p>
+    The session is bound to one collection, grant and device. It ends after
+    24 hours and the SDK reconnects with a new handshake. Revoking the grant
+    closes it at once.
+  </p>
+  <p>
+    In a browser, <code>loadOrCreateClientKey()</code> keeps your app’s key in
+    IndexedDB as a non-extractable key where the browser allows it. Otherwise
+    the key is stored in your origin’s storage. Either way, script running on
+    your origin can use it, so a cross-site scripting bug in your app is a
+    bug in your app’s access.
+  </p>
+
+  <h2 id="waiting">When no device is online</h2>
+  <p>
+    When a Private collection has no device online, connecting fails with
+    {" "}<code>unavailable</code> and reason <code>no_device_online</code>.
+    Pass <code>waitForDevice: true</code> to keep retrying instead, and tell
+    the user what to do.
+  </p>
+  <CodeBlock code={waiting} language="ts" label="connect.ts" />
+  <p>
+    The SDK reconnects by itself when the link drops. <code>db.link</code> and
+    {" "}<code>onLink()</code> report the link to the replica, not the sync
+    state; for that, use <a href="/sdk/offline-sync/">sync status</a>.
+  </p>
+
+  <h2 id="local">On the same computer</h2>
+  <p>
+    A script or plugin on a computer running the mdbase desktop app can talk
+    to the desktop app’s replica directly, without the relay.
+    {" "}<code>@mdbase-dev/sdk/node</code> has two connectors:
+  </p>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Connector</th>
+        <th>How it connects</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>connectDaemonLocalhost(&#123; collection &#125;)</code></td>
+        <td>
+          A localhost WebSocket. The user links your key to the collection on
+          screen in the desktop app, once per collection and key.
+        </td>
+      </tr>
+      <tr>
+        <td><code>ipcConnector(&#123; collection, grant, staticKey &#125;)</code></td>
+        <td>A local socket or named pipe, with your app’s grant and key.</td>
+      </tr>
+    </tbody>
+  </table>
+  <CodeBlock code={local} language="ts" label="export.mjs" />
+  <p>
+    Both read the desktop app’s identity from its state directory and pin its
+    key, so another process listening on the same port fails the handshake.
+  </p>
+  <p>
+    <code>connectDaemonLocalhost</code> uses a new key each time, so the user
+    is asked to link it on every run. To be asked once, use
+    {" "}<code>localLinkConnector(&#123; link: () =&gt; readLocalLink(), collection, staticKey &#125;)</code>
+    {" "}with a key you keep. Outside a browser,
+    {" "}<code>loadOrCreateClientKey()</code> keeps keys in memory only, unless
+    you pass your own <code>storage</code>.
+  </p>
+
+  <h2 id="first-party">mdbase’s own apps</h2>
+  <p>
+    mdbase’s own web apps can keep a replica of their own in the browser, so
+    they open and edit while offline. Other apps reach a replica as described
+    above. Running your own replica in the browser is not open to other apps
+    at launch.
   </p>
 </DocsLayout>

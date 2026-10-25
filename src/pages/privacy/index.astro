@@ -6,11 +6,11 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   title="Privacy"
   description="Privacy information for mdbase.dev and mdbase Connect."
 >
+  <header class="page-intro">
+    <h1>Privacy</h1>
+    <p class="page-intro__lede">How the public website and Connect services handle data.</p>
+  </header>
   <article class="legal">
-    <header>
-      <h1>Privacy</h1>
-      <p>How the public website and Connect services handle data.</p>
-    </header>
     <h2>Website</h2>
     <p>
       mdbase.dev is a public static documentation website. It has no account
@@ -28,9 +28,13 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       networks.
     </p>
     <p>
-      Connect also retains computer pairing, application declarations,
-      collection identifiers and display names, exact grants, tokens, audit
-      metadata, and routing metadata needed to operate the service.
+      Connect also retains registered devices and their public keys,
+      application declarations, collection identifiers and display names,
+      collection members and their roles, exact grants, tokens, audit
+      metadata, and routing metadata needed to operate the service. If you use
+      an encryption password for Private collections, Connect stores your
+      account key locked with that password. Connect never receives the
+      password or the unlocked key.
     </p>
     <p>
       Connect uses these records, never collection contents, to produce
@@ -38,20 +42,43 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       authorization and pairing requests are approved, denied, or left
       unfinished, and which applications are connected and in use. Direct use
       on the same computer is visible only as per-account counts reported by
-      the connector. Connect does not use third-party analytics. Expired tokens,
+      the desktop app. Connect does not use third-party analytics. Expired tokens,
       unfinished authorization and pairing requests, and protocol usage counts
       are deleted about 13 months after they expire or were last updated.
     </p>
+    <h2>Collection data</h2>
     <p>
-      Local collection paths and record payloads stay at the connector.
-      Encrypted relay traffic exposes routing metadata, operation names, timing,
-      and sizes. Request and response bodies remain encrypted between the
-      application and local connector.
+      For a synced collection, each change is encrypted on your device before
+      it is uploaded. Connect stores the encrypted changes, snapshots, and
+      attachments. It can see the collection’s members, devices, and app
+      grants, the number, padded sizes, and timing of changes, and connection
+      metadata such as IP addresses.
     </p>
     <p>
-      Hosted collection records are encrypted at rest by the hosted provider.
-      The provider decrypts them to execute authorized mdbase operations and
+      For a Cloud copy collection, Connect also holds the collection key and
+      keeps a readable copy, which the hosted service uses to execute
+      authorized mdbase operations. For these collections, the hosted service
       acts as a trusted data processor.
+    </p>
+    <p>
+      For a Private collection, Connect holds no collection key and cannot read
+      record contents, paths, field names, or attachments.
+    </p>
+    <p>
+      For a collection with sync off, record contents and paths stay on your
+      devices. Applications reach it through an encrypted relay session with
+      the computer that holds it. The relay sees routing metadata, timing, and
+      sizes.
+    </p>
+    <p>
+      If an application schedules reminders, Connect stores each reminder’s
+      time and a random identifier. For Private collections and collections
+      with sync off, it stores no reminder content.
+    </p>
+    <p>
+      When an account moves to the new sync system, mdbase keeps the old
+      system’s copy of each collection for 90 days after it moves, for
+      recovery.
     </p>
     <h2>Email</h2>
     <p>
@@ -75,8 +102,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     </p>
     <h2>Contact</h2>
     <p>
-      Report a privacy or security concern through the appropriate repository
-      in the <a href="https://github.com/mdbase-dev">mdbase GitHub organization</a>.
+      Email <a href="mailto:support@mdbase.dev">support@mdbase.dev</a> about a
+      privacy concern. Report security issues as described on the{" "}
+      <a href="/security/">security page</a>.
     </p>
   </article>
 </BaseLayout>

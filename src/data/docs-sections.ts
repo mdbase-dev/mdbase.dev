@@ -1,4 +1,3 @@
-import release from "./connect-release.json";
 import mcpTools from "./mcp-tools.json";
 
 export type DocsSectionId = "sdk" | "mcp" | "editor" | "reader" | "writer";
@@ -15,16 +14,16 @@ type DocsSection = {
 
 export const docsSections: Record<DocsSectionId, DocsSection> = {
   sdk: {
-    label: "Connect SDK",
+    label: "SDK",
     navLabel: "SDK documentation",
     headerCurrent: "sdk",
     sourcePath: "src/pages/sdk",
-    meta: { label: "@mdbase-dev/connect", value: release.sdkVersion },
+    meta: { label: "@mdbase-dev/sdk", value: "Not yet published" },
     groups: [
       {
         label: "Start",
         docs: [
-          { href: "/sdk/quickstart/", label: "Run the source-built sandbox", key: "quickstart" },
+          { href: "/sdk/quickstart/", label: "Quickstart", key: "quickstart" },
           { href: "/sdk/connect-quickstart/", label: "Connect a browser app", key: "connect-quickstart" },
           { href: "/sdk/", label: "SDK overview", key: "overview" }
         ]
@@ -32,15 +31,16 @@ export const docsSections: Record<DocsSectionId, DocsSection> = {
       {
         label: "Build",
         docs: [
-          { href: "/sdk/portable-apps/", label: "Portable HTML apps", key: "portable-apps" },
+          { href: "/sdk/portable-apps/", label: "Browser bundle", key: "portable-apps" },
           { href: "/sdk/manifest/", label: "Application manifest", key: "manifest" },
           { href: "/sdk/contracts/", label: "Contracts and adapters", key: "contracts" },
           { href: "/sdk/authorization/", label: "Authorization", key: "authorization" },
           { href: "/sdk/operations/", label: "Records and operations", key: "operations" },
-          { href: "/sdk/routing/", label: "Authority routes", key: "routing" },
+          { href: "/sdk/editing/", label: "Editing records", key: "editing" },
+          { href: "/sdk/routing/", label: "How apps reach a collection", key: "routing" },
           { href: "/sdk/testing/", label: "Testing", key: "testing" },
           { href: "/sdk/notifications/", label: "Notifications and timers", key: "notifications" },
-          { href: "/sdk/offline-sync/", label: "Offline sync", key: "offline-sync" }
+          { href: "/sdk/offline-sync/", label: "Pending writes and sync status", key: "offline-sync" }
         ]
       },
       {

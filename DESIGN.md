@@ -20,47 +20,52 @@ rounded:
 
 ## Direction
 
-mdbase is understated. The site uses a nearly white paper surface, fine rules,
-plain language, and small structural labels. The visual hierarchy follows the
-content and its technical structure.
+mdbase is understated. Pages sit on **Silver sky**: a pale blue-grey canvas
+(`oklch(97% 0.009 245)`, dark `oklch(20.5% 0.018 245)`) with soft cloud and fine
+grain. Text stays on clean canvas; the sky lives at the edges and never sits
+under body copy. Fine rules, plain language and small structural labels carry
+the hierarchy.
 
-Light and dark themes use the color roles defined in
-`mdbase-connect/packages/ui/styles.css`. The dark canvas is a soft charcoal
-(`oklch(17.5% 0.012 255)`), with raised surfaces at 19.5% and 23.5% lightness.
-The build synchronizes those values from Connect so the two sites retain the
-same theme contract.
+Colour roles come from `mdbase-connect/packages/ui/styles.css` and are
+synchronised by the build. The site overrides only the canvas, in
+`src/styles/global.css` and `src/styles/home.css`.
 
-The homepage is based directly on
-`mdbase-connect/docs/mdbase-configurations-v2.html`. Its signature is one field
-of 361 record particles. The field begins as a murmuration and becomes concrete
-collection, structure, authority, permission, and access diagrams as the reader
-scrolls. This is the only expressive visual element. Canvas surfaces, labels,
-edges, and particles use the same light and dark color roles as the page. The
-introductory field uses the soft text and accent roles; later scenes use accent
-particles to distinguish metadata, hosted authority, and moving packets.
+The mark is the square-bar icon (`src/components/BrandMark.astro`). It sits
+beside the wordmark in the header, and a hover ripple runs through the bars in
+reading order, matching the apps. The favicon and the social card
+(`public/og-card.png`, 1200×630) use the same mark.
+
+The homepage pairs a moving sky (`public/mdbase-atmosphere.js`) with one field
+of 361 record particles (`public/mdbase-murmuration.js`). The field begins as a
+murmuration and becomes concrete diagrams as the reader scrolls: files, apps,
+editing, sync, Cloud copy and Private, permissions, and sharing. Canvas
+surfaces, labels, edges and particles use the page's colour roles. Dashed boxes
+mark copies that are offline, locked or removed; they keep a solid surface so
+they read against the sky.
 
 ## Typography
 
 Atkinson Hyperlegible is the reading and display face. Azeret Mono is reserved
-for paths, package names, versions, operations, and structural labels. Headings
-are compact and leave room for their explanatory text. Reading columns use a
-72ch measure. Sections can contain as much detail as their subject requires.
+for paths, package names, versions, operations, and structural labels. Page
+titles are large and regular (about 2.4rem); section headings are 1.3rem
+semibold; body text is 17px. Reading columns use a 72ch measure.
 
 ## Layout
 
-The homepage has six long chapters in a left reading column and a fixed canvas
-on the right. On narrow screens, the canvas moves above each chapter. Interior
-pages use low, ruled page openings and narrow documentation columns. Navigation,
-buttons, tables, callouts, and footer links remain visually quiet. A reading
-wash sits between the homepage canvas and its copy, becoming opaque before the
-mobile text region begins.
+The homepage has long chapters in a left reading column, a fixed canvas on the
+right, and a chapter index in the left gutter on wide screens. On narrow
+screens, the canvas moves above each chapter. Interior pages open with a
+visible title and lede (`.page-intro`) under a still band of sky at the top
+right; documentation pages keep their three-column layout. Navigation, buttons,
+tables, callouts, and footer links remain visually quiet.
 
 ## Motion
 
-Only the homepage particle field moves. Its transformations explain the current
-chapter. Reduced-motion preferences place the particles directly into each
-formation. The particle field otherwise animates on both pointer and touch
-screens. Interior pages do not use decorative animation.
+Only the homepage moves: the sky drifts and the particle field explains the
+current chapter. A "Pause motion" control stops both. Reduced-motion
+preferences stop the sky and place particles directly into each formation.
+The header mark's hover ripple is the only motion on interior pages, and it
+also respects reduced motion.
 
 ## Language
 

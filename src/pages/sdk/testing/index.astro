@@ -2,155 +2,149 @@
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
-const sandbox = `import { createSandbox } from "@mdbase-dev/connect-dev";
-import type { JsonObject } from "@mdbase-dev/connect";
-import type { MdbaseCollectionClient } from "@mdbase-dev/connect/advanced";
+const sandbox = `import { describe, expect, it } from "vitest";
+import { connect, isMdbaseError } from "@mdbase-dev/sdk";
+import { MemoryReplica } from "@mdbase-dev/sdk/testing";
+import { completeTask } from "../src/tasks";
 
-interface Task extends JsonObject {
-  type: "task";
-  title: string;
-  status: "open" | "done";
+async function setup() {
+  const replica = new MemoryReplica({ confirmDelayMs: null });
+  const { id } = replica.seed({
+    path: "tasks/plan.md",
+    types: ["task"],
+    frontmatter: { title: "Plan", status: "open" },
+  });
+  const db = await connect({
+    connector: replica.connector(),
+    app: { name: "dev.example.test", version: "0.0.0" },
+  });
+  return { replica, db, id };
 }
 
-// Feature logic under test: depends only on the collection client.
-async function openTasks(client: MdbaseCollectionClient<Task>) {
-  const tasks = await client.queryAll({ types: ["task"] });
-  if (!tasks.ok) return tasks;
-  return {
-    ...tasks,
-    value: tasks.value.results.filter((task) => task.effectiveFrontmatter?.status === "open")
-  };
-}
+describe("completeTask", () => {
+  it("shows the change before it is confirmed", async () => {
+    const { replica, db, id } = await setup();
+    const write = await completeTask(db, id);
+    expect(write.state).toBe("pending");
+    expect((await db.get(id)).frontmatter.get("status")).toBe("done");
 
-const { client } = createSandbox<Task>({
-  records: [
-    { path: "tasks/first.md", types: ["task"], frontmatter: { type: "task", title: "First", status: "open" } },
-    { path: "tasks/done.md", types: ["task"], frontmatter: { type: "task", title: "Done", status: "done" } }
-  ]
-});
+    replica.confirmAll();
+    await expect(write.confirmed).resolves.toMatchObject({ state: "confirmed" });
+    db.close();
+  });
 
-const result = await openTasks(client);
-if (!result.ok) throw new Error(result.problem.message);
-expect(result.value.map((task) => task.path)).toEqual(["tasks/first.md"]);`;
+  it("reports a rejected write", async () => {
+    const { replica, db, id } = await setup();
+    const write = await completeTask(db, id);
+    replica.reject(write.mutationId);
+    await expect(write.confirmed).rejects.toSatisfy((e) => isMdbaseError(e));
+    db.close();
+  });
+});`;
 
-const editing = `import { createRecordTestAuthority } from "@mdbase-dev/connect-testing";
-
-const authority = createRecordTestAuthority();
-authority.seed("Notes/one.md", { body: "Original" });
-authority.records.follow(authority.watch);
-
-// Mount the editor with authority.records where it expects connection.records.
-const opened = await authority.records.open("Notes/one.md");
-if (!opened.ok) throw new Error(opened.problem.message);
-opened.value.session.setBody("Mine");
-
-authority.editElsewhere("Notes/one.md", { body: "Theirs" });
-await vi.runAllTimersAsync();
-expect(opened.value.session.getSnapshot().state).toBe("conflict");`;
-
-const ci = `pnpm exec mdbase-connect-dev validate-manifest \\
-  public/.well-known/mdbase-app.json
-
-pnpm test
-
-# Run semantic and route tests against the real local stack.
-pnpm e2e`;
+const where = `const replica = new MemoryReplica({
+  // MemoryReplica does not parse expressions. Supply your own evaluator.
+  where: (expr, record) =>
+    expr === 'status == "open"' && record.frontmatter.get("status") === "open",
+});`;
 ---
 
 <DocsLayout
   title="Testing"
-  description="Use the transport-neutral client and deterministic sandbox for feature tests, then reserve the real connector for CEL, authorization, encryption, and route behavior."
+  description="Test your app against MemoryReplica, an in-memory replica that speaks the real protocol. Keep merge and permission behaviour for tests against a real collection."
   active="testing"
   headings={[
-    { href: "#sandbox", label: "Sandbox tests" },
-    { href: "#coverage", label: "Sandbox coverage" },
-    { href: "#editing", label: "Editing features" },
-    { href: "#real", label: "Real connector tests" },
-    { href: "#ci", label: "CI sequence" }
+    { href: "#sandbox", label: "Unit tests" },
+    { href: "#coverage", label: "What it covers" },
+    { href: "#editing", label: "Controls" },
+    { href: "#real", label: "What it doesn’t cover" }
   ]}
 >
-  <h2 id="sandbox">Test feature logic through MdbaseCollectionClient</h2>
-  <CodeBlock code={sandbox} language="ts" label="tasks.test.ts" />
   <p>
-    The sandbox implements the same small{" "}
-    <code>MdbaseCollectionTransport</code> seam used by
-    {" "}<code>MdbaseCollectionClient</code>. It is deterministic, requires no
-    browser authorization, and exposes a snapshot helper for assertions.
+    <code>MemoryReplica</code> from <code>@mdbase-dev/sdk/testing</code> is an
+    in-memory replica. It speaks the same protocol as a real one: frames,
+    pushes and receipts. Your code connects to it with
+    {" "}<code>connect()</code> and gets an ordinary
+    {" "}<code>MdbaseClient</code>.
   </p>
 
-  <h2 id="coverage">What the sandbox covers</h2>
+  <h2 id="sandbox">Unit tests</h2>
+  <CodeBlock code={sandbox} language="ts" label="tasks.test.ts" />
+
+  <h2 id="coverage">What it covers</h2>
+  <ul>
+    <li>Reads, queries with cursors, live queries and the change feed.</li>
+    <li>Creates, updates, renames and deletes, with receipts and <code>ifRevision</code>.</li>
+    <li>Sync status and pending writes. Holds and conflicts are empty until you add one with <code>hold(ref)</code> or <code>conflict(ref, &#123; field, kept, lost &#125;)</code>.</li>
+    <li>Files: upload, download and listing.</li>
+    <li>Record sessions from <code>db.records.open()</code>.</li>
+  </ul>
+  <p>
+    <code>where</code> needs an evaluator you supply.
+    {" "}<code>order_by</code> sorts on <code>file.path</code> and top-level
+    frontmatter fields.
+  </p>
+  <CodeBlock code={where} language="ts" label="where.ts" />
+
+  <h2 id="editing">Controls</h2>
   <table class="api-table">
     <thead>
       <tr>
-        <th>Covered</th>
-        <th>Test with the real stack</th>
+        <th>Call</th>
+        <th>Use it to</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td>Typed CRUD and outcomes</td>
-        <td>CEL expression semantics</td>
+        <td><code>new MemoryReplica(&#123; confirmDelayMs &#125;)</code></td>
+        <td>
+          Confirm writes after a delay (0 ms by default), or pass
+          {" "}<code>null</code> to confirm only when you say so
+        </td>
       </tr>
       <tr>
-        <td>Revision preconditions</td>
-        <td>Query ordering semantics</td>
+        <td><code>seed(&#123; path, types, frontmatter, body &#125;)</code></td>
+        <td>Add a confirmed record before the test</td>
       </tr>
       <tr>
-        <td>Type filtering and pagination</td>
-        <td>OAuth, PKCE, and grant approval</td>
+        <td><code>confirmAll()</code></td>
+        <td>Confirm every pending write</td>
       </tr>
       <tr>
-        <td>Read defaults</td>
-        <td>Direct and encrypted relay routing</td>
+        <td><code>reject(mutationId, problem?)</code></td>
+        <td>Reject one write (by default with <code>conflict</code>, reason <code>revision</code>)</td>
       </tr>
       <tr>
-        <td>Change cursors</td>
-        <td>Filesystem and hosted-provider behavior</td>
+        <td><code>setOnline(false)</code></td>
+        <td>Act as if the log can’t be reached: status reports offline and writes stay pending</td>
+      </tr>
+      <tr>
+        <td><code>dropConnections()</code></td>
+        <td>Cut the link, to test reconnects</td>
+      </tr>
+      <tr>
+        <td><code>refuse</code>, <code>role</code>, <code>capabilities</code> options</td>
+        <td>Refuse the connection with a problem, or set what <code>hello</code> reports</td>
       </tr>
     </tbody>
   </table>
   <p>
-    The sandbox rejects <code>where</code> and <code>orderBy</code> with <code>sandbox_unsupported</code>. Run CEL
-    expression and ordering tests against a conforming collection authority.
+    <code>createApplicationFixture()</code> stands in for
+    {" "}<code>MdbaseConnect</code>, so you can test your app’s sign-in and
+    readiness screens with snapshots you control.
   </p>
 
-  <h2 id="editing">Test editing features</h2>
-  <CodeBlock code={editing} language="ts" label="editor.test.ts" />
+  <h2 id="real">What it doesn’t cover</h2>
   <p>
-    <code>createRecordTestAuthority()</code> from
-    {" "}<code>@mdbase-dev/connect-testing</code> is an in-memory authority
-    with revision checks and a change watch; its <code>records</code> is the
-    real <code>connection.records</code> implementation. Controls reproduce
-    what other clients and the network do: <code>editElsewhere()</code>,
-    {" "}<code>renameElsewhere()</code>, <code>deleteElsewhere()</code>,
-    {" "}<code>loseNextResponse()</code>, <code>failNextWrite()</code> and
-    {" "}<code>resetWatch()</code>, with <code>writes</code> recording what
-    reached the authority.
+    <code>MemoryReplica</code> is not the replica. It applies patches
+    blindly, has no query planner and does not merge. Test these against a
+    real collection:
   </p>
-
-  <h2 id="real">Use the real stack at system boundaries</h2>
-  <p>Run integration tests against the local Connect stack for:</p>
   <ul>
-    <li>manifest registration and callback validation;</li>
-    <li>OAuth with PKCE and refresh-token rotation;</li>
-    <li>portable short-code approval, expiry, polling limits, cancellation, and key binding;</li>
-    <li><code>file://</code> memory isolation, popup blocking, and exact <code>Origin: null</code> grants;</li>
-    <li>grant narrowing, pausing, revocation, and operation gaps;</li>
-    <li>CEL filters, ordering, links, saved views, and type behavior;</li>
-    <li>direct-to-relay failover and durable mutation receipts;</li>
-    <li>hosted capabilities, sync, notifications, and authority timers.</li>
+    <li>field and body merges;</li>
+    <li>query expressions, type validation and defaults;</li>
+    <li>grants and permission errors;</li>
+    <li>when real holds and conflicts happen;</li>
+    <li>routing to a Private collection.</li>
   </ul>
-  <p>
-    Package tests should also build the dependency-free browser artifact,
-    recalculate its SHA-384 value, compare it with
-    {" "}<code>integrity.json</code>, and load the bundle from a real local file.
-  </p>
-
-  <h2 id="ci">Recommended CI sequence</h2>
-  <CodeBlock code={ci} language="sh" label="CI" />
-  <p>
-    Validate the manifest before tests so a callback or requirement error is
-    reported as a declaration problem. Keep deterministic feature tests fast,
-    then run the real-stack suite as the release boundary.
-  </p>
 </DocsLayout>

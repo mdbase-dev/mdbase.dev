@@ -14,7 +14,7 @@ import DocsLayout from "../../../../components/DocsLayout.astro";
     { href: "#broaden", label: "Reconnect or broaden access" },
     { href: "#write", label: "Read and write access" },
     { href: "#revoke", label: "Revoke access" },
-    { href: "#local", label: "Collections on your computer" }
+    { href: "#modes", label: "Cloud copy and Private" }
   ]}
 >
   <h2 id="model">One approval per collection</h2>
@@ -39,7 +39,7 @@ import DocsLayout from "../../../../components/DocsLayout.astro";
       <tr><td><code>collection_id</code></td><td>The collection's ID in Connect.</td></tr>
       <tr><td><code>display_name</code></td><td>The collection name shown in Connect.</td></tr>
       <tr><td><code>operations</code></td><td>The operations you approved, such as <code>read</code>, <code>query</code> or <code>update</code>.</td></tr>
-      <tr><td><code>authority</code></td><td><code>local</code> when the collection is on your computer, <code>remote</code> when it is hosted.</td></tr>
+      <tr><td><code>authority</code></td><td><code>local</code> when requests go to one of your devices, <code>remote</code> when mdbase serves them.</td></tr>
     </tbody>
   </table>
   <p>
@@ -99,17 +99,24 @@ import DocsLayout from "../../../../components/DocsLayout.astro";
     well if you no longer use them.
   </p>
 
-  <h2 id="local">Collections on your computer</h2>
+  <h2 id="modes">Cloud copy and Private</h2>
   <p>
-    For a collection that stays on your computer, requests travel from the MCP
-    server through the Connect relay to the Connector. They are encrypted end
-    to end between the MCP server and your Connector. The Connector checks its
-    own copy of your approval before it opens the collection, so a grant you
-    revoked is refused locally too.
+    Your approval travels with the collection, so every copy checks it
+    before it answers a request. A grant you revoked is refused by your
+    devices and by the cloud copy too.
   </p>
   <p>
-    The Connector must be running and online. If it is not, tools return{" "}
-    <code>connector_offline</code>. See{" "}
+    For a <strong>Cloud copy</strong> collection, requests go to the readable
+    copy mdbase keeps, so tools work while your devices are off.
+  </p>
+  <p>
+    For a <strong>Private</strong> collection, requests travel from the MCP
+    server through the mdbase relay to one of your devices. They are
+    encrypted end to end between the MCP server and that device, and the
+    relay cannot read them. One of your devices must be online. If none is,
+    tools return <code>connector_offline</code>. A new approval for a Private
+    collection takes effect once one of your signed-in devices has recorded
+    it. See{" "}
     <a href="/apps/mcp/troubleshooting/">Troubleshooting</a>.
   </p>
 </DocsLayout>

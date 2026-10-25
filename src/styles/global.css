@@ -67,11 +67,11 @@ button, select, input, textarea { color: inherit; font: inherit; }
 button, select { cursor: pointer; }
 img, svg { display: block; max-width: 100%; }
 
-strong, b,
-h1, h2, h3, h4 {
+strong, b, h4 {
   font-weight: 400;
 }
 
+/* The homepage's scale: a large regular title, semibold section heads. */
 h1, h2, h3, h4 {
   max-width: 34ch;
   color: var(--ink);
@@ -79,6 +79,25 @@ h1, h2, h3, h4 {
   line-height: 1.35;
   letter-spacing: 0;
   text-wrap: pretty;
+}
+
+h1 {
+  font-size: clamp(1.9rem, 3.6vw, 2.4rem);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+}
+
+h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
 }
 
 p, li { max-width: var(--reading); }
@@ -156,6 +175,7 @@ main[tabindex="-1"]:focus { outline: none; }
   border: 0;
 }
 .content-section + .content-section,
+.content-section + .catalogue-section,
 .catalogue-section + .catalogue-section,
 .build-section { margin-top: 3.75rem; }
 .content-section > p { margin-top: 0.8rem; color: var(--ink-soft); }
@@ -171,7 +191,7 @@ main[tabindex="-1"]:focus { outline: none; }
   counter-increment: steps;
 }
 .step::before { color: var(--ink-muted); font: 400 0.65rem/1.6 var(--sans); content: counter(steps, decimal-leading-zero); }
-.step h3 { font-size: 1rem; }
+.step h3 { font-size: 1rem; font-weight: 600; }
 .step p { margin-top: 0.25rem; color: var(--ink-soft); }
 
 .plain-sequence, .glossary-list { margin-top: 1.5rem; }
@@ -228,7 +248,7 @@ main[tabindex="-1"]:focus { outline: none; }
 }
 .code-block button { min-height: 2.4rem; padding: 0 0.4rem; color: inherit; background: transparent; border: 0; }
 .code-block pre, pre:not(.file-tree):not(.record-example) { max-width: 100%; padding: 1rem; font-size: 0.76rem; line-height: 1.58; tab-size: 2; }
-.code-block pre { margin: 0; border: 0; }
+.code-block pre:not(.file-tree):not(.record-example) { margin: 0; border: 0; }
 .code-block code { font-size: inherit; }
 
 .callout {
@@ -325,7 +345,7 @@ main[tabindex="-1"]:focus { outline: none; }
   .download-option__actions { justify-content: flex-start; }
   .plain-sequence li, .glossary-list > div { grid-template-columns: 2rem minmax(0, 1fr); }
   .plain-sequence span { grid-column: 2; }
-  .glossary-list dd { grid-column: 1 / -1; }
+  .glossary-list > div { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -336,4 +356,102 @@ main[tabindex="-1"]:focus { outline: none; }
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
+}
+
+/* Silver sky: the homepage's canvas, and a still band of cloud and grain behind the header. */
+:root {
+  --color-canvas: oklch(97% 0.009 245);
+  --sky-cloud: oklch(76% 0.026 245);
+  --sky-light: #fff;
+  --sky-grain: url("/textures/light-2.png");
+  --sky-grain-opacity: 0.17;
+}
+
+:root[data-theme="dark"] {
+  --color-canvas: oklch(20.5% 0.018 245);
+  --sky-cloud: oklch(36% 0.03 245);
+  --sky-light: oklch(27% 0.022 245);
+  --sky-grain: url("/textures/dark-2.png");
+  --sky-grain-opacity: 0.11;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-canvas: oklch(20.5% 0.018 245);
+    --sky-cloud: oklch(36% 0.03 245);
+    --sky-light: oklch(27% 0.022 245);
+    --sky-grain: url("/textures/dark-2.png");
+    --sky-grain-opacity: 0.11;
+  }
+}
+
+.site-body {
+  position: relative;
+}
+
+.site-body::before,
+.site-body::after {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 0;
+  width: min(72vw, 1180px);
+  height: 600px;
+  pointer-events: none;
+  content: "";
+  mask-image: linear-gradient(to right, transparent, #000 45%), linear-gradient(to bottom, #000 40%, transparent);
+  mask-composite: intersect;
+}
+
+.site-body::before {
+  background:
+    radial-gradient(closest-side, var(--sky-light), transparent) 62% 22% / 46% 44% no-repeat,
+    radial-gradient(closest-side, var(--sky-cloud), transparent) 88% 8% / 52% 58% no-repeat,
+    radial-gradient(closest-side, var(--sky-cloud), transparent) 52% 62% / 44% 46% no-repeat,
+    radial-gradient(closest-side, var(--sky-light), transparent) 96% 70% / 38% 40% no-repeat,
+    radial-gradient(closest-side, var(--sky-cloud), transparent) 108% 46% / 40% 52% no-repeat;
+  filter: blur(18px);
+  opacity: 0.9;
+}
+
+.site-body::after {
+  background: var(--sky-grain) 0 0 / 384px 384px repeat;
+  opacity: var(--sky-grain-opacity);
+}
+
+.site-body > main,
+.site-body > .site-footer {
+  position: relative;
+  z-index: 1;
+}
+
+.site-body > .site-header {
+  background: transparent;
+}
+
+/* Visible page intro on product pages. */
+.page-intro {
+  max-width: var(--reading);
+  margin: 0 0 3rem;
+  padding-top: 1.5rem;
+}
+
+.page-intro__lede {
+  margin-top: 1rem;
+  color: var(--ink-soft);
+  font-size: 1.15rem;
+  line-height: 1.5;
+}
+
+
+/* The collapsed docs menu on narrow screens should look like it opens. */
+.docs-nav summary {
+  cursor: pointer;
+}
+
+.docs-nav details:not([open]) > summary::after {
+  margin-left: 0.5rem;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  content: "Show pages ▾";
 }

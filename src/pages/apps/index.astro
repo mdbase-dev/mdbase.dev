@@ -17,7 +17,7 @@ const applications: CatalogueEntry[] = [
     description: "Task manager with lists, boards, calendars, recurrence, reminders, attachments, and time tracking.",
     status: "Public beta",
     runsOn: "Web, iOS, Android",
-    collections: "Hosted by Connect or local through Connector",
+    collections: "Cloud copy, or Private through one of your devices",
     links: [
       { label: "Open TaskNotes", href: "https://app.tasknotes.dev/" },
       { label: "Try the demo", href: "https://app.tasknotes.dev/?demo=30" },
@@ -26,10 +26,10 @@ const applications: CatalogueEntry[] = [
   },
   {
     name: "mdbase Editor",
-    description: "General collection editor for Markdown records, frontmatter, links, backlinks, and type definitions, with hosted collection sharing and read-only access for viewers.",
+    description: "General collection editor for Markdown records, frontmatter, links, backlinks, and type definitions, with collection sharing and read-only access for viewers.",
     status: "Public beta",
     runsOn: "Web",
-    collections: "Hosted by Connect or local through Connector",
+    collections: "Cloud copy, or Private through one of your devices",
     links: [
       { label: "Open Editor", href: "https://editor.mdbase.dev/" },
       { label: "Documentation", href: "/apps/editor/" },
@@ -41,7 +41,7 @@ const applications: CatalogueEntry[] = [
     description: "Read, highlight and organise PDFs, EPUBs and saved web pages, with Markdown notes and citation metadata.",
     status: "Development build",
     runsOn: "Web; optional Chrome extension",
-    collections: "Hosted by Connect or local through Connector",
+    collections: "Cloud copy, or Private through one of your devices",
     links: [
       { label: "Open Reader", href: "https://reader.mdbase.dev/" },
       { label: "Documentation", href: "/apps/reader/" },
@@ -54,7 +54,7 @@ const applications: CatalogueEntry[] = [
     description: "Write Markdown papers, theses and books with a typeset preview, citations from Reader, and PDF or Word export.",
     status: "Development build",
     runsOn: "Web",
-    collections: "Hosted by Connect or local through Connector",
+    collections: "Cloud copy, or Private through one of your devices",
     links: [
       { label: "Open writer", href: "https://writer.mdbase.dev/" },
       { label: "Documentation", href: "/apps/writer/" },
@@ -63,10 +63,10 @@ const applications: CatalogueEntry[] = [
   },
   {
     name: "mdbase for Obsidian",
-    description: "Obsidian plugin for collection setup, type editing, migration, validation, and hosted collection mirrors.",
+    description: "Obsidian plugin for collection setup, type editing, migration, and validation.",
     status: "Development build",
     runsOn: "Obsidian desktop and mobile",
-    collections: "Local folder or Connect-hosted mirror",
+    collections: "Your Obsidian vault",
     links: [{ label: "Source", href: "https://github.com/callumalpass/mdbase-obsidian" }]
   },
   {
@@ -74,7 +74,7 @@ const applications: CatalogueEntry[] = [
     description: "Remote MCP endpoint for reading and changing approved collections from compatible AI clients.",
     status: "Public beta",
     runsOn: "OAuth-capable MCP clients",
-    collections: "Hosted by Connect or local through Connector",
+    collections: "Cloud copy, or Private through one of your devices",
     links: [
       { label: "Set up", href: "/apps/mcp/" },
       { label: "Tool reference", href: "/apps/mcp/tools/" }
@@ -88,13 +88,23 @@ const applications: CatalogueEntry[] = [
   description="Applications and collection tools that work with mdbase collections."
   current="apps"
 >
-  <section class="apps-intro" aria-label="Applications">
-    <h1 class="sr-only">Applications</h1>
+  <header class="page-intro">
+    <h1>Applications</h1>
+    <p class="page-intro__lede">
+      Applications are the tools you use to view and change a collection. Each
+      one asks for access to a collection and works on the same Markdown
+      records.
+    </p>
+  </header>
+
+  <section class="content-section" aria-labelledby="reaching-collections">
+    <h2 id="reaching-collections">How apps reach a collection</h2>
     <p>
-      Applications are the tools used to view and change an mdbase collection.
-      They access the same Markdown records through mdbase Connect, whether the
-      collection is hosted by Connect or served from your computer by the
-      Connector.
+      Web apps can use a Cloud copy collection at any time. They reach a Private
+      collection through one of your devices, so one of them must be online,
+      such as a computer running the <a href="/downloads/">desktop app</a>.
+      Several apps can use one collection at once, each within the permission
+      you gave it. <a href="/connect/#apps">How permissions work</a>.
     </p>
   </section>
 
@@ -124,13 +134,13 @@ const applications: CatalogueEntry[] = [
   <section class="build-section" aria-label="For application developers">
     <div class="build-section__body">
       <p>
-        Application developers can use the Connect SDK for authorization,
-        collection selection, operations, and change feeds. Application
-        manifests declare required contracts and permissions.
+        Any app can work with an mdbase collection. The SDK asks for access,
+        reads and changes records, and follows changes. An app’s manifest
+        declares the contracts and operations it needs.
       </p>
       <div class="button-row">
         <a href="/sdk/quickstart/">SDK quickstart</a>
-        <a href="/sdk/portable-apps/">Application guide</a>
+        <a href="/sdk/">SDK overview</a>
       </div>
     </div>
   </section>

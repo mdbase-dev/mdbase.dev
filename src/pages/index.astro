@@ -4,135 +4,88 @@ import HomeLayout from "../layouts/HomeLayout.astro";
 
 <HomeLayout
   title="mdbase"
-  description="Keep structured data in ordinary Markdown files and use the same collection across applications and locations."
+  description="Keep notes, tasks and projects as plain Markdown files you own. Apps can understand them, and mdbase keeps them in sync across your devices."
 >
+  <div id="material" aria-hidden="true"><canvas id="atmosphere"></canvas><div id="grain"></div></div>
   <canvas id="diagram" aria-hidden="true"></canvas>
+  <nav class="chapter-index" aria-label="Sections">
+    <a href="#intro">Home</a>
+    <a href="#example">Files</a>
+    <a href="#apps">Apps</a>
+    <a href="#editing">Editing</a>
+    <a href="#sync">Sync</a>
+    <a href="#options">Privacy</a>
+    <a href="#permission">Permissions</a>
+    <a href="#sharing">Sharing</a>
+    <a href="#start">Get started</a>
+    <button class="chapter-index__motion" type="button" data-motion-control>Pause motion</button>
+  </nav>
+<main id="main" tabindex="-1">
+<section id="intro" data-index="Home" class="chapter is-active" data-scene="intro" aria-label="Introduction"><div class="chapter__inner">
+<h1 class="home-title">Structured data in ordinary Markdown files</h1>
+<p>Keep your notes, tasks, and projects as plain Markdown files that you own. Apps can understand them, and mdbase keeps them in sync across your devices.</p>
+<div class="chapter__actions home-actions"><a class="home-action home-action--primary" href="https://connect.mdbase.dev/signup">Get started</a><a class="home-action" href="/downloads/">Download the desktop app</a></div>
+</div></section>
 
-  <main id="main" tabindex="-1">
-    <section id="intro" class="chapter is-active" data-scene="intro" aria-label="Introduction">
-      <div class="chapter__inner">
-        <h1 class="home-title">Structured data in ordinary Markdown files</h1>
-        <p>
-          An mdbase is a folder of Markdown files with enough shared structure
-          for applications to understand them. The files remain readable in a
-          text editor and can be moved, copied, versioned, or changed with
-          ordinary tools.
-        </p>
-        <p>
-          Applications can use these files without importing them into private
-          databases. <a href="/connect/">mdbase Connect</a> can host a
-          collection online, synchronize it with a local copy, and control
-          which applications may use it. If a collection remains on your
-          computer, the mdbase Connector serves the folder locally.
-        </p>
-        <div class="chapter__actions home-actions">
-          <a class="home-action home-action--primary" href="https://editor.mdbase.dev/">Open the Editor</a>
-          <a class="home-action" href="/spec/">Read the specification</a>
-        </div>
-      </div>
-    </section>
-
-    <section id="example" class="chapter" data-scene="collection" aria-label="Example collection">
-      <div class="chapter__inner">
-        <p>
-          A collection is a folder containing Markdown records and the
-          definitions that describe them. In this example, a project
-          application and a text editor can work with the same files.
-        </p>
-        <pre class="file-tree" aria-label="Example mdbase folder"><code>projects/
-├── mdbase.yaml
-├── _types/
-│   ├── project.md
-│   └── person.md
-├── projects/
-│   └── website-redesign.md
-└── people/
-    └── sam.md</code></pre>
-      </div>
-    </section>
-
-    <section id="meaning" class="chapter" data-scene="structure" aria-label="Markdown records">
-      <div class="chapter__inner">
-        <p>
-          Each record is an ordinary Markdown file. Frontmatter holds fields
-          that applications can validate and query, while the body remains
-          prose.
-        </p>
-        <pre class="record-example" aria-label="Example project record"><code>---
-type: project
-title: Website redesign
-status: active
-owner: "[[people/sam.md]]"
----
+<section id="example" data-index="Files" class="chapter" data-scene="collection" aria-label="A collection"><div class="chapter__inner">
+<h2>A folder of Markdown, with structure</h2>
+<p>A collection is a folder of Markdown records, plus type definitions that say what their fields mean. Frontmatter holds fields that apps can validate and query, while the body stays prose.</p>
+<pre class="record-example" aria-label="Example project record: projects/website-redesign.md"><code><span class="fm-rule">---</span>
+<span class="fm-key">type:</span> project
+<span class="fm-key">title:</span> Website redesign
+<span class="fm-key">status:</span> active
+<span class="fm-key">owner:</span> <span class="fm-link">"[[people/sam.md]]"</span>
+<span class="fm-rule">---</span>
 
 The new site should make mdbase
 easier to understand.</code></pre>
-        <p>
-          A type definition stored in the collection explains what these fields
-          mean. Conforming tools use the same rules for links, queries,
-          validation, and updates.
-        </p>
-      </div>
-    </section>
+<p>Because they’re plain files, they work with git, backups, and any text editor. If you stop using mdbase, you still have a folder of Markdown.</p>
+</div></section>
 
-    <section id="storage" class="chapter" data-scene="modes" aria-label="Local and hosted collections">
-      <div class="chapter__inner">
-        <p>
-          A collection can remain as a folder on your computer or be hosted by
-          mdbase Connect. The Connector serves a local folder directly to
-          approved applications. A hosted collection keeps its main copy
-          online and can synchronize with a local Markdown mirror for offline
-          work.
-        </p>
-      </div>
-    </section>
+<section id="apps" data-index="Apps" class="chapter" data-scene="apps" aria-label="Apps"><div class="chapter__inner">
+<h2>One collection, many apps</h2>
+<p>Apps built on mdbase work directly with these files instead of importing them into their own databases. Use TaskNotes for tasks, Reader for papers and web pages, Writer for long documents, or the Editor for any collection.</p>
+<p>Several apps can use the same collection at once, so nothing has to be exported from one app to another.</p>
+</div></section>
 
-    <section id="permission" class="chapter" data-scene="grant" aria-label="Application access">
-      <div class="chapter__inner">
-        <p>
-          Applications use Connect to ask for access to a collection and list
-          the operations they need. You might allow an application to find, create,
-          and edit project records while leaving deletion blocked.
-        </p>
-        <p>
-          Connect checks that permission whenever the application uses the
-          collection.
-        </p>
-      </div>
-    </section>
+<section id="editing" data-index="Editing" class="chapter" data-scene="merge" aria-label="Editing from anywhere"><div class="chapter__inner">
+<h2>Edit from anywhere</h2>
+<p>Open the same record in a text editor on your laptop and in an app on your phone. mdbase works out what each edit changed, field by field.</p>
+<p>Edits to different fields are combined, so one copy of the file never silently replaces another.</p>
+</div></section>
 
-    <section id="sharing" class="chapter" data-scene="sharing" aria-label="Sharing with people">
-      <div class="chapter__inner">
-        <p>
-          You can share a hosted collection with other people. Invite viewers
-          who can read, or editors who can read and change records. Each person
-          can connect compatible applications within the permissions you allow.
-        </p>
-        <p>
-          Invitations currently require a registered, verified Connect account.
-          Sharing is available for hosted collections, not folders served locally
-          by the Connector.
-        </p>
-      </div>
-    </section>
+<section id="sync" data-index="Sync" class="chapter" data-scene="sync" aria-label="Sync across devices"><div class="chapter__inner">
+<h2>Every device has the whole collection</h2>
+<p>Turn on sync and your laptop, phone, and other devices each keep their own complete copy as ordinary files. Each one keeps working without a connection and catches up when it’s back online.</p>
+<p>No device is the main one, so you can switch any of them off, or lose one, and still have your whole collection.</p>
+<p>Your changes are locked on your device before they leave it. mdbase passes them between your devices without being able to read them.</p>
+</div></section>
 
-    <section id="after-approval" class="chapter" data-scene="access" aria-label="Managing access">
-      <div class="chapter__inner">
-        <p>
-          Access is not ownership. You can change a member’s role or remove
-          their access, and narrow, pause, or revoke an application’s permission.
-        </p>
-        <p>
-          Removing an application does not remove the collection. Your records
-          remain, and other approved applications can keep using them.
-        </p>
-        <p>
-          See the <a href="/apps/">current applications</a>, read the{" "}
-          <a href="/sdk/">developer documentation</a>, or learn about the
-          optional <a href="/runtime/">runtime profile</a>. Connect is also
-          available in <a href="/beta/">open beta</a>.
-        </p>
-      </div>
-    </section>
-  </main>
+<section id="options" data-index="Privacy" class="chapter" data-scene="options" aria-label="Cloud copy or Private"><div class="chapter__inner">
+<h2>Choose what mdbase can see</h2>
+<p>There are two ways to sync a collection. They differ in whether mdbase can read it, which decides how your devices and apps reach it.</p>
+<p><strong>Cloud copy</strong>, the default, also keeps a readable copy with mdbase, so web apps keep working while your devices are off, and a new device joins when you sign in.</p>
+<p><strong>Private</strong> is end-to-end encrypted: only your devices can unlock it, and mdbase never holds the key. Apps reach the collection through one of your devices. To add a device, you sign in and unlock it with your encryption password or recovery key.</p>
+<p>Both sync the same way.</p>
+</div></section>
+
+<section id="permission" data-index="Permissions" class="chapter" data-scene="grant" aria-label="Application access"><div class="chapter__inner">
+<h2>Apps ask first</h2>
+<p>An application asks for access to one collection and lists the operations it needs. You might let a project planner find, create, and edit project records while leaving deletion blocked.</p>
+<p>The permission travels with the collection, so every copy checks it, whether on your devices or in the cloud copy.</p>
+</div></section>
+
+<section id="sharing" data-index="Sharing" class="chapter" data-scene="sharing" aria-label="Sharing and access"><div class="chapter__inner">
+<h2>Share it, and take it back</h2>
+<p>Invite viewers who can read, or editors who can read and change records. Their devices keep a full copy too, and each person can connect their own applications within the role you gave them. Cloud copy and Private collections can both be shared; in a Private collection, an owner or editor approves a new member’s first device by comparing a six-digit code with them.</p>
+<p>You can change a member’s role or remove them at any time. A removed member stops receiving changes but keeps the files they already had.</p>
+<p>Applications work the same way: narrow or revoke any permission. Removing an application never removes the collection, and other approved applications keep using it.</p>
+</div></section>
+<section id="start" data-index="Get started" class="chapter" data-scene="intro" aria-label="Get started"><div class="chapter__inner">
+<h2>Get started</h2>
+<p>Sign up for mdbase Connect, the account that syncs and shares your collections. Your account starts with a small Cloud copy collection that you can open in any app. To sync a folder on your computer, as Cloud copy or Private, use the desktop app.</p>
+<div class="chapter__actions home-actions"><a class="home-action home-action--primary" href="https://connect.mdbase.dev/signup">Sign up</a><a class="home-action" href="/downloads/">Download the desktop app</a><a class="home-action" href="/apps/">See all apps</a></div>
+<p class="developer-note">Building an app? Any app can work with an mdbase collection. Read the <a href="/sdk/">SDK documentation</a> and the <a href="/spec/">specification</a>. The specification, Connect, Reader and Writer are open source under the MIT licence, <a href="https://github.com/mdbase-dev">on GitHub</a>.</p>
+</div></section>
+</main>
 </HomeLayout>

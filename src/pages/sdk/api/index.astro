@@ -2,334 +2,221 @@
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
-const constructor = `new MdbaseConnect<Frontmatter>({
-  serverUrl: string | URL,
-  manifest?: MdbaseAppManifest | string | URL,
-  redirectUri?: string | URL,
-  storage?: Storage,
-  relayEncryption?: "required" | "disabled",
-  keyStore?: GrantKeyStore,
-  identityStore?: ApplicationIdentityStore,
-  directAccess?: "auto" | "disabled",
-  loopbackUrl?: string | URL,
-  navigate?: (url: string) => void | Promise<void>,
-  timeouts?: {
-    requestMs?: number | null,
-    watchStartMs?: number | null,
-    fileIndexMs?: number | null,
-    uploadMs?: number | null,
-    syncMs?: number | null
-  }
-})`;
+const connectSignature = `connect(options: ClientOptions): Promise<MdbaseClient>
 
-const session = `const session = mdbase.application({
-  selection: new MdbaseBrowserSelection({
-    collectionParameter: "collection",
-    fallbackPath: "/"
-  })
-});`;
+interface ClientOptions {
+  connector: Connector;
+  app: { name: string; version: string };
+  timezone?: string;              // IANA zone for writes and queries; default: the host's
+  features?: string[];            // optional features to request, such as "presence"
+  reconnect?: false | { minDelayMs?: number; maxDelayMs?: number }; // on by default
+  waitForDevice?: boolean;        // Private: wait for a device instead of failing
+  onWaiting?: (why: MdbaseError) => void;
+  signal?: AbortSignal;
+}`;
 
-const error = `const updated = await connection.update(input);
-if (!updated.ok) {
-  if (updated.problem.code === "operation_invalid") {
-    renderDiagnostics(updated.problem.details.diagnostics);
-  } else {
-    renderProblem(updated.problem.code, updated.problem.recovery);
-  }
+const writeOptions = `interface WriteOptions {
+  mutationId?: string;            // default: a new UUIDv7
+  conflictMode?: "record" | "reject";
+  timezone?: string;
+  include?: Include;
+  dryRun?: boolean;
+  wait?: "pending" | "confirmed" | "published";
+  signal?: AbortSignal;
 }`;
 ---
 
 <DocsLayout
   title="API reference"
-  description="A compact reference for the public @mdbase-dev/connect browser SDK: manager, application session, collection operations, record sessions, outcomes, and helpers."
+  description="A compact reference for @mdbase-dev/sdk: connect, the client, writes, status, files and errors."
   active="api"
   headings={[
-    { href: "#constructor", label: "Constructor" },
-    { href: "#environment", label: "Environment" },
-    { href: "#authorization", label: "Authorization methods" },
-    { href: "#session", label: "Application session" },
-    { href: "#operations", label: "Operation methods" },
-    { href: "#records", label: "Record sessions" },
-    { href: "#notifications", label: "Notifications and timers" },
-    { href: "#connection", label: "Connection and sync" },
-    { href: "#client", label: "Collection client" },
-    { href: "#errors", label: "Outcomes and helpers" }
+    { href: "#constructor", label: "connect()" },
+    { href: "#client", label: "Reads" },
+    { href: "#operations", label: "Writes" },
+    { href: "#connection", label: "Status and link" },
+    { href: "#records", label: "Holds and conflicts" },
+    { href: "#files", label: "Files" },
+    { href: "#session", label: "createMdbase" },
+    { href: "#notifications", label: "Other exports" },
+    { href: "#errors", label: "Errors" }
   ]}
 >
-  <h2 id="constructor">MdbaseConnect constructor</h2>
-  <CodeBlock code={constructor} language="ts" label="Signature" />
+  <p>
+    This page lists the main public API. The package’s TypeScript declarations
+    are the full reference.
+  </p>
+
+  <h2 id="constructor">connect()</h2>
+  <CodeBlock code={connectSignature} language="ts" label="Signature" />
+  <p>
+    Connectors: <code>relayConnector</code> and
+    {" "}<code>nextRelayConnector</code> (remote, through the relay or to the
+    hosted replica), <code>inProcessConnector</code>,
+    {" "}<code>localLinkConnector</code>, and from
+    {" "}<code>@mdbase-dev/sdk/node</code>, <code>ipcConnector</code> and
+    {" "}<code>connectDaemonLocalhost</code>. In tests,
+    {" "}<code>new MemoryReplica().connector()</code>.
+  </p>
+
+  <h2 id="client">Reads</h2>
   <table class="api-table">
     <thead>
-      <tr>
-        <th>Option</th>
-        <th>Default</th>
-        <th>Purpose</th>
-      </tr>
+      <tr><th>Method</th><th>Returns</th></tr>
     </thead>
     <tbody>
-      <tr>
-        <td><code>serverUrl</code></td>
-        <td>Required</td>
-        <td>Connect control-plane origin</td>
-      </tr>
-      <tr>
-        <td><code>manifest</code></td>
-        <td>None</td>
-        <td>Bundled manifest object or app-local URL</td>
-      </tr>
-      <tr>
-        <td><code>redirectUri</code></td>
-        <td>Current page for web; unused for portable files</td>
-        <td>Exact callback listed in a web or native manifest</td>
-      </tr>
-      <tr>
-        <td><code>storage</code></td>
-        <td><code>localStorage</code> for web; memory for opaque portable files</td>
-        <td>Authorization credential boundary</td>
-      </tr>
-      <tr>
-        <td><code>relayEncryption</code></td>
-        <td><code>required</code></td>
-        <td>Allow plaintext relay only in an intentional development environment</td>
-      </tr>
-      <tr>
-        <td><code>keyStore</code></td>
-        <td>IndexedDB for web; memory for opaque portable files</td>
-        <td>Override encrypted grant key persistence</td>
-      </tr>
-      <tr>
-        <td><code>directAccess</code></td>
-        <td><code>auto</code></td>
-        <td>Prefer the same-computer connector</td>
-      </tr>
-      <tr>
-        <td><code>loopbackUrl</code></td>
-        <td>Fixed connector endpoint</td>
-        <td>Development and automated-test override</td>
-      </tr>
-      <tr>
-        <td><code>navigate</code></td>
-        <td><code>location.assign</code></td>
-        <td>Open authorization, including in a native system browser</td>
-      </tr>
-      <tr>
-        <td><code>identityStore</code></td>
-        <td>IndexedDB</td>
-        <td>Persist the application's signing identity</td>
-      </tr>
-      <tr>
-        <td><code>timeouts</code></td>
-        <td>Per workload</td>
-        <td>Default budgets for requests, watch start-up, file indexing, uploads and sync; <code>null</code> disables one deliberately</td>
-      </tr>
+      <tr><td><code>get(ref, include?, signal?)</code></td><td><code>RecordView</code>; throws <code>not_found</code></td></tr>
+      <tr><td><code>find(ref, include?, signal?)</code></td><td><code>RecordView | null</code></td></tr>
+      <tr><td><code>readMany(refs, …)</code></td><td>Several records in one call</td></tr>
+      <tr><td><code>query(query, include?, signal?)</code></td><td>One <code>QueryResult</code> page; <code>cursor</code> when there is more</td></tr>
+      <tr><td><code>pages(query, include?, signal?, &#123; onReset &#125;)</code></td><td>An async iterator over every page</td></tr>
+      <tr><td><code>live(query, include?)</code></td><td>A <code>LiveQuery</code>: <code>records</code>, <code>stale</code>, <code>complete</code>, <code>ready</code>, <code>subscribe(fn)</code>, <code>setQuery(q)</code>, <code>close()</code></td></tr>
+      <tr><td><code>changes(cursor?, limit?)</code></td><td><code>&#123; changes, cursor, reset &#125;</code></td></tr>
+      <tr><td><code>watchChanges(cursor, onChanges)</code></td><td>A stop function with <code>ready</code> and <code>state</code></td></tr>
+      <tr><td><code>backlinks(…)</code></td><td>Records that link to a record</td></tr>
+      <tr><td><code>describe()</code></td><td>Types, contracts and settings of the collection</td></tr>
+      <tr><td><code>queryContract(&#123; id, version &#125;, options?)</code></td><td>Records through a contract’s field names</td></tr>
+      <tr><td><code>validate(refs?)</code></td><td>Validation issues per record</td></tr>
+      <tr><td><code>views.list()</code>, <code>views.execute(…)</code></td><td>Saved views</td></tr>
+    </tbody>
+  </table>
+  <p>
+    A <code>RecordRef</code> is a record ID, <code>&#123; path &#125;</code>,
+    or a <code>RecordView</code>. <code>Include</code> is
+    {" "}<code>&#123; body, effective, document, links, diagnostics &#125;</code>,
+    each a boolean.
+  </p>
+
+  <h2 id="operations">Writes</h2>
+  <table class="api-table">
+    <thead>
+      <tr><th>Method</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>create(&#123; id?, type?, path?, frontmatter?, body?, document? &#125;, options?)</code></td><td>The ID is minted locally and usable at once</td></tr>
+      <tr><td><code>update(ref, &#123; patch, unset, add, remove, body, bodyEdits, ifRevision &#125;, options?)</code></td><td>Pass a <code>RecordView</code> to merge field by field</td></tr>
+      <tr><td><code>replaceDocument(ref, source, options?)</code></td><td>Replace the whole Markdown source</td></tr>
+      <tr><td><code>rename(view, to, &#123; updateRefs, ifRevision &#125;)</code></td><td><code>updateRefs</code> defaults to <code>true</code></td></tr>
+      <tr><td><code>delete(ref, &#123; ifRevision &#125;)</code></td><td></td></tr>
+      <tr><td><code>preflightRename(view, to)</code>, <code>preflightDelete(ref)</code></td><td>What the change would touch</td></tr>
+      <tr><td><code>receipt(mutationId)</code>, <code>awaitReceipt(mutationId, timeoutMs?)</code></td><td>The current receipt; or wait until it leaves <code>pending</code></td></tr>
+      <tr><td><code>pendingWrites()</code></td><td>Writes still waiting</td></tr>
+      <tr><td><code>records.open(ref, &#123; autosave, timeoutMs, signal, recovery &#125;)</code></td><td>A record session lease; see <a href="/sdk/editing/">Editing records</a></td></tr>
+    </tbody>
+  </table>
+  <CodeBlock code={writeOptions} language="ts" label="WriteOptions" />
+  <p>
+    Every write resolves to a <code>Write</code>:
+    {" "}<code>state</code>, <code>receipt</code>, <code>records</code> (the
+    optimistic view), <code>mutationId</code>, <code>onReceipt(fn)</code>,
+    {" "}<code>confirmed</code> and <code>published</code> (promises).
+    {" "}<code>confirmed</code> rejects with an <code>MdbaseError</code> if the
+    write is rejected or its outcome is unknown. <code>published</code>
+    {" "}settles when a file-backed replica has written the change to disk,
+    which can be before confirmation.
+  </p>
+
+  <h2 id="connection">Status and link</h2>
+  <table class="api-table">
+    <thead>
+      <tr><th>Member</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>getStatus()</code>, <code>onStatus(fn)</code>, <code>status</code></td><td><code>SyncStatus</code>: <code>mode</code>, <code>confirmedThrough</code>, <code>headKnown</code>, <code>pending</code>, <code>holds</code>, <code>unresolved</code>, <code>connection</code>, <code>installing</code></td></tr>
+      <tr><td><code>summarizeStatus(status)</code></td><td><code>&#123; kind, text, pending, holds, conflicts, confirmedThrough &#125;</code></td></tr>
+      <tr><td><code>link</code>, <code>onLink(fn)</code></td><td><code>"open"</code>, <code>"reconnecting"</code> or <code>"closed"</code></td></tr>
+      <tr><td><code>hello</code></td><td>What the replica reported at connect, including the grant’s role and capabilities</td></tr>
+      <tr><td><code>close()</code></td><td>Close the client and its subscriptions</td></tr>
     </tbody>
   </table>
 
-  <h2 id="environment">Runtime environment</h2>
-  <p>
-    <code>environment()</code> returns the effective
-    {" "}<code>distribution</code>, <code>applicationOrigin</code>, and
-    {" "}<code>credentialStorage</code>. Portable files report origin
-    {" "}<code>null</code> and default to <code>memory</code>. A caller-supplied
-    storage or key adapter reports <code>custom</code>.
-  </p>
-
-  <h2 id="authorization">MdbaseConnect methods</h2>
-  <p>
-    Every asynchronous method accepts a final{" "}
-    <code>ConnectRequestOptions</code> argument, with <code>signal</code> and
-    {" "}<code>timeoutMs</code>, and resolves to a <code>ConnectOutcome</code>.
-  </p>
+  <h2 id="records">Holds and conflicts</h2>
   <table class="api-table">
     <thead>
-      <tr>
-        <th>Method</th>
-        <th>Result</th>
-        <th>Purpose</th>
-      </tr>
+      <tr><th>Member</th><th>Notes</th></tr>
     </thead>
     <tbody>
-      <tr><td><code>application(options)</code></td><td><code>MdbaseApplicationSession</code></td><td>The ordinary application lifecycle entry point</td></tr>
-      <tr><td><code>register(options?)</code></td><td><code>ConnectOutcome&lt;Application&gt;</code></td><td>Load, canonicalize, and register the bundled manifest</td></tr>
-      <tr><td><code>manifest(options?)</code></td><td><code>ConnectOutcome&lt;MdbaseApplicationManifest&gt;</code></td><td>The loaded, validated manifest</td></tr>
-      <tr><td><code>authorize(options?)</code></td><td><code>ConnectOutcome&lt;MdbaseAuthorizationOutcome&gt;</code></td><td>Registry-level authorization; applications normally use the session</td></tr>
-      <tr><td><code>completeAuthorization(callbackUrl?, options?)</code></td><td><code>ConnectOutcome&lt;MdbaseAuthorizationResult&gt;</code></td><td>Complete a web or native callback</td></tr>
-      <tr><td><code>connections()</code></td><td><code>MdbaseConnectionInfo[]</code></td><td>Every saved collection authorization for this application</td></tr>
-      <tr><td><code>connection(collectionId)</code></td><td><code>MdbaseConnection | null</code></td><td>One permanently collection-bound client</td></tr>
-      <tr><td><code>unavailableReason(collectionId)</code></td><td><code>MdbaseUnavailableReason | null</code></td><td>Why a saved collection cannot be used</td></tr>
-      <tr><td><code>onConnectionsChange(listener)</code></td><td>Unsubscribe function</td><td>Observe additions, removal, refresh, and cross-tab storage changes</td></tr>
-      <tr><td><code>environment()</code></td><td><code>MdbaseConnectEnvironment</code></td><td>Distribution, origin, and credential storage in effect</td></tr>
-      <tr><td><code>forgetAll()</code></td><td><code>void</code></td><td>Forget every locally retained connection for this application</td></tr>
-    </tbody>
-  </table>
-  <h3>Portable authorization options</h3>
-  <p>
-    <code>authorize()</code> on the manager or session accepts
-    {" "}<code>onDeviceCode</code> to report
-    {" "}<code>userCode</code>, <code>verificationUri</code>,
-    {" "}<code>verificationUriComplete</code>, <code>expiresAt</code>, and
-    {" "}<code>intervalSeconds</code>. Supply <code>openVerification</code> to own
-    the approval window, or an <code>AbortSignal</code> to cancel polling and
-    discard the unapproved key.
-  </p>
-
-  <h2 id="session">MdbaseApplicationSession</h2>
-  <CodeBlock code={session} language="ts" label="Browser application boundary" />
-  <p>
-    One session owns collection selection, authorization, setup checks, and a
-    snapshot. <code>MdbaseBrowserSelection</code> keeps the selected
-    collection in the URL and follows back and forward navigation; native
-    shells supply their own selection adapter.
-  </p>
-  <table class="api-table">
-    <thead>
-      <tr><th>Method</th><th>Purpose</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><code>start(options?)</code></td><td>Load the manifest and restore the selected collection; concurrent callers share the work</td></tr>
-      <tr><td><code>subscribe(listener)</code>, <code>getSnapshot()</code></td><td>External-store state: <code>unselected</code>, <code>authorization_required</code>, <code>checking_setup</code>, <code>setup_review_required</code>, <code>ready</code>, <code>unavailable</code>, <code>blocked</code>, and start-up states</td></tr>
-      <tr><td><code>connection()</code></td><td>The ready collection's <code>MdbaseConnection</code>, or <code>null</code></td></tr>
-      <tr><td><code>authorize(target, options?)</code></td><td>Authorize <code>"choose"</code>, <code>"selected"</code>, or <code>{`{ collectionId }`}</code></td></tr>
-      <tr><td><code>completeAuthorization(callbackUrl?, options?)</code></td><td>Complete the callback; the snapshot becomes <code>ready</code></td></tr>
-      <tr><td><code>ensureCapabilities(capabilities, options?)</code></td><td>Request declared optional capabilities; <code>unchanged</code> when already granted</td></tr>
-      <tr><td><code>applyCollectionSetup(options?)</code></td><td>Apply reviewed collection setup</td></tr>
-      <tr><td><code>select(collectionId)</code>, <code>clearSelection()</code>, <code>forget(collectionId)</code></td><td>Change or forget the selection</td></tr>
-      <tr><td><code>destroy()</code></td><td>End the session</td></tr>
-    </tbody>
-  </table>
-  <div class="callout">
-    <strong>Collection IDs are bookmark-safe locators.</strong>
-    <p>
-      They may appear in history, logs, and shared URLs. They do not authorize
-      an operation. Connect still requires the application's stored grant and
-      enforces it at the collection authority.
-    </p>
-  </div>
-
-  <h2 id="operations">Collection operations</h2>
-  <p>
-    The methods below belong to <code>MdbaseConnection</code>, not the manager.
-    A repository that holds one connection cannot accidentally read or write a
-    different collection when the user changes another part of the UI.
-  </p>
-  <table class="api-table">
-    <thead>
-      <tr>
-        <th>Method</th>
-        <th>Capability</th>
-        <th>Notes</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td><code>describe()</code></td><td><code>collection.read</code></td><td>Types, contracts, schemas, settings, and supported operations</td></tr>
-      <tr><td><code>changes(input?)</code></td><td><code>collection.read</code></td><td>One resumable cursor page</td></tr>
-      <tr><td><code>watch(options?)</code></td><td><code>collection.read</code></td><td>Bounded start-up, then a subscription with retry, status, and <code>close()</code></td></tr>
-      <tr><td><code>read(&#123; path &#125;)</code></td><td><code>collection.read</code></td><td>Effective and raw frontmatter plus revision; <code>file_not_found</code> when missing</td></tr>
-      <tr><td><code>query(input?)</code></td><td><code>collection.read</code></td><td>One query page</td></tr>
-      <tr><td><code>queryPages(input?, options?)</code></td><td><code>collection.read</code></td><td>Snapshot-consistent pages, one outcome each</td></tr>
-      <tr><td><code>queryAll(input?, options?)</code></td><td><code>collection.read</code></td><td>Load every page into one result</td></tr>
-      <tr><td><code>create(input)</code></td><td><code>records.create</code></td><td>Typed frontmatter and optional body</td></tr>
-      <tr><td><code>update(input)</code></td><td><code>records.edit</code></td><td>Canonical <code>patch</code>, optional <code>body</code>, and <code>ifRevision</code>; <code>concurrent_modification</code> when stale</td></tr>
-      <tr><td><code>preflightRename(input)</code></td><td><code>records.edit</code></td><td>Read-only reference impact</td></tr>
-      <tr><td><code>rename(input)</code></td><td><code>records.edit</code></td><td>Move with optional reference updates</td></tr>
-      <tr><td><code>renameWithProgress(input, options)</code></td><td><code>records.edit</code></td><td>Preflight reuse, cancellation, and outcome recovery</td></tr>
-      <tr><td><code>preflightDelete(input)</code></td><td><code>records.delete</code></td><td>Read-only backlink impact</td></tr>
-      <tr><td><code>delete(input)</code></td><td><code>records.delete</code></td><td>Delete with optional backlink check</td></tr>
-      <tr><td><code>deleteWithProgress(input, options)</code></td><td><code>records.delete</code></td><td>Preflight reuse, cancellation, and outcome recovery</td></tr>
-      <tr><td><code>validate(input?)</code></td><td><code>collection.read</code></td><td>Canonical collection validation result</td></tr>
+      <tr><td><code>listHolds()</code>, <code>onHolds(fn)</code></td><td><code>Hold[]</code>: <code>id</code>, <code>path</code>, <code>reason</code>, <code>mine</code>, <code>theirs</code></td></tr>
+      <tr><td><code>resolveHold(id, how, use?)</code></td><td><code>how</code>: <code>keep_mine</code>, <code>take_theirs</code>, <code>use</code>, <code>delete</code>, <code>keep_both</code></td></tr>
+      <tr><td><code>describeHold(hold, &#123; collectionId &#125;)</code>, <code>holdNotice(holds)</code></td><td>Plain-language text and the actions that apply</td></tr>
+      <tr><td><code>listConflicts(recordId?)</code>, <code>onConflicts(fn)</code></td><td><code>ConflictEntry[]</code></td></tr>
+      <tr><td><code>resolveConflict(entry, field, value)</code>, <code>dismissConflict(entry)</code></td><td>Choose a value, or keep what the record has</td></tr>
     </tbody>
   </table>
 
-  <h3>Saved views and type source</h3>
-  <p>
-    Saved view methods are <code>listViews()</code>,
-    <code>executeView()</code>, <code>readViewSource()</code>,
-    <code>createViewSource()</code>, <code>updateViewSource()</code>, and
-    {" "}<code>deleteViewSource()</code>. Type source methods are{" "}
-    <code>readType()</code>, <code>createType()</code>, and{" "}
-    <code>updateType()</code>. Updates require the source revision.
-  </p>
-
-  <h2 id="records">Record sessions</h2>
-  <p>
-    <code>connection.records.open(path, options?)</code> returns a lease on
-    the one shared <code>MdbaseRecordSession</code> for that record;
-    {" "}<code>connection.records.follow(watch)</code> keeps open sessions
-    current. Sessions provide <code>setBody()</code>,
-    {" "}<code>patchFrontmatter()</code>, <code>save()</code>,
-    {" "}<code>flush()</code>, <code>refresh()</code>, <code>resolve()</code>,
-    {" "}<code>discard()</code>, <code>subscribe()</code> and
-    {" "}<code>getSnapshot()</code>. See <a href="/sdk/editing/">Editing
-    records</a>.
-  </p>
-
-  <h2 id="notifications">Notifications and timers</h2>
+  <h2 id="files">Files</h2>
   <table class="api-table">
     <thead>
-      <tr><th>Method</th><th>Purpose</th></tr>
+      <tr><th>Member of <code>db.files</code></th><th>Notes</th></tr>
     </thead>
     <tbody>
-      <tr><td><code>registerNotifications(options)</code></td><td>Register Web Push and select declared criteria</td></tr>
-      <tr><td><code>unregisterNotifications(worker)</code></td><td>Remove the server channel, then unsubscribe the browser</td></tr>
-      <tr><td><code>registerNativeNotifications(options)</code></td><td>Register or rotate one FCM token</td></tr>
-      <tr><td><code>unregisterNativeNotifications()</code></td><td>Remove the native channel before deleting its token</td></tr>
-      <tr><td><code>listTimers(namespace)</code></td><td>Read timers within this grant namespace</td></tr>
-      <tr><td><code>putTimer(input)</code></td><td>Create or replace one generation-fenced timer</td></tr>
-      <tr><td><code>cancelTimer(input)</code></td><td>Cancel one timer</td></tr>
-      <tr><td><code>reconcileTimers(input)</code></td><td>Atomically project the complete desired timer set</td></tr>
+      <tr><td><code>list(&#123; folder, media &#125;)</code>, <code>listPage(…)</code>, <code>get(ref)</code></td><td><code>FileView</code>: <code>id</code>, <code>path</code>, <code>size</code>, <code>digest</code>, <code>media</code>, <code>state</code></td></tr>
+      <tr><td><code>upload(path, source, &#123; onProgress, transferId, fileId, ifRevision, signal &#125;)</code></td><td><code>source</code>: <code>Uint8Array</code>, <code>ArrayBuffer</code> or <code>Blob</code></td></tr>
+      <tr><td><code>download(ref)</code>, <code>downloadStream(ref, &#123; range &#125;)</code></td><td><code>download</code> is capped at 64 MiB</td></tr>
+      <tr><td><code>move(view, to)</code>, <code>delete(ref)</code></td><td>Both take <code>ifRevision</code></td></tr>
     </tbody>
   </table>
 
-  <h2 id="connection">Connection, routing, and sync</h2>
-  <table class="api-table">
-    <thead>
-      <tr><th>Method</th><th>Purpose</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><code>info()</code></td><td>Read collection ID, display name, operations, scope, route, and direct status</td></tr>
-      <tr><td><code>authorizationCapabilities(required)</code></td><td>Compare required and granted operations (legacy v1 grants)</td></tr>
-      <tr><td><code>requestCapabilities(capabilities, options?)</code></td><td>Request more declared capabilities for this same collection</td></tr>
-      <tr><td><code>forget()</code></td><td>Forget only this locally retained connection</td></tr>
-      <tr><td><code>onConnectionChange(listener)</code></td><td>Subscribe and receive an unsubscribe function</td></tr>
-      <tr><td><code>checkDirectAccess()</code></td><td>Read same-computer availability silently</td></tr>
-      <tr><td><code>requestDirectAccess()</code></td><td>Prompt from a user gesture where required</td></tr>
-      <tr><td><code>disableDirectAccess()</code></td><td>Persist a relay-only preference for this app</td></tr>
-      <tr><td><code>sync()</code></td><td>Return one credential-hiding sync transport for a remote, direct, or relayed authority, or null</td></tr>
-      <tr><td><code>pendingMutations()</code>, <code>pendingMutation(requestId)</code></td><td>Durable handles for writes whose outcome is unknown, including after a reload</td></tr>
-      <tr><td><code>pending.recover(options?)</code></td><td>Resend the exact original request; never a new write</td></tr>
-      <tr><td><code>files</code></td><td>Upload, list, download, move, and delete collection files</td></tr>
-    </tbody>
-  </table>
-
-  <h2 id="client">MdbaseCollectionClient</h2>
+  <h2 id="session">createMdbase</h2>
   <p>
-    Import from <code>@mdbase-dev/connect/advanced</code> and construct with
-    any <code>MdbaseCollectionTransport</code>. It exposes the
-    record, query, view, type, validation, and timer methods above. Its surface
-    is limited to collection behavior. Domain packages should prefer this
-    dependency when they use collection operations alone.
+    <code>createMdbase(declaration)</code> is the entry point for web apps. Its
+    snapshot has a <code>phase</code> that says what to show; when
+    {" "}<code>phase.kind</code> is <code>"ready"</code>,
+    {" "}<code>phase.connection</code> is the open connection. Its actions
+    include <code>start</code>, <code>signIn</code>, <code>select</code>,
+    {" "}<code>forget</code>, <code>signOut</code> and <code>close</code>.
+  </p>
+  <p>
+    <code>new MdbaseConnect(declaration)</code> is the same entry under its
+    previous name. Its <code>application()</code> returns an object with
+    {" "}<code>getSnapshot</code>, <code>subscribe</code>, <code>start</code>,
+    {" "}<code>authorize</code>, <code>select</code>, <code>assess</code>,
+    {" "}<code>configure</code>, <code>clearSelection</code>,
+    {" "}<code>forget</code>, <code>setForeground</code> and
+    {" "}<code>close</code>. <code>connection(collectionId)</code> returns a
+    connection whose <code>records</code> is an <code>MdbaseClient</code>.
+    See <a href="/sdk/connect-quickstart/">Connect a browser app</a> for its
+    current status.
   </p>
 
-  <h2 id="errors">Outcomes and helpers</h2>
+  <h2 id="notifications">Other exports</h2>
+  <ul>
+    <li><code>toPlain</code>, <code>toValue</code>, <code>valueEquals</code>, <code>uuidv7</code>: values and IDs.</li>
+    <li><code>loadOrCreateClientKey</code>, <code>indexedDbKeyStorage</code>, <code>memoryKeyStorage</code>: your app’s session key.</li>
+    <li><code>isConfirmed(receipt)</code>: whether a receipt is confirmed.</li>
+    <li><code>TimersApi</code>: see <a href="/sdk/notifications/">Notifications and timers</a>.</li>
+    <li><code>@mdbase-dev/sdk/testing</code>: <code>MemoryReplica</code>, <code>createApplicationFixture</code>.</li>
+  </ul>
+
+  <h2 id="errors">Errors</h2>
   <p>
-    Expected failures are <code>ConnectOutcome</code> data:
-    {" "}<code>{`{ ok: false, problem }`}</code> with a stable
-    {" "}<code>code</code>, a <code>category</code>, a suggested
-    {" "}<code>recovery</code>, and code-specific <code>details</code>.
+    Failures throw <code>MdbaseError</code> with <code>code</code>,
+    {" "}<code>recovery</code>, and often <code>reason</code>,
+    {" "}<code>details</code>, <code>issues</code> or
+    {" "}<code>retryAfterMs</code>. Use <code>isMdbaseError(e, code?)</code>.
+    Branch on <code>code</code> and <code>reason</code>; <code>message</code>
+    {" "}is for developers. Each code has one recovery.
   </p>
-  <CodeBlock code={error} language="ts" label="outcomes.ts" />
   <table class="api-table">
     <thead>
-      <tr><th>Export</th><th>Purpose</th></tr>
+      <tr><th>Code</th><th>Recovery</th><th>When</th></tr>
     </thead>
     <tbody>
-      <tr><td><code>ConnectOutcome</code></td><td>The result type of every asynchronous operation</td></tr>
-      <tr><td><code>externalStore()</code></td><td>Adapt a session to <code>useSyncExternalStore</code></td></tr>
-      <tr><td><code>MdbaseConnectError</code></td><td>Carries a problem through custom transports and adapters</td></tr>
-      <tr><td><code>isRetryableConnectError()</code></td><td>Classify transient Connect failures</td></tr>
-      <tr><td><code>parseMdbasePushPayload()</code></td><td>Validate a browser push envelope</td></tr>
-      <tr><td><code>parseMdbaseNativeNotificationData()</code></td><td>Validate string-valued FCM/APNs data</td></tr>
-      <tr><td><code>showMdbasePushNotification()</code></td><td>Validate and display static manifest presentation</td></tr>
+      <tr><td><code>invalid_request</code></td><td><code>fix_request</code></td><td>Malformed parameters, unsafe paths, an expired query cursor</td></tr>
+      <tr><td><code>invalid_record</code></td><td><code>fix_request</code></td><td>The write fails validation; see <code>issues</code></td></tr>
+      <tr><td><code>not_found</code></td><td><code>refresh</code></td><td>No such record, file, hold or transfer</td></tr>
+      <tr><td><code>conflict</code></td><td><code>resolve_conflict</code></td><td>The current state doesn’t allow this write: <code>revision</code>, <code>path_taken</code>, <code>duplicate_value</code>, …</td></tr>
+      <tr><td><code>unauthenticated</code></td><td><code>reauthorize</code></td><td>No session, an expired one, or a revoked grant</td></tr>
+      <tr><td><code>forbidden</code></td><td><code>reauthorize</code></td><td>The grant lacks the capability, or the role doesn’t allow it</td></tr>
+      <tr><td><code>collection_invalid</code></td><td><code>repair_collection</code></td><td>The collection’s config or type files can’t be loaded</td></tr>
+      <tr><td><code>unavailable</code></td><td><code>retry</code></td><td>The replica can’t be reached, for example no device online</td></tr>
+      <tr><td><code>rate_limited</code></td><td><code>retry</code></td><td>Too many requests; see <code>retryAfterMs</code></td></tr>
+      <tr><td><code>quota_exceeded</code></td><td><code>free_space</code></td><td>The collection is over its storage quota</td></tr>
+      <tr><td><code>too_large</code></td><td><code>fix_request</code></td><td>A request or file over its limit</td></tr>
+      <tr><td><code>upgrade_required</code></td><td><code>upgrade</code></td><td>This SDK version is too old for the replica or collection</td></tr>
+      <tr><td><code>outcome_unknown</code></td><td><code>resolve_outcome</code></td><td>A write’s outcome can’t be determined; read again and decide</td></tr>
+      <tr><td><code>cancelled</code></td><td><code>none</code></td><td>You cancelled the request</td></tr>
+      <tr><td><code>internal</code></td><td><code>contact_support</code></td><td>A bug; the request may be retried once</td></tr>
     </tbody>
   </table>
 </DocsLayout>

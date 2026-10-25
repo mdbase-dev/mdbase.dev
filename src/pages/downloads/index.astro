@@ -15,19 +15,30 @@ const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
 
 <BaseLayout
   title="Download"
-  description="Download the mdbase Connect desktop app or standalone command line tools for macOS, Windows, and Linux."
+  description="Download the mdbase Connect desktop app or the standalone command-line tools for macOS, Windows, and Linux."
   current="downloads"
 >
-  <section class="content-section" aria-label="mdbase Connect downloads">
-    <h1 class="sr-only">mdbase Connect downloads</h1>
+  <header class="page-intro">
+    <h1>Download</h1>
+    <p class="page-intro__lede">
+      Install the mdbase Connect desktop app to keep synced collections as
+      folders on your computer and let approved apps reach Private collections
+      through it.
+    </p>
+  </header>
+
+  <section class="content-section" aria-labelledby="about-heading">
+    <h2 id="about-heading">What the desktop app does</h2>
     <p>
-      Install mdbase Connect on your computer to make local Markdown folders
-      available to approved applications. The desktop app includes the mdbase
-      Connector, its background service, and the command-line tools.
+      The desktop app runs the mdbase background service. It keeps a complete
+      copy of each collection you sync with this computer as ordinary files,
+      syncs your changes, and serves approved apps when a collection is Private.
+      It includes the <code>mdbase</code> command-line tool.
     </p>
     <p>
-      The mdbase editor is available online. These builds are public beta
-      releases; hosted collections require a free Connect account.
+      You don’t need it to use a Cloud copy collection in web apps. These
+      builds are beta releases, and syncing requires a{" "}
+      <a href="/beta/">Connect account</a>.
     </p>
     <div class="download-summary" aria-label="Release details">
       <span>Version <strong>{version}</strong></span>
@@ -38,9 +49,8 @@ const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
   <section class="content-section" aria-labelledby="desktop-heading">
     <h2 id="desktop-heading">Desktop app</h2>
     <p>
-      Choose the package for your computer. The app installs the Connector and
-      can open local mdbase collections immediately; hosted Connect features
-      require an account.
+      Choose the package for your computer, then sign in to your Connect
+      account from the app.
     </p>
 
     <div class="callout">
@@ -78,8 +88,9 @@ const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
   <section id="command-line" class="content-section" aria-labelledby="cli-heading">
     <h2 id="cli-heading">Command line</h2>
     <p>
-      The standalone archive contains the unified <code>mdbase</code> CLI and
-      Connect background service. It does not include the desktop interface.
+      The standalone archive contains the <code>mdbase</code> command-line
+      tool and background service, for servers and computers with no desktop.
+      It has no desktop interface.
     </p>
     <div class="download-list">
       {
@@ -102,6 +113,24 @@ const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
     <p class="download-note">
       Follow the <a href={`https://github.com/mdbase-dev/mdbase-connect/blob/${tag}/docs/headless.md`}>headless installation guide</a>{" "}
       to verify, install, and run the service.
+    </p>
+  </section>
+
+  <section class="content-section" aria-labelledby="updating-heading">
+    <h2 id="updating-heading">Updating from the Connector</h2>
+    <p>
+      Install this release over your existing copy. When your account moves to
+      the new sync system, the app takes over the collections the Connector
+      served and turns them into Private collections. Their files, record IDs
+      and app permissions carry over. Folders that mirrored a collection stored
+      by Connect join its Cloud copy.
+    </p>
+    <p>
+      On a headless install, <code>mdbase migrate status</code> shows progress
+      for each collection, and <code>mdbase migrate start</code> runs or
+      resumes the takeover. See{" "}
+      <a href="/connect/#moving-from-the-connector">if you used Connect before</a>{" "}
+      for what changes.
     </p>
   </section>
 

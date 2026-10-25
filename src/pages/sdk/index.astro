@@ -2,193 +2,195 @@
 import DocsLayout from "../../components/DocsLayout.astro";
 import CodeBlock from "../../components/CodeBlock.astro";
 
-const seam = `import type { MdbaseCollectionClient } from "@mdbase-dev/connect/advanced";
+const seam = `import type { MdbaseClient } from "@mdbase-dev/sdk";
 
-export async function listOpenTasks(client: MdbaseCollectionClient<Task>) {
-  return client.queryAll({
+// Accept the client, not a connector, so the same code runs against
+// a real collection and against MemoryReplica in tests.
+export async function listOpenTasks(db: MdbaseClient) {
+  const page = await db.query({
     types: ["task"],
     where: 'status == "open"',
-    orderBy: [{ field: "due", direction: "asc" }]
+    order_by: [{ field: "due", direction: "asc" }],
+    limit: 50,
   });
+  return page.records;
 }`;
 ---
 
 <DocsLayout
-  title="Connect SDK"
-  description="Use the Connect SDK to authorize a collection and call typed mdbase operations."
+  title="SDK overview"
+  description="@mdbase-dev/sdk is the TypeScript client for mdbase collections: reads from a local view, optimistic writes and live queries."
   active="overview"
   headings={[
     { href: "#start", label: "Where to start" },
-    { href: "#choose-a-surface", label: "Choose a surface" },
+    { href: "#model", label: "How the SDK works" },
+    { href: "#choose-a-surface", label: "Getting a client" },
     { href: "#application-shape", label: "Application shape" },
     { href: "#package-map", label: "Package map" }
   ]}
 >
   <p>
-    <code>@mdbase-dev/connect</code> is the browser and native-shell SDK for
-    applications that operate on one user-approved local or hosted mdbase
-    collection. The application declares the capabilities it needs in its
-    manifest. Connect selects the route and the collection authority checks
-    the current grant.
+    Web apps, Node scripts and editor plugins use it to read, query, watch
+    and change records and files in one collection.
   </p>
 
-  <h2 id="start">Starting points</h2>
+  <h2 id="start">Where to start</h2>
   <div class="start-options">
     <div>
-      <strong>Local SDK sandbox</strong>
+      <strong>Quickstart</strong>
       <p>
-        Run typed reads and revision-safe changes against an in-memory
-        collection. This source-built sandbox needs no account or service.
+        Run a short script against an in-memory replica. It needs no account
+        or service.
       </p>
-      <a href="/sdk/quickstart/">Run the source-built sandbox</a>
+      <a href="/sdk/quickstart/">Run the quickstart</a>
     </div>
     <div>
-      <strong>Connect an application</strong>
+      <strong>Connect an app</strong>
       <p>
-        Add a manifest, authorize one compatible collection, complete the
-        browser callback, and use the approved connection.
+        Declare your app, sign the user in and use the collection they pick.
       </p>
-      <a href="/sdk/connect-quickstart/">Open the Connect guide</a>
+      <a href="/sdk/connect-quickstart/">Connect a browser app</a>
     </div>
     <div>
-      <strong>Specification implementations</strong>
+      <strong>The format</strong>
       <p>
-        Build a conforming collection tool or use the versioned TypeScript and
-        Rust implementations without the managed Connect service.
+        Build tools that read and write mdbase collections directly, without
+        the SDK.
       </p>
-      <a href="/spec/">Open the specification</a>
+      <a href="/spec/">Read the specification</a>
     </div>
   </div>
   <div class="callout">
     <strong>Release status</strong>
     <p>
-      The production service and protocol 1 are deployed for public beta accounts.
-      The npm packages await their first public release. Current developers
-      build or pack the versioned artifacts from the
-      {" "}<a href="https://github.com/mdbase-dev/mdbase-connect">Connect repository</a>.
-    </p>
-  </div>
-  <div class="callout callout--success">
-    <strong>Conformance evidence</strong>
-    <p>
-      The current site records mdbase specification 0.3.0 claims for the
-      TypeScript 0.3.0-rc.4 and Rust 0.4.0-rc.3 implementations, with evidence
-      dated 29 July 2026. <a href="/spec/#section-14">Review conformance resources</a>.
+      <code>@mdbase-dev/sdk</code> is not on npm yet. Until it is, the install
+      commands in these guides fail.
     </p>
   </div>
 
-  <h2 id="choose-a-surface">SDK surfaces</h2>
+  <h2 id="model">How the SDK works</h2>
+  <p>
+    Your app talks to a <strong>replica</strong> of the collection: a copy
+    that applies changes in the order the collection’s log confirms them. The
+    SDK gives you that replica’s view, plus your own writes that are still
+    waiting.
+  </p>
+  <ul>
+    <li>
+      <strong>Reads are local.</strong> <code>get</code>, <code>query</code>
+      {" "}and <code>live</code> answer from the replica’s view. They include
+      your pending writes.
+    </li>
+    <li>
+      <strong>Writes are intents.</strong> Each write returns at once with a
+      receipt in the <code>pending</code> state. It becomes
+      {" "}<code>confirmed</code> when the log accepts it, or
+      {" "}<code>rejected</code> with a reason.
+    </li>
+    <li>
+      <strong>Nothing is lost silently.</strong> Concurrent edits to the same
+      field are merged, and the losing value is kept as a conflict you can
+      review. A file-backed replica can also put a local edit on hold instead
+      of overwriting it.
+    </li>
+  </ul>
+  <p>
+    <a href="/sdk/offline-sync/">Pending writes and sync status</a> covers
+    receipts, holds and conflicts.
+  </p>
+
+  <h2 id="choose-a-surface">Getting a client</h2>
+  <p>
+    Every client comes from <code>connect()</code>, given a
+    {" "}<strong>connector</strong> that says how to reach a replica:
+  </p>
   <table class="api-table">
     <thead>
       <tr>
-        <th>Surface</th>
-        <th>Use it for</th>
-        <th>Depends on</th>
+        <th>You are building</th>
+        <th>How you reach the collection</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td><code>MdbaseConnect</code></td>
-        <td>Application-level manager for web, native-shell, and portable-file authorization</td>
-        <td>Browser APIs or adapters supplied by a native shell</td>
+        <td>A web or mobile app</td>
+        <td>
+          <code>createMdbase()</code> signs the user in and hands you a
+          connection. Its client is an ordinary <code>MdbaseClient</code>.
+          See <a href="/sdk/connect-quickstart/">Connect a browser app</a>.
+        </td>
       </tr>
       <tr>
-        <td><code>MdbaseConnection</code></td>
-        <td>One collection's operations, renewal, routing, notifications, and provider-neutral sync</td>
-        <td>Browser APIs or adapters supplied by a native shell</td>
+        <td>A script or plugin on a computer running the mdbase desktop app</td>
+        <td>
+          Connectors from <code>@mdbase-dev/sdk/node</code> reach the desktop
+          app’s replica on the same machine. See
+          {" "}<a href="/sdk/routing/">How apps reach a collection</a>.
+        </td>
       </tr>
       <tr>
-        <td><code>MdbaseApplicationSession</code></td>
-        <td>One application's collection selection, authorization, setup checks, and reactive snapshot</td>
-        <td>An <code>MdbaseConnect</code> manager and a selection adapter such as <code>MdbaseBrowserSelection</code></td>
-      </tr>
-      <tr>
-        <td><code>connection.records</code></td>
-        <td>Records people type into: autosave, conflicts, exact recovery, live updates</td>
-        <td>An <code>MdbaseConnection</code></td>
-      </tr>
-      <tr>
-        <td><code>MdbaseCollectionClient</code> (<code>/advanced</code>)</td>
-        <td>Domain and feature logic that should be independent of OAuth and hosting</td>
-        <td>A small <code>MdbaseCollectionTransport</code></td>
-      </tr>
-      <tr>
-        <td><code>createSandbox()</code></td>
-        <td>Fast frontend tests for CRUD, revisions, pagination, defaults, and change cursors</td>
-        <td><code>@mdbase-dev/connect-dev</code></td>
-      </tr>
-      <tr>
-        <td><code>OfflineReplica</code></td>
-        <td>Offline-first applications backed by any sync-capable authority</td>
-        <td><code>@mdbase-dev/connect-sync</code></td>
+        <td>Tests and demo modes</td>
+        <td>
+          <code>MemoryReplica</code> from <code>@mdbase-dev/sdk/testing</code>.
+          See <a href="/sdk/testing/">Testing</a>.
+        </td>
       </tr>
     </tbody>
   </table>
 
-  <h2 id="application-shape">Application structure</h2>
+  <h2 id="application-shape">Application shape</h2>
   <p>
-    Create one <code>MdbaseConnect</code> manager and one application session
-    at the application boundary. Read the session's active connection, then
-    pass that <code>MdbaseConnection</code> into feature code. The session owns
-    collection selection and authorization; the manager owns saved
-    authorizations. A bound connection never changes collections underneath a
-    repository, and feature code written against
-    {" "}<code>MdbaseCollectionClient</code> can also run against the developer
-    sandbox or another conforming transport.
-  </p>
-  <p>
-    A downloaded HTML file supplies
-    {" "}<code>distribution: "portable"</code> in its inline manifest. The same
-    manager then uses short-code approval and session-only credentials. See the
-    {" "}<a href="/sdk/portable-apps/">portable HTML application guide</a>.
+    Keep domain code on <code>MdbaseClient</code>. It then runs unchanged
+    against any connector.
   </p>
   <CodeBlock code={seam} language="ts" label="tasks.ts" />
-  <div class="callout">
-    <strong>Typed outcomes</strong>
-    <p>
-      Every operation returns a <code>ConnectOutcome</code>:
-      {" "}<code>{`{ ok: true, value, diagnostics }`}</code> or
-      {" "}<code>{`{ ok: false, problem }`}</code>. Expected failures are data
-      with a stable code and a suggested recovery; exceptions mean a
-      programming error.
-    </p>
-  </div>
 
   <h2 id="package-map">Package map</h2>
   <table class="api-table">
     <thead>
       <tr>
-        <th>Package</th>
-        <th>Purpose</th>
+        <th>Import</th>
+        <th>What it gives you</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td><code>@mdbase-dev/connect</code></td>
-        <td>Authorization, routes, operations, notifications, and authority-neutral sync handoff</td>
+        <td><code>@mdbase-dev/sdk</code></td>
+        <td>
+          <code>connect</code>, <code>MdbaseClient</code>,
+          {" "}<code>createMdbase</code>, errors, status helpers and connectors
+        </td>
       </tr>
       <tr>
-        <td><code>@mdbase-dev/connect-dev</code></td>
-        <td>Manifest validation, contract validation, and deterministic sandbox transport</td>
+        <td><code>@mdbase-dev/sdk/node</code></td>
+        <td>Connectors to the desktop app over local IPC or localhost</td>
       </tr>
       <tr>
-        <td><code>@mdbase-dev/connect-protocol</code></td>
-        <td>Shared TypeScript types and canonical JSON Schemas</td>
+        <td><code>@mdbase-dev/sdk/testing</code></td>
+        <td><code>MemoryReplica</code> and test fixtures</td>
       </tr>
       <tr>
-        <td><code>@mdbase-dev/connect-sync</code></td>
-        <td>Authority-neutral replication state machine, IndexedDB replica, conflicts, and offline mutations</td>
+        <td><code>@mdbase-dev/sdk/browser</code></td>
+        <td>
+          The same surface as a browser module. The package also ships a
+          classic-script bundle; see <a href="/sdk/portable-apps/">Browser bundle</a>.
+        </td>
       </tr>
       <tr>
-        <td><code>@mdbase-dev/connect-webhooks</code></td>
-        <td>Server-side verification for signed notification webhooks</td>
+        <td><code>@mdbase-dev/sdk/account</code></td>
+        <td>Encryption password and recovery key set-up for Private collections</td>
+      </tr>
+      <tr>
+        <td><code>@mdbase-dev/sdk/app-host</code>, <code>@mdbase-dev/sdk/app-storage</code></td>
+        <td>
+          The parts that let an app run its own replica in the browser. These
+          are for mdbase’s own apps at launch.
+        </td>
       </tr>
     </tbody>
   </table>
-
-  <div class="button-row" style="margin-top: 2rem">
-    <a class="button button--primary" href="/sdk/quickstart/">Run the source-built sandbox</a>
-    <a class="button" href="/sdk/connect-quickstart/">Connect a browser app</a>
-    <a class="button" href="/spec/">Implement the specification</a>
-  </div>
+  <p>
+    The package needs Node 20 or later outside the browser. It is what apps
+    use instead of the <code>@mdbase-dev/connect</code> beta.
+  </p>
 </DocsLayout>

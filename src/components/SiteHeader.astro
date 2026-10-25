@@ -1,4 +1,6 @@
 ---
+import BrandMark from "./BrandMark.astro";
+
 interface Props {
   current?: "home" | "apps" | "downloads" | "connect" | "sdk" | "runtime" | "spec";
 }
@@ -15,7 +17,7 @@ const links = [
 <header class="site-header">
   <div class="site-header__inner">
     <div class="site-header__identity">
-      <a class="wordmark" href="/" aria-label="mdbase home">mdbase</a>
+      <a class="wordmark" href="/" aria-label="mdbase home"><BrandMark /><span>mdbase</span></a>
       <a class="site-header__signup" href="https://connect.mdbase.dev/signup">Sign up</a>
     </div>
     <nav class="site-nav" aria-label="Primary navigation">

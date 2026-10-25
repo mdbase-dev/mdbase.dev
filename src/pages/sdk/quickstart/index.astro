@@ -2,163 +2,157 @@
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
-const setup = `git clone https://github.com/mdbase-dev/mdbase-connect.git
-cd mdbase-connect
-corepack enable
-pnpm install
-pnpm build`;
+const setup = `mkdir mdbase-quickstart && cd mdbase-quickstart
+npm init -y
+npm install @mdbase-dev/sdk`;
 
-const download = `curl -fsSLo packages/devkit/sandbox-quickstart.mjs \\
-  https://mdbase.dev/examples/sandbox-quickstart.mjs
+const example = `import { connect, isMdbaseError, summarizeStatus } from "@mdbase-dev/sdk";
+import { MemoryReplica } from "@mdbase-dev/sdk/testing";
 
-node packages/devkit/sandbox-quickstart.mjs`;
-
-const example = `import { createSandbox } from "@mdbase-dev/connect-dev";
-
-const { client, transport } = createSandbox({
-  records: [{
-    path: "tasks/first.md",
-    types: ["task"],
-    frontmatter: {
-      type: "task",
-      title: "Read the collection",
-      completed: false
-    }
-  }]
+// An in-memory stand-in for a replica. Writes stay pending until confirmAll().
+const replica = new MemoryReplica({ confirmDelayMs: null });
+replica.seed({
+  path: "tasks/first.md",
+  types: ["task"],
+  frontmatter: { title: "Read the collection", status: "open" },
 });
 
-// Every operation returns a ConnectOutcome: check ok, then use value or problem.
-function required(outcome) {
-  if (!outcome.ok) throw new Error(\`\${outcome.problem.code}: \${outcome.problem.message}\`);
-  return outcome.value;
-}
+const db = await connect({
+  connector: replica.connector(),
+  app: { name: "dev.example.quickstart", version: "0.1.0" },
+});
 
-const first = required(await client.read({ path: "tasks/first.md" }));
+// A live query: a snapshot first, then a diff for every change.
+const tasks = db.live({
+  types: ["task"],
+  order_by: [{ field: "file.path", direction: "asc" }],
+});
+await tasks.ready;
+console.log(\`Tasks: \${tasks.records.map((r) => r.path).join(", ")}\`);
 
-const created = required(await client.create({
+// Writes return at once with the optimistic result.
+const created = await db.create({
   type: "task",
   path: "tasks/second.md",
-  frontmatter: {
-    type: "task",
-    title: "Update one record",
-    completed: false
-  }
-}));
-
-const updated = required(await client.update({
-  path: created.path,
-  patch: { completed: true },
-  ifRevision: created.revision
-}));
-
-// Reusing the old revision is refused instead of overwriting the update.
-const stale = await client.update({
-  path: created.path,
-  patch: { completed: false },
-  ifRevision: created.revision
+  frontmatter: { title: "Update one record", status: "open" },
 });
+console.log(\`Created: \${created.records[0].path} (\${created.state})\`);
+console.log(\`Status: \${summarizeStatus(await db.getStatus()).text}\`);
 
-const tasks = required(await client.query({
-  types: ["task"],
-  limit: 20
-}));
+// Pass the record you read, so only the fields you change are sent.
+const first = await db.get({ path: "tasks/first.md" });
+const done = await db.update(first, { patch: { status: "done" } });
 
-console.log(\`Read: \${first.frontmatter.title}\`);
-console.log(\`Updated: \${updated.path} (completed: \${updated.frontmatter.completed})\`);
-console.log(\`Stale revision: \${stale.ok ? "accepted" : stale.problem.code}\`);
-console.log(\`Task records: \${tasks.results.length}\`);
-console.log(\`Markdown paths: \${transport.snapshot().map((record) => record.path).join(", ")}\`);`;
+replica.confirmAll(); // The log accepts both writes.
+const receipt = await done.confirmed;
+console.log(\`Confirmed at position \${receipt.seq}\`);
 
-const output = `Read: Read the collection
-Updated: tasks/second.md (completed: true)
-Stale revision: concurrent_modification
-Task records: 2
-Markdown paths: tasks/first.md, tasks/second.md`;
+// A whole-record check fails if the record changed since you read it.
+try {
+  const stale = await db.update(first, { patch: { status: "open" }, ifRevision: first.revision });
+  await stale.confirmed;
+} catch (e) {
+  if (!isMdbaseError(e, "conflict")) throw e;
+  console.log(\`Stale revision: \${e.code} (\${e.reason})\`);
+}
+
+console.log(\`Status: \${summarizeStatus(await db.getStatus()).text}\`);
+console.log(\`Open tasks: \${tasks.records.filter((r) => r.frontmatter.get("status") === "open").length}\`);
+tasks.close();
+db.close();`;
+
+const output = `Tasks: tasks/first.md
+Created: tasks/second.md (pending)
+Status: Synced through 1, 1 change waiting
+Confirmed at position 3
+Stale revision: conflict (revision)
+Status: Synced through 3
+Open tasks: 1`;
 ---
 
 <DocsLayout
-  title="Run the source-built SDK sandbox"
-  description="Build the current beta packages from source, then run typed operations against an in-memory collection with no account or service."
+  title="Quickstart"
+  description="Run a short script against an in-memory replica: read, watch, write and see a stale write refused."
   active="quickstart"
   headings={[
     { href: "#prerequisites", label: "Prerequisites" },
-    { href: "#build", label: "1. Build the packages" },
-    { href: "#run", label: "2. Run the example" },
-    { href: "#read", label: "3. Read the code" },
-    { href: "#result", label: "4. Check the result" },
-    { href: "#next", label: "5. Continue" }
+    { href: "#build", label: "Install the SDK" },
+    { href: "#run", label: "Run the example" },
+    { href: "#result", label: "Expected result" },
+    { href: "#read", label: "What it shows" },
+    { href: "#next", label: "Next steps" }
   ]}
 >
-  <div class="callout callout--success">
-    <strong>Local sandbox · source build · no account required</strong>
-    <p>
-      This example uses the real typed collection client and the deterministic
-      developer sandbox. It keeps every record in memory and makes no network
-      requests.
-    </p>
-  </div>
+  <p>
+    This script needs no account, no service and no collection. It uses
+    {" "}<code>MemoryReplica</code>, an in-memory replica from
+    {" "}<code>@mdbase-dev/sdk/testing</code> that speaks the same protocol as a
+    real one. Your code talks to it through the same
+    {" "}<code>MdbaseClient</code> it would use with a real collection.
+  </p>
 
   <h2 id="prerequisites">Prerequisites</h2>
   <ul>
-    <li>Git;</li>
-    <li>Node 24 LTS;</li>
-    <li>Corepack, which installs the repository's pinned pnpm version.</li>
+    <li>Node 20 or later.</li>
+    <li>npm.</li>
   </ul>
 
-  <h2 id="build">1. Build the current packages</h2>
-  <p>
-    The Connect packages await their first npm publication. Build the exact
-    beta packages from the public repository for this example.
-  </p>
+  <h2 id="build">1. Install the SDK</h2>
   <CodeBlock code={setup} language="sh" label="Terminal" />
+  <div class="callout">
+    <strong>The package is not on npm yet.</strong>
+    <p>
+      Until <code>@mdbase-dev/sdk</code> is published,
+      {" "}<code>npm install</code> fails. This page will give the exact version
+      once it is published.
+    </p>
+  </div>
 
-  <h2 id="run">2. Download and run the complete example</h2>
+  <h2 id="run">2. Run the example</h2>
   <p>
-    Save the example inside the developer package so Node resolves the local
-    workspace packages. The final command prints the result and exits.
+    Save this as <code>quickstart.mjs</code> and run
+    {" "}<code>node quickstart.mjs</code>. It prints its results and exits.
   </p>
-  <CodeBlock code={download} language="sh" label="Terminal" />
-  <p>
-    You can also
-    {" "}<a href="/examples/sandbox-quickstart.mjs" download>download the example file</a>
-    {" "}and save it as
-    {" "}<code>packages/devkit/sandbox-quickstart.mjs</code>.
-  </p>
+  <CodeBlock code={example} language="js" label="quickstart.mjs" />
 
-  <h2 id="read">3. See what the example does</h2>
-  <CodeBlock code={example} language="js" label="packages/devkit/sandbox-quickstart.mjs" />
-  <p>
-    <code>createSandbox()</code> returns the same
-    {" "}<code>MdbaseCollectionClient</code> boundary used by a connected
-    collection. The example reads one seed record, creates a second record,
-    updates it with its revision token, shows that a stale revision is
-    refused, and queries both task records. Every operation returns a{" "}
-    <code>ConnectOutcome</code>: check <code>ok</code>, then use{" "}
-    <code>value</code> or <code>problem</code>. Expected failures are data,
-    not exceptions.
-  </p>
-
-  <h2 id="result">4. Check the expected result</h2>
+  <h2 id="result">3. Check the result</h2>
   <CodeBlock code={output} language="text" label="Expected output" />
+
+  <h2 id="read">4. What it shows</h2>
+  <ul>
+    <li>
+      <strong>Writes are optimistic.</strong> <code>create()</code> and
+      {" "}<code>update()</code> return a <code>Write</code> straight away, in
+      the <code>pending</code> state. Your reads and live queries already show
+      the change. <code>write.confirmed</code> resolves when the collection’s
+      log accepts it.
+    </li>
+    <li>
+      <strong>Live queries stay current.</strong> <code>db.live()</code> keeps
+      {" "}<code>records</code> up to date as writes land, so the count at the end
+      already includes both changes.
+    </li>
+    <li>
+      <strong>Frontmatter is a <code>Map</code>.</strong> Read fields with
+      {" "}<code>record.frontmatter.get("status")</code>, or convert with
+      {" "}<code>toPlain()</code>.
+    </li>
+    <li>
+      <strong>Stale writes are refused.</strong> With <code>ifRevision</code>,
+      a write against an old revision fails with the error code
+      {" "}<code>conflict</code> and reason <code>revision</code>.
+    </li>
+  </ul>
   <p>
-    A stale revision fails with the
-    {" "}<code>concurrent_modification</code> problem, the same code a real
-    collection returns. The sandbox also supports
-    typed CRUD, pagination, read defaults, and change cursors. CEL expressions,
-    authorization, routing, and filesystem behavior belong in real-stack
-    integration tests.
+    <code>MemoryReplica</code> is not the real replica. It applies patches
+    blindly and has no query planner or merge. Use it for unit tests and demo
+    modes, not to test merge behaviour.
   </p>
 
-  <h2 id="next">5. Continue to a real collection</h2>
-  <p>
-    The next guide adds an application manifest, a provisionable workout
-    contract, browser authorization, and one approved local or hosted
-    collection.
-  </p>
+  <h2 id="next">5. Next steps</h2>
   <div class="button-row" style="margin-top: 1.5rem">
-    <a class="button button--primary" href="/sdk/connect-quickstart/">
-      Connect a browser application
-    </a>
-    <a class="button" href="/sdk/testing/">Understand the test boundary</a>
+    <a class="button button--primary" href="/sdk/operations/">Read and write records</a>
+    <a class="button" href="/sdk/offline-sync/">Pending writes and sync status</a>
+    <a class="button" href="/sdk/testing/">Test with MemoryReplica</a>
   </div>
 </DocsLayout>

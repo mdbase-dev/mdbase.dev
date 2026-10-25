@@ -2,145 +2,140 @@
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
 
-const open = `const opened = await connection.records.open("Notes/today.md", {
-  autosave: { idleMs: 1_000 },
-  timeoutMs: 8_000
+const open = `const lease = await db.records.open({ path: "notes/today.md" }, {
+  autosave: { idleMs: 1_000 }, // leave out for explicit flush() only
 });
-if (!opened.ok) return renderProblem(opened.problem);
-const { session, release } = opened.value;
+const { session } = lease;
 
 const unsubscribe = session.subscribe(() => render(session.getSnapshot()));
 editor.onChange((text) => session.setBody(text));
-properties.onChange((patch) => session.patchFrontmatter(patch));`;
+properties.onChange((patch) => session.patchFrontmatter(patch)); // undefined unsets a key`;
 
-const follow = `const watch = await connection.watch({}, { timeoutMs: 20_000 });
-if (watch.ok) {
-  const stopFollowing = connection.records.follow(watch.value);
-  // On sign-out: stopFollowing(); watch.value.close();
-}`;
-
-const leave = `const flushed = await session.flush({ timeoutMs: 8_000 });
-if (!flushed.ok) {
-  if (flushed.problem.code === "concurrent_modification") {
-    showConflict(session.getSnapshot()); // local body and snapshot.remote
+const leave = `const result = await session.flush({ timeoutMs: 8_000 });
+if (!result.ok) {
+  const snapshot = session.getSnapshot();
+  if (snapshot.state === "conflict") {
+    showConflict(snapshot.body, snapshot.remote); // your text and the newer record
   } else {
-    renderProblem(flushed.problem);
+    showProblem(result.problem);
   }
 }
 unsubscribe();
-release();`;
+lease.release();`;
 
-const resolve = `session.resolve({ keep: "mine" });   // write local changes over the newer record
+const resolve = `session.resolve({ keep: "mine" });   // put your changes on top of the newer record
 session.resolve({ keep: "theirs" }); // take the newer record
 session.resolve({ body: merged });   // save text the user merged`;
 
-const react = `const store = externalStore(session);
+const recover = `// Keep this with your own saved state, for example in IndexedDB.
+const recovery = session.getSnapshot().recovery;
+if (recovery) {
+  saveRecovery({
+    mutationId: recovery.mutationId,
+    recordId: recovery.recordId,
+    baseRevision: recovery.baseRevision,
+  });
+}
 
-function useRecord() {
-  return useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
-}`;
-
-const adapter = `import { MdbaseRecordSession } from "@mdbase-dev/connect";
-import type { MdbaseRecordSessionAdapter } from "@mdbase-dev/connect/advanced";
-
-const adapter: MdbaseRecordSessionAdapter<Note> = {
-  revision: (note) => note.revision,
-  body: (note) => note.body,
-  frontmatter: (note) => note.frontmatter,
-  write: (base, change, options) => notes.write(base, change, options), // ConnectOutcome<Note>
-  read: (base, options) => notes.read(base.id, options),
-  recover: (requestId, options) => notes.recover(requestId, options),
-  isPending: (requestId) => notes.isPending(requestId)
-};
-const session = new MdbaseRecordSession(note, adapter, { autosave: { idleMs: 650 } });`;
+// After a reload:
+const lease = await db.records.open(recordId, { recovery: loadRecovery() });`;
 ---
 
 <DocsLayout
   title="Editing records"
-  description="Keep one record open while people type: autosave, conflicts, lost responses, renames and deletions handled by one shared session."
-  active="operations"
+  description="Keep one record open while people type: autosave, conflicts, lost responses and deletions handled by one shared session."
+  active="editing"
   headings={[
     { href: "#open", label: "Open a record" },
     { href: "#follow", label: "Stay current" },
     { href: "#states", label: "States" },
     { href: "#conflicts", label: "Conflicts" },
     { href: "#leave", label: "Leave safely" },
-    { href: "#react", label: "React" },
-    { href: "#custom", label: "Custom storage" }
+    { href: "#custom", label: "Survive a reload" }
   ]}
 >
   <p>
-    An application that lets people type into a record should not call{" "}
-    <code>update()</code> on every change. Open the record as a session
-    instead. The session saves after a pause in typing, never runs two writes
-    for the same record, and tells your interface what state the record is in.
+    An app that lets people type into a record should not call
+    {" "}<code>update()</code> on every keystroke. Open the record as a session
+    instead. The session saves after a pause in typing, never runs two saves
+    for the same record at once, and tells your interface what state the
+    record is in.
   </p>
 
   <h2 id="open">Open a record</h2>
   <CodeBlock code={open} language="ts" label="editor.ts" />
   <p>
-    <code>open()</code> reads the record and returns a lease: the session and a{" "}
-    <code>release()</code> function for this view. Every view that opens the
-    same path shares one session, so an application never has two competing
-    writers for a record. Each save sends only the body and the frontmatter
-    keys that changed, checked against the revision they were based on.
+    <code>db.records.open()</code> takes an ID, a <code>&#123; path &#125;</code>
+    {" "}or a record you read. It returns a lease: the <code>session</code> and
+    a <code>release()</code> function for this view. Every view that opens the
+    same record on the same client shares one session, so your app never has
+    two competing writers for it. Views that share a session must use the same
+    autosave setting.
+  </p>
+  <p>
+    The lease is local to your app. It does not lock the record for anyone
+    else.
   </p>
 
   <h2 id="follow">Stay current while it is open</h2>
-  <CodeBlock code={follow} language="ts" label="watch.ts" />
   <p>
-    <code>follow()</code> routes collection changes to open sessions. A record
-    changed elsewhere is re-read, a renamed record keeps its session at the new
-    path, and a deleted record keeps its local text. After a change gap every
-    open record is re-read. The session recognizes its own saves, including
-    when the saved text comes back normalized before the save has finished,
-    so they are never mistaken for someone else's edit.
+    An open session follows the collection’s change feed. When the record
+    changes elsewhere, the session reads it again. Without local changes, it
+    shows the newer record. With local changes, it moves to
+    {" "}<code>conflict</code> and keeps both: your text, and the newer record
+    in <code>snapshot.remote</code>.
   </p>
 
   <h2 id="states">States</h2>
   <ul>
-    <li><code>saved</code>: the text is the saved record.</li>
+    <li><code>saved</code>: the text is the record, confirmed by the log.</li>
+    <li><code>saved_on_device</code>: the text is kept on this device and syncs when the log can be reached.</li>
     <li><code>unsaved</code>: local changes wait for autosave or <code>flush()</code>.</li>
-    <li><code>saving</code>: a write is in flight. Typing continues; newer text is saved next.</li>
-    <li><code>conflict</code>: the record changed elsewhere in a part edited locally.</li>
-    <li><code>recovery</code>: a save's response was lost. The same save is recovered exactly; nothing new is written until it is. This includes a save interrupted by a reload: <code>open()</code> resumes it.</li>
-    <li><code>error</code>: the last save failed. Local text is kept, and nothing retries in the background.</li>
-    <li><code>deleted</code>: the record no longer exists. Local text is kept.</li>
+    <li><code>saving</code>: a save is in flight. Typing continues; newer text is saved next.</li>
+    <li><code>conflict</code>: the record changed elsewhere while you had unsaved changes, or it is held.</li>
+    <li>
+      <code>recovery</code>: a save’s outcome is not known yet. The session
+      waits for that save’s own receipt and never sends a replacement.
+    </li>
+    <li><code>error</code>: the last save failed. Your text is kept.</li>
+    <li><code>deleted</code>: the record no longer exists. Your text is kept.</li>
   </ul>
   <p>
-    <code>snapshot.problem</code> holds the typed problem behind{" "}
-    <code>error</code> and <code>recovery</code>.
+    <code>snapshot.problem</code> holds the error behind <code>error</code>
+    {" "}and <code>recovery</code>. <code>snapshot.dirty</code> tells you
+    whether there are unsaved changes.
   </p>
 
-  <h2 id="conflicts">Resolve conflicts</h2>
+  <h2 id="conflicts">Conflicts</h2>
+  <p>
+    Each save also checks the revision your text was based on, so a change
+    the session hasn’t seen yet still can’t be overwritten. In
+    {" "}<code>conflict</code>, let the user choose:
+  </p>
   <CodeBlock code={resolve} language="ts" label="conflict.ts" />
   <p>
-    A change made elsewhere is a conflict only when it touched something edited
-    locally: the body, or a frontmatter key the user changed. Otherwise the
-    session builds on the newer record without asking. If the other change
-    produced exactly the local text, the record is simply saved.
+    A session can’t resolve a <a href="/sdk/offline-sync/#holds">hold</a>.
+    Held records stay protected until the user resolves the hold itself.
   </p>
 
   <h2 id="leave">Leave safely</h2>
   <CodeBlock code={leave} language="ts" label="leave.ts" />
   <p>
-    <code>flush()</code> saves until nothing is left, or returns why it cannot.
-    Releasing the last view never cancels a save in progress; the session is
-    dropped once it has nothing left to save.
+    <code>flush()</code> resolves once there is nothing left to save and the
+    log has confirmed it, or tells you why it can’t. If the change is kept on
+    this device but not confirmed yet, it resolves with <code>ok: true</code>
+    {" "}and <code>saved: "on_device"</code>. Releasing the last view
+    stops autosave but keeps unsaved text, so opening the record again on the
+    same client picks it up. A client keeps at most 64 sessions with unsaved
+    text; settle some before opening more.
   </p>
 
-  <h2 id="react">Use it from React</h2>
-  <CodeBlock code={react} language="tsx" label="use-record.tsx" />
-
-  <h2 id="custom">Records behind your own storage</h2>
-  <CodeBlock code={adapter} language="ts" label="custom-session.ts" />
+  <h2 id="custom">Survive a reload</h2>
   <p>
-    Applications that reach records through their own repository or a test
-    double construct the session with an adapter from{" "}
-    <code>@mdbase-dev/connect/advanced</code>. Adapters report failures as{" "}
-    <code>ConnectOutcome</code> values. A <code>file_not_found</code> problem
-    from <code>read</code> marks the record deleted, and <code>recover</code>{" "}
-    must continue the original write through its pending mutation, never send
-    a new one.
+    Unsaved text lives in memory. If a save was sent but its outcome is not
+    yet known when the page reloads, keep the session’s recovery reference and
+    pass it back to <code>open()</code>. The session then finishes that same
+    save instead of writing again.
   </p>
+  <CodeBlock code={recover} language="ts" label="recover.ts" />
 </DocsLayout>
