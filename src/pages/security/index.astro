@@ -87,11 +87,12 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   <section class="content-section" aria-labelledby="private-keys">
     <h2 id="private-keys">Private collection keys</h2>
     <p>
-      By default, your devices share an account key. Your device generates it
-      and shows it to you once as a recovery key, and mdbase stores a copy
-      locked with your encryption password using Argon2id. mdbase never sees
-      the password or the recovery key. A new device that you sign in gets the
-      collection keys once you enter either one.
+      When you first choose Private, your device generates an account key that
+      your devices share. It shows the key to you once as a recovery key, and
+      mdbase stores a copy locked with your encryption password using
+      Argon2id. mdbase never sees the password or the recovery key. A new
+      device that you sign in gets the collection keys once you enter either
+      one.
     </p>
     <p>
       Strict mode removes that stored copy. Each new device is then approved
@@ -168,7 +169,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     <h2 id="report">Report a security issue</h2>
     <p>
       Use GitHub’s private vulnerability reporting on the{" "}
-      <a href="https://github.com/mdbase-dev/mdbase-connect/security">mdbase-connect repository</a>.
+      <a href="https://github.com/mdbase-dev/mdbase-connect/security/advisories/new">mdbase-connect repository</a>.
       Don’t open a public issue. Include the affected component and version, the
       steps to reproduce, and the impact, with credentials, paths and record
       contents removed. Developers building apps should also read the{" "}
