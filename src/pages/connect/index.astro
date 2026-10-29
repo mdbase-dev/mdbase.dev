@@ -4,33 +4,78 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="mdbase Connect"
-  description="mdbase Connect is the account that syncs and shares your Markdown collections. Choose Cloud copy or Private for each collection, approve apps, share with people, and add devices."
+  description="mdbase Connect lets apps use your Markdown collections as their database. You approve each app, and your records stay as files you own, synced across your devices."
   current="connect"
 >
   <header class="page-intro">
     <h1>mdbase Connect</h1>
     <p class="page-intro__lede">
-      Connect is the account that syncs and shares your collections. This page
-      explains what you choose for each collection, what mdbase can read, and
-      how apps, people and devices get access.
+      Connect lets apps use your Markdown collections as their database. An app
+      doesn’t keep your data in its own storage. It asks for access to one of
+      your collections, then finds, creates and edits records there, and
+      every change is saved as a Markdown file you own.
     </p>
   </header>
+
+  <section class="content-section" aria-labelledby="how-it-works">
+    <h2 id="how-it-works">How it works</h2>
+    <p>
+      Say you keep your tasks in a collection. Each task is a Markdown file,
+      like <code>tasks/renew-passport.md</code>:
+    </p>
+    <pre><code>---
+type: task
+title: Renew passport
+status: open
+due: 2026-12-01
+---
+
+Book a photo appointment first.</code></pre>
+    <p>
+      Connect <a href="/apps/">TaskNotes</a> to that collection and it queries
+      the records of type <code>task</code> to build its lists. Mark this one
+      done and TaskNotes changes <code>status</code> in the file. Edit the due
+      date in a text editor and TaskNotes shows the new date. Any other app you
+      connect to the same collection sees the same records, so nothing has to
+      be exported from one app to another.
+    </p>
+    <p>
+      Connect is the account that makes this work. It handles sign-in, the
+      permissions you grant, syncing between your devices, and sharing with
+      other people.
+    </p>
+  </section>
+
+  <section class="content-section" aria-labelledby="apps">
+    <h2 id="apps">Apps ask first</h2>
+    <p>
+      When you connect an app, you sign in to Connect, choose one collection,
+      and see the operations the app asks for before you approve it. You might
+      let a project planner find, create and edit project records while leaving
+      deletion blocked.
+    </p>
+    <p>
+      The permission is recorded with the collection, and every copy checks it:
+      your devices and, for Cloud copy, mdbase’s copy. You can narrow or revoke
+      a permission at any time. Removing an app never removes the collection,
+      and your other apps keep using it.
+    </p>
+  </section>
 
   <section class="content-section" aria-labelledby="sync-options">
     <h2 id="sync-options">Cloud copy or Private</h2>
     <p>
-      When you turn on sync for a collection, every device that syncs it keeps a
-      complete copy as ordinary files and works offline. Each change is locked
-      on the device before it leaves. mdbase passes it to your other devices
-      and can’t read it. You choose one of two options for each collection:
+      Connect keeps each collection in sync across your devices. Every device
+      that syncs it keeps a complete copy as ordinary files and keeps working
+      offline. For each collection, you choose whether mdbase can read it:
     </p>
     <dl class="glossary-list">
       <div>
         <dt>Cloud copy</dt>
         <dd>
-          The default for new accounts. mdbase also keeps a readable copy of the
-          collection and holds its key. Web apps keep working while your devices
-          are off, and a new device joins when you sign in.
+          The default. mdbase keeps a readable copy of the collection, so web
+          apps keep working while your devices are off, and a new device joins
+          when you sign in.
         </dd>
       </div>
       <div>
@@ -52,47 +97,16 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   <section class="content-section" aria-labelledby="devices">
     <h2 id="devices">Add a device</h2>
     <p>
-      For a Cloud copy collection, sign in on the new device. Once your account
-      approves it, the device receives the collection key and downloads its
-      copy. None of your other devices need to be online.
+      For a Cloud copy collection, sign in on the new device and it downloads
+      the collection. For a Private collection, you also unlock it with your
+      encryption password or recovery key, or, in strict mode, approve it from
+      a device you already have. See
+      <a href="/security/#private-keys">Private collection keys</a> for how
+      this works.
     </p>
     <p>
-      Cloud copy needs no encryption password. If you choose Private for a
-      collection, you set an encryption password when you create your first
-      Private collection, and mdbase shows you a recovery key once. Keep the
-      recovery key in a password manager or on paper. To add a device, sign in
-      and enter your encryption password or the recovery key. mdbase stores your
-      key only in a form locked with your password, so it can’t reset the
-      password for you. The recovery key is how you get back in if you forget it.
-    </p>
-    <p>
-      If you’d prefer mdbase to store no copy of that key, turn on strict mode.
-      You then approve each new device from one you already have, by checking
-      that both screens show the same six-digit code.
-    </p>
-    <p>
-      If you lose a device, remove it from your account. The collection gets a
-      new key, so the removed device receives no further changes. It keeps the
-      files it already had.
-    </p>
-  </section>
-
-  <section class="content-section" aria-labelledby="apps">
-    <h2 id="apps">Apps ask first</h2>
-    <p>
-      An app asks for access to one collection and lists the operations it
-      needs, such as finding, creating and editing records. You choose the
-      collection and see what the app asks for before you approve it.
-    </p>
-    <p>
-      The permission is recorded with the collection, and every copy checks it:
-      your devices and, for Cloud copy, mdbase’s copy. In a Private collection,
-      a new permission takes effect once one of your signed-in devices has
-      recorded it. You aren’t asked again on the device.
-    </p>
-    <p>
-      You can narrow or revoke a permission at any time. Removing an app
-      never removes the collection, and your other apps keep using it.
+      If you lose a device, remove it from your account. It receives no further
+      changes but keeps the files it already had.
     </p>
   </section>
 
@@ -123,44 +137,6 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     </p>
   </section>
 
-  <section class="content-section" aria-labelledby="moving-from-the-connector">
-    <h2 id="moving-from-the-connector">If you used Connect before</h2>
-    <p>
-      Existing accounts move to the new sync system automatically, in waves.
-      You don’t need to export anything, and your files stay where they are.
-    </p>
-    <ul>
-      <li>
-        <strong>Collections hosted by Connect</strong> become Cloud copy
-        collections, with their records, files, record IDs and members. Folders
-        that mirrored them join the new collection once the desktop app is
-        updated. Edits that weren’t uploaded yet arrive then, or are held for
-        review if the record also changed elsewhere.
-      </li>
-      <li>
-        <strong>Local collections served by the Connector</strong> become
-        Private collections when the updated <a href="/downloads/">desktop app</a>{" "}
-        takes them over on that computer. They keep their files, record IDs
-        and app permissions, and they’re end-to-end encrypted, so mdbase can’t
-        read them. Keep that computer online while it moves them.
-      </li>
-      <li>
-        <strong>Apps</strong> need their current versions. Older versions can’t
-        reach migrated collections and will ask you to update, and you may need
-        to approve some apps again.
-      </li>
-      <li>
-        <strong>Notes larger than 1 MiB</strong> move too. They stay as
-        Markdown files but aren’t in the normal record index, so they may not
-        appear in app lists or searches.
-      </li>
-    </ul>
-    <p>
-      mdbase keeps the old system’s copy of each collection for 90 days after
-      it moves, for recovery.
-    </p>
-  </section>
-
   <section class="content-section" aria-labelledby="get-started">
     <h2 id="get-started">Get started</h2>
     <p>
@@ -169,6 +145,11 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <a href="https://connect.mdbase.dev/login">sign in</a> to manage an
       existing account. See the <a href="/apps/">apps</a> that work with mdbase
       collections.
+    </p>
+    <p>
+      Building an app? <a href="/sdk/connect-quickstart/">Connect a browser
+      app</a> walks through sign-in, choosing a collection and working with
+      records using the <a href="/sdk/">SDK</a>.
     </p>
   </section>
 </BaseLayout>
