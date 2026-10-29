@@ -116,24 +116,6 @@ const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
     </p>
   </section>
 
-  <section class="content-section" aria-labelledby="updating-heading">
-    <h2 id="updating-heading">Updating from the Connector</h2>
-    <p>
-      Install this release over your existing copy. When your account moves to
-      the new sync system, the app takes over the collections the Connector
-      served and turns them into Private collections. Their files, record IDs
-      and app permissions carry over. Folders that mirrored a collection stored
-      by Connect join its Cloud copy.
-    </p>
-    <p>
-      On a headless install, <code>mdbase migrate status</code> shows progress
-      for each collection, and <code>mdbase migrate start</code> runs or
-      resumes the takeover. See{" "}
-      <a href="/connect/#moving-from-the-connector">if you used Connect before</a>{" "}
-      for what changes.
-    </p>
-  </section>
-
   <section class="content-section" aria-labelledby="verify-heading">
     <h2 id="verify-heading">Release details</h2>
     <p>
