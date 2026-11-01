@@ -105,28 +105,34 @@ import DocVideo from "../../../../components/DocVideo.astro";
     When a page carries a DOI or scholarly metadata, the panel shows the
     citation it will store. With a DOI, the citation comes from the DOI
     registry, and only the DOI is sent. Otherwise it comes from the page's own
-    metadata tags.
+    metadata tags. If you turn on Wikimedia's Citoid lookup in Settings, which
+    is off by default, a page without a DOI citation can also be looked up by
+    sending its address to Wikimedia.
   </p>
 
   <h2 id="marks">Mark pages you have saved</h2>
   <p>
-    <strong>Settings → Mark pages I've saved</strong> is off by default. When
-    you turn it on, the extension asks for permission to read the pages you
-    visit. It then checks each HTTPS page against your collection, shows a
-    badge with a highlight count or a saved-page check mark, and displays saved
+    The extension asks for access to HTTPS websites when you install it. It
+    checks the pages you visit against your selected collection, shows a badge
+    with a highlight count or a saved-page check mark, and displays saved
     highlights. Opening the side panel can also show highlights for that page.
-    Turning saved-page marking off removes its optional HTTPS permission.
+    If you limit the extension's site access in Chrome, it stops marking saved
+    pages, and <strong>Settings → Pages you visit</strong> offers to allow it
+    on all sites again.
   </p>
 
   <h2 id="permissions">Permissions</h2>
   <ul>
     <li>
-      Without <strong>Mark pages I've saved</strong>, the extension can only
-      read a page when you open the panel on it.
+      It has access to HTTPS websites from installation, which it uses to
+      follow the tab you are on and mark saved pages. If you limit site access
+      in Chrome, it reads a page only where you allow it or when you open the
+      panel on it.
     </li>
     <li>
-      Its only permanent site access is the mdbase Connect API, which it uses
-      to reach your collection. That access cannot read the pages you browse.
+      It also has access to the mdbase Connect API and the mdbase collection
+      log service (<code>log.mdbase.dev</code>), which it uses to reach your
+      collection.
     </li>
     <li>Its access to your collection comes from the Connect approval, which you can revoke in Connect.</li>
     <li>See the <a href="/apps/reader/extension/privacy/">extension privacy policy</a> for capture data, permissions and third-party lookups.</li>

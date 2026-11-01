@@ -42,10 +42,13 @@ import BaseLayout from "../../../../../layouts/BaseLayout.astro";
       not rewritten. Only save pages you intend to keep in that collection.
     </p>
     <p>
-      For supported PDFs, Reader downloads the document for saving. Where
-      Chrome permits, the download uses your existing access to the original
-      website. The extension does not copy the website's login cookies into
-      the saved PDF as part of that operation.
+      When you save a supported PDF, Reader downloads the document from
+      within the page, using your existing cookies and login for that
+      website. This lets Reader save PDFs that are available to you only
+      while signed in. If Reader cannot fetch it from the page, the
+      extension tries to download the PDF directly. The PDF goes only to your
+      selected collection. Reader does not export or save the website's cookies or
+      your login details.
     </p>
 
     <h2>Citation lookups</h2>
@@ -57,29 +60,51 @@ import BaseLayout from "../../../../../layouts/BaseLayout.astro";
       Those services also receive ordinary network information such as your IP
       address. Extension DOI requests omit cookies.
     </p>
-
-    <h2>Optional saved-page recognition</h2>
     <p>
-      “Mark pages I've saved and show my highlights on them” is optional. If
-      enabled, Chrome requests access to HTTPS websites. Reader then sends the
-      addresses of HTTPS pages you visit, including pages you have not saved,
-      through your configured Connect route to query your selected collection.
-      It retrieves matching saved highlights and may read page text to display
-      them. This is not merely an on-device browser comparison. Turning the
-      feature off stops these background lookups and requests removal of the
-      optional website permission.
+      Wikimedia Citoid lookup is off by default. If you turn on “Look up
+      citations with Wikimedia’s Citoid service” in extension Settings and no
+      DOI citation is found for a web page, Reader sends the captured page's
+      address to Wikimedia's Citoid service. Reader does not send addresses
+      of PDFs, local or private hostnames, IP addresses, or links whose query
+      parameters look like tokens, keys or session codes. Citoid requests omit
+      cookies and other credentials. Like DOI lookups, this can happen before
+      you save.
+    </p>
+
+    <h2>Website access and saved-page recognition</h2>
+    <p>
+      Reader requests access to all HTTPS websites when you install it. With
+      that access, the side panel follows the tab you are on, and Reader marks
+      pages you have saved and shows your highlights on them. To do this,
+      Reader queries your selected collection through your configured Connect
+      route. It keeps short hashes of the addresses saved in that collection
+      in extension storage and refreshes them from the collection about once
+      an hour. When an HTTPS page you load matches one of them, Reader sends
+      the page's address to your collection to retrieve its saved highlights,
+      and may read page text to display them. While the side panel is open,
+      Reader also sends the address of the tab you are on to your collection
+      to check whether that page is saved.
+    </p>
+    <p>
+      You can limit Reader's site access in Chrome's extension settings. Reader
+      then stops following your tabs and marking saved pages, and works on a
+      page only where you have allowed it or after you click its toolbar
+      button there. The “Pages you visit” section of extension Settings shows
+      when site access is limited and can ask Chrome to allow it on all sites
+      again.
     </p>
 
     <h2>Connection and local browser data</h2>
     <p>
-      The extension keeps Connect authorization state, the selected collection,
-      preferences and interrupted-write recovery information in Chrome's
-      extension-local storage. Signing keys and application identity are held
-      in the extension's IndexedDB databases. Recovery data can include
-      identifiers, addresses and pending changes. Draft text and selected
-      passages are kept in extension session storage and cleaned up when their
-      tab closes. This implementation does not use Chrome's synchronized
-      storage for those drafts.
+      The extension keeps Connect authorization state and grants, the Connect
+      account email it shows, the selected collection, preferences, the hashed
+      saved-page addresses described above and interrupted-write recovery
+      information in Chrome's extension-local storage and the extension's
+      IndexedDB databases. Signing keys and application identity are held in
+      IndexedDB. Recovery data can include identifiers, addresses and pending
+      changes. Draft text and selected passages are kept per tab in extension
+      session storage and cleaned up when their tab closes. The extension does
+      not use Chrome's synchronized storage.
     </p>
     <p>
       Connect grants are sensitive credentials used to access only collections
@@ -90,25 +115,26 @@ import BaseLayout from "../../../../../layouts/BaseLayout.astro";
     <h2>Where data goes</h2>
     <p>
       The production extension contacts <code>connect.mdbase.dev</code> for
-      authorization and collection operations. Depending on your collection,
-      records and files are handled by the readable copy mdbase keeps (a Cloud
+      authorization and collection operations. The mdbase SDK in the extension
+      also contacts <code>log.mdbase.dev</code>, mdbase's first-party
+      collection log and file transport. It carries the operations on
+      collections you have authorized and is not an analytics service.
+      Depending on your collection, records and files are handled by the readable copy mdbase keeps (a Cloud
       copy collection) or by one of your own devices through the mdbase relay
       (a Private collection). Not all traffic remains on your computer. The{" "}
       <a href="/privacy/">Connect privacy page</a> describes account, routing
       and Cloud copy handling.
     </p>
     <p>
-      When the mdbase desktop app runs on your computer, you may separately
-      allow the extension to reach it directly. This is optional;
-      Chrome controls the localhost and local-network permissions. Websites
-      you capture and DOI registries have their own privacy practices.
+      Websites you capture, DOI registries and, if you turn it on, Wikimedia's
+      Citoid service have their own privacy practices.
     </p>
 
     <h2>Purposes, service providers and sharing</h2>
     <p>
       Reader uses this information to prepare and save sources, look up citation
       metadata, store annotations, access an authorized collection, recover
-      interrupted writes and, if enabled, recognize saved pages. Connect
+      interrupted writes and recognize saved pages. Connect
       processes account and grant details, routing metadata and bounded usage
       counts needed to operate the service; its operator report uses aggregate
       counts rather than returning individual records or page contents.
@@ -121,14 +147,15 @@ import BaseLayout from "../../../../../layouts/BaseLayout.astro";
       Render provides database recovery, and encrypted logical database
       backup artifacts are retained through GitHub Actions. Account email may
       be delivered through Resend. DOI registries receive a DOI when
-      a lookup is made, and the original website serves content or a PDF when
-      you choose to capture it. These providers may process the network and
+      a lookup is made, Wikimedia receives a page address when you have
+      turned on Citoid lookup, and the original website serves content or a
+      PDF when you choose to capture it. These providers may process the network and
       operational information necessary to provide those services. The
       extension does not contain an advertising or third-party analytics SDK.
       We do not sell user data, use or transfer it for purposes unrelated to
       Reader's stated function, or use or transfer it to determine
-      creditworthiness or for lending. Transfers to service providers and DOI
-      registries are limited to the functions described above.
+      creditworthiness or for lending. Transfers to service providers, DOI
+      registries and Wikimedia are limited to the functions described above.
     </p>
     <p>
       Our use of information received from Google APIs adheres to the
@@ -147,18 +174,17 @@ import BaseLayout from "../../../../../layouts/BaseLayout.astro";
         recovery state can persist across browser restarts.
       </li>
       <li>
-        Turn off saved-page recognition in extension Settings to stop
-        background address lookups and request removal of website access.
+        Limit Reader's site access in Chrome's extension settings to stop
+        background saved-page lookups for the pages you visit.
       </li>
       <li>
-        Settings → Disconnect this browser → Disconnect and clear local data
-        removes extension-local state, session drafts and IndexedDB credentials
-        after confirmation. It also requests removal of optional website and
-        local-network permissions. Finish pending saves first: a write already
-        sent may still complete, and recovery information is discarded.
+        Removing the extension from Chrome deletes its extension-local
+        storage, session drafts and IndexedDB data, including its Connect
+        credentials, in that browser. Finish pending saves first: a write
+        already sent may still complete, and recovery information is discarded.
       </li>
       <li>
-        Clearing this browser does not revoke server-side grants or delete
+        Removing the extension does not revoke server-side grants or delete
         collection content, and does not affect other browsers. Highlights
         already drawn on an open page may remain until it is reloaded. Revoke
         Reader's application access in Connect and remove records/files in
@@ -186,6 +212,6 @@ import BaseLayout from "../../../../../layouts/BaseLayout.astro";
       Changes to this policy will be posted at this address with an updated
       effective date.
     </p>
-    <p>Effective date: 27 September 2026.</p>
+    <p>Effective date: 2 November 2026.</p>
   </article>
 </BaseLayout>
