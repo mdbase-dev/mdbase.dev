@@ -61,6 +61,13 @@ normal pull request. It never deploys or pushes `main` directly. The same
 workflow can be run manually with a tag to recover from a delayed npm
 publication or failed dispatch.
 
+When `Site checks` passes on that pull request's exact head,
+`.github/workflows/merge-connect-release.yml` merges it, and the merge deploys
+through the normal `main` path. It acts only on a pull request opened by the
+release App on an `automation/connect-release-v*` branch, titled for that tag
+and changing only `site-sources.json` and `src/data/connect-release.json`. Any
+other pull request keeps its normal review and merge path.
+
 The workflow uses a GitHub App configured as `RELEASE_AUTOMATION_CLIENT_ID` and
 `RELEASE_AUTOMATION_APP_PRIVATE_KEY`. Its installation on this repository needs
 only `contents: write` and `pull requests: write`. The App token ensures the
