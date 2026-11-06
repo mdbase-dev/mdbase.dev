@@ -40,11 +40,14 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       Connect uses these records, never collection contents, to produce
       aggregate operator reports: how many accounts complete setup, how often
       authorization and pairing requests are approved, denied, or left
-      unfinished, and which applications are connected and in use. Direct use
-      on the same computer is visible only as per-account counts reported by
+      unfinished, and which applications are connected and in use. For those
+      reports Connect records the days each of your devices was active and the
+      last day each synced collection was active, without linking the two. Direct
+      use on the same computer is visible only as per-account counts reported by
       the desktop app. Connect does not use third-party analytics. Expired tokens,
-      unfinished authorization and pairing requests, and protocol usage counts
-      are deleted about 13 months after they expire or were last updated.
+      unfinished authorization and pairing requests, device activity days, and
+      protocol usage counts are deleted about 13 months after they expire or were
+      last updated. A collection's last active day is deleted with the collection.
     </p>
     <h2>Collection data</h2>
     <p>
