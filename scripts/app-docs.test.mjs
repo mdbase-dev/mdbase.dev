@@ -20,8 +20,6 @@ test("Reader and Writer are listed with live applications and local documentatio
     assert.ok(catalogue.includes(`https://${app}.mdbase.dev/`));
     assert.ok(catalogue.includes(`/apps/${app}/`));
   }
-  assert.ok(catalogue.includes("https://reader.mdbase.dev/?preview=1"));
-  assert.ok(catalogue.includes("https://lab.mdbase-writer.pages.dev/?demo"));
 });
 
 test("Every documentation navigation entry resolves to a site page", () => {

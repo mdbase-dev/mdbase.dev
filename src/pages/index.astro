@@ -1,5 +1,6 @@
 ---
 import HomeLayout from "../layouts/HomeLayout.astro";
+import AppShot from "../components/AppShot.astro";
 ---
 
 <HomeLayout
@@ -24,7 +25,7 @@ import HomeLayout from "../layouts/HomeLayout.astro";
 <section id="intro" data-index="Home" class="chapter is-active" data-scene="intro" aria-label="Introduction"><div class="chapter__inner">
 <h1 class="home-title">Structured data in ordinary Markdown files</h1>
 <p>Keep your notes, tasks, and projects as plain Markdown files that you own. Apps can understand them, and mdbase keeps them in sync across your devices.</p>
-<div class="chapter__actions home-actions"><a class="home-action home-action--primary" href="https://connect.mdbase.dev/signup">Get started</a><a class="home-action" href="/apps/#try">Try a demo</a><a class="home-action" href="/downloads/">Download the desktop app</a></div>
+<div class="chapter__actions home-actions"><a class="home-action home-action--primary" href="https://connect.mdbase.dev/signup">Get started</a><a class="home-action" href="/downloads/">Download the desktop app</a></div>
 </div></section>
 
 <section id="example" data-index="Files" class="chapter" data-scene="collection" aria-label="A collection"><div class="chapter__inner">
@@ -46,10 +47,9 @@ easier to understand.</code></pre>
 <h2>One collection, many apps</h2>
 <p>Apps built on mdbase work directly with these files instead of importing them into their own databases. Use TaskNotes for tasks, Reader for papers and web pages, Writer for long documents, or the Editor for any collection.</p>
 <p>Several apps can use the same collection at once, so nothing has to be exported from one app to another.</p>
-<figure class="app-shot">
-<img src="/images/apps/reader.webp" width="1600" height="900" loading="lazy" decoding="async" alt="mdbase Reader showing a chapter with two highlighted passages and their annotations, beside a text editor open on the same collection's Markdown files.">
-<figcaption>Reader, with the same collection open in a text editor. Each highlight is saved as its own Markdown file. <a href="/apps/">See all apps</a>.</figcaption>
-</figure>
+<AppShot name="reader" alt="mdbase Reader showing a chapter of The Principles of Psychology with two highlighted passages.">
+<Fragment slot="caption">Reader keeps each highlight as its own Markdown file in your collection. <a href="/apps/">See all apps</a>.</Fragment>
+</AppShot>
 </div></section>
 
 <section id="editing" data-index="Editing" class="chapter" data-scene="merge" aria-label="Editing from anywhere"><div class="chapter__inner">

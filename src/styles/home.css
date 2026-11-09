@@ -437,22 +437,29 @@
   }
 }
 
-/* A still of a real app, in the reading column of the Apps chapter. */
-.app-shot {
+/* The app screenshot in the Apps chapter keeps to the reading column. */
+.home-body .app-shot {
   width: min(560px, 100%);
-  margin: 28px 0;
+  margin: 32px 0 8px;
 }
 
-.app-shot img {
-  display: block;
-  width: 100%;
-  height: auto;
+/* The fixed header's backing fades into the sky, so it never ends in a hard edge. */
+.home-body > .site-header {
+  background: transparent;
+}
+
+.home-body > .site-header::before {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: -120px;
+  bottom: -24px;
+  left: calc(-1 * var(--site-left));
   background: var(--color-canvas);
-  border: 1px solid var(--color-text);
-}
-
-.app-shot figcaption {
-  margin-top: .6rem;
-  color: var(--color-text-soft);
-  font-size: .85em;
+  content: "";
+  pointer-events: none;
+  mask-image:
+    linear-gradient(90deg, #000 calc(100% - 120px), transparent),
+    linear-gradient(180deg, #000 calc(100% - 24px), transparent);
+  mask-composite: intersect;
 }
