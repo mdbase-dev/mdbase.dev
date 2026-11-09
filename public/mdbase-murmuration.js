@@ -365,37 +365,6 @@
         }
       }
 
-      function layoutMerge(bounds) {
-        const compact = bounds.w < 480;
-        const laptop = addCard("merge-laptop", "Laptop · text editor", [
-          { text: "status: active", tone: "remove" },
-          { text: "status: done", tone: "add" }
-        ], compact ? rect(bounds, 0.00, 0.00, 0.48, 0.36) : rect(bounds, 0.00, 0.06, 0.40, 0.28));
-        const phone = addCard("merge-phone", "Phone · TaskNotes", [
-          { text: "due: 2026-11-02", tone: "add" }
-        ], compact ? rect(bounds, 0.52, 0.00, 0.48, 0.36) : rect(bounds, 0.00, 0.66, 0.40, 0.28));
-        const result = addCard("merge-result", "website-redesign.md", [
-          { text: "---", tone: "faint" },
-          "title: Website redesign",
-          { text: "status: done", tone: "add" },
-          'owner: "[[people/sam.md]]"',
-          { text: "due: 2026-11-02", tone: "add" },
-          { text: "---", tone: "faint" }
-        ], compact ? rect(bounds, 0.14, 0.50, 0.72, 0.50) : rect(bounds, 0.53, 0.25, 0.47, 0.50));
-        const fromLaptop = compact
-          ? [pointOnNode(laptop, "bottom"), pointOnNode(result, "top", 0.3)]
-          : [pointOnNode(laptop, "right"), pointOnNode(result, "left", 0.3)];
-        const fromPhone = compact
-          ? [pointOnNode(phone, "bottom"), pointOnNode(result, "top", 0.7)]
-          : [pointOnNode(phone, "right"), pointOnNode(result, "left", 0.7)];
-        addEdge(fromLaptop, null, "one field", true);
-        addEdge(fromPhone, null, "another field", true);
-        if (!compact) addNote("both changes kept", result.box.x + result.box.w / 2, result.box.y + result.box.h + 26);
-        pathParticles(0, 10, fromLaptop);
-        pathParticles(10, 10, fromPhone);
-        ambient(20);
-      }
-
       function lockedLines(count) {
         return Array.from({ length: count }, (_, index) =>
           ({ text: "▒▒▒▒▒▒▒▒  locked", tone: index === count - 1 ? "add" : "faint" }));
@@ -485,40 +454,6 @@
         ambient(next);
       }
 
-      function layoutOptions(bounds) {
-        const compact = bounds.w < 480;
-        const panels = [
-          ["cloud", "Cloud copy", 0.00],
-          ["private", "Private", 0.53]
-        ];
-        let next = 0;
-        panels.forEach(([id, label, x]) => {
-          addNode(`${id}-panel`, label, "", rect(bounds, x, 0.02, 0.47, 0.96), "boundary");
-          const devices = addNode(`${id}-devices`, "your devices", "", rect(bounds, x + 0.04, 0.14, 0.39, 0.22), "standard");
-          const log = addCard(`${id}-log`, "mdbase sync", [{ text: "▒▒▒▒▒▒  locked", tone: "faint" }],
-            rect(bounds, x + 0.04, 0.47, 0.39, 0.15), "log");
-          const cloud = id === "cloud"
-            ? addNode(`${id}-copy`, compact ? "readable copy" : "readable copy · apps work while devices are off", "", rect(bounds, x + 0.04, 0.70, 0.39, 0.24), "accent")
-            : addCard(`${id}-copy`, compact ? "locked" : "locked · only your devices", [{ text: "apps go through", tone: "faint" }, { text: "your devices", tone: "faint" }],
-              rect(bounds, x + 0.04, 0.70, 0.39, 0.24), "replica");
-          const up = [pointOnNode(devices, "bottom"), pointOnNode(log, "top")];
-          addEdge(up, null, "", false).relationship = true;
-          gridParticles(next, 90, devices);
-          next += 90;
-          pathParticles(next, 6, up);
-          next += 6;
-          if (id === "cloud") {
-            const down = [pointOnNode(log, "bottom"), pointOnNode(cloud, "top")];
-            addEdge(down, null, "", false).relationship = true;
-            gridParticles(next, 90, cloud, "metadata");
-            next += 90;
-            pathParticles(next, 6, down);
-            next += 6;
-          }
-        });
-        ambient(next);
-      }
-
       function layoutGrant(bounds) {
         const compact = bounds.w < 480;
         const collection = addNode("grant-collection", "projects", "",
@@ -576,7 +511,7 @@
 
         const layouts = {
           intro: layoutIntro, collection: layoutCollection, structure: layoutStructure,
-          apps: layoutApps, merge: layoutMerge, sync: layoutSync, options: layoutOptions,
+          apps: layoutApps, sync: layoutSync,
           grant: layoutGrant, sharing: layoutSharing, serve: layoutServe
         };
         (layouts[name] || layoutIntro)(bounds);

@@ -437,12 +437,6 @@
   }
 }
 
-/* The app screenshot in the Apps chapter keeps to the reading column. */
-.home-body .app-shot {
-  width: min(560px, 100%);
-  margin: 32px 0 8px;
-}
-
 /* The fixed header's backing fades into the sky, so it never ends in a hard edge. */
 .home-body > .site-header {
   background: transparent;
@@ -462,4 +456,49 @@
     linear-gradient(90deg, #000 calc(100% - 120px), transparent),
     linear-gradient(180deg, #000 calc(100% - 24px), transparent);
   mask-composite: intersect;
+}
+
+/* Status line, record file, app list and closing facts. */
+#intro .chapter__inner > p.home-status {
+  margin-top: 1.4rem;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+.home-body .chapter code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+}
+
+/* The app screenshot keeps to the reading column. */
+.home-body .chapter .app-shot { width: min(560px, 100%); margin: 28px 0 0; }
+
+/* The task's file sits just under its screenshot. */
+.home-body .record-example.home-record {
+  width: min(560px, 100%);
+  margin-top: 14px;
+  font-variant-ligatures: none;
+}
+.home-body .record-example .home-record__path {
+  color: var(--color-text-muted);
+}
+
+.home-apps,
+.home-facts { margin-top: 1.1rem; }
+.home-apps > div,
+.home-facts > div {
+  display: grid;
+  padding: 0.6rem 0;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+.home-apps dd,
+.home-facts dd { margin: 0; color: var(--color-text-soft); }
+.home-facts dt { color: var(--color-text-muted); }
+.home-facts { margin-top: 2.25rem; font-size: 0.94rem; }
+
+@media (max-width: 35rem) {
+  .home-apps > div,
+  .home-facts > div { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
 }

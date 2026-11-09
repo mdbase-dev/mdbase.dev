@@ -38,9 +38,9 @@ reading order, matching the apps. The favicon and the social card
 The homepage pairs a moving sky (`public/mdbase-atmosphere.js`) with one field
 of 361 record particles (`public/mdbase-murmuration.js`). The field begins as a
 murmuration and becomes concrete diagrams as the reader scrolls: files, apps,
-editing, sync, Cloud copy and Private, permissions, and sharing. Canvas
-surfaces, labels, edges and particles use the page's colour roles. Dashed boxes
-mark copies that are offline, locked or removed; they keep a solid surface so
+sync, apps reaching the collection through mdbase, permissions, and sharing.
+Canvas surfaces, labels, edges and particles use the page's colour roles.
+Dashed boxes mark copies that are offline, switched off or removed; they keep a solid surface so
 they read against the sky.
 
 ## Typography
