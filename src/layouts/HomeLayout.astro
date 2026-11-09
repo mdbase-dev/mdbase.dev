@@ -11,9 +11,11 @@ import ThemeControlScript from "../components/ThemeControlScript.astro";
 interface Props {
   title: string;
   description: string;
+  /** Keep a draft page out of search engines. */
+  noIndex?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, noIndex = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
 
@@ -40,6 +42,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="The mdbase mark beside the words: mdbase, Structured data in ordinary Markdown files" />
     <meta name="twitter:card" content="summary_large_image" />
+    {noIndex && <meta name="robots" content="noindex" />}
     <script is:inline src="/theme-bootstrap.js"></script>
   </head>
   <body class="home-body">

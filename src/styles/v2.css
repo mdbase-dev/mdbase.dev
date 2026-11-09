@@ -1,160 +1,43 @@
-/* Draft homepage (/v2/): a still page of facts, real screenshots and files. */
-.v2 {
-  width: min(calc(100vw - var(--site-left) - 24px), 1040px);
-  padding-bottom: 2rem;
+/* Draft homepage (/v2/): additions to the homepage chapters. */
+#intro .chapter__inner > p.v2-status {
+  margin-top: 1.4rem;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
 }
 
-.v2 h1 {
-  max-width: 22ch;
-  font-size: clamp(2rem, 4.2vw, 2.6rem);
-  font-weight: 400;
-  line-height: 1.15;
-}
-
-.v2 h2 { font-size: 1.3rem; font-weight: 600; }
-.v2 h3 { font-size: 1rem; font-weight: 600; }
-
-.v2 p { max-width: var(--reading); }
-.v2-section > p { margin-top: 0.8rem; color: var(--ink-soft); }
-
-.v2 code {
+.home-body .chapter code {
   font-family: var(--mono);
   font-size: 0.86em;
 }
 
-.v2-intro { padding-top: 1rem; }
-.v2-lede {
-  margin: 1.1rem 0 1.6rem;
-  color: var(--ink-soft);
-  font-size: 1.15rem;
-}
-.v2-status {
-  margin-top: 1.6rem;
-  color: var(--ink-muted);
-  font-size: 0.88rem;
-}
+.home-body .chapter .app-shot { width: min(560px, 100%); margin: 28px 0 0; }
 
-.v2-section {
-  margin-top: 4.5rem;
-  padding-top: 1.75rem;
-  border-top: 1px solid var(--line);
-}
-
-/* App screenshot beside the record file it shows. */
-.v2-pair {
-  display: grid;
-  margin: 1.5rem 0 1.5rem;
-  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
-  gap: 1.5rem;
-  align-items: start;
-}
-
-.v2-file {
-  margin: 0;
-  overflow: hidden;
-  background: var(--color-surface, var(--canvas));
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
-}
-
-.v2-file figcaption {
-  display: flex;
-  height: 28px;
-  padding: 0 12px;
-  align-items: center;
-  color: var(--ink-muted);
-  background: var(--color-surface-subtle, var(--canvas));
-  border-bottom: 1px solid var(--line);
-  font: 400 0.68rem/1 var(--mono);
-}
-.v2-file figcaption span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.v2 .v2-file pre,
-.v2 pre.v2-tree {
-  max-width: none;
-  margin: 0;
-  border-radius: 0;
-  padding: 16px 18px 18px;
-  overflow-x: auto;
-  color: var(--ink);
-  font: 400 0.76rem/1.7 var(--mono);
+/* The task's file sits just under its screenshot. */
+.home-body .record-example.v2-record {
+  width: min(560px, 100%);
+  margin-top: 14px;
   font-variant-ligatures: none;
 }
-.v2 .v2-file pre { background: transparent; border: 0; }
-.v2-file pre code, .v2-tree code { font-size: inherit; }
-.v2-file .k { color: var(--ink-muted); }
-.v2-file .f { color: var(--blue); }
-
-.v2-columns {
-  display: grid;
-  margin-top: 0.8rem;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
-  gap: 2rem;
-  align-items: start;
-}
-.v2-columns > p { color: var(--ink-soft); }
-.v2 pre.v2-tree {
-  padding: 14px 18px;
-  background: var(--color-surface-subtle, var(--canvas));
-  border: 1px solid var(--line);
-  border-radius: 8px;
+.home-body .record-example .v2-path {
+  color: var(--color-text-muted);
 }
 
-/* Apps: a two-by-two set of framed screenshots. */
-.v2-apps {
-  display: grid;
-  margin: 1.75rem 0 1.5rem;
-  padding: 0;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 2.5rem 2rem;
-  list-style: none;
-}
-.v2-apps .app-shot { margin-bottom: 1rem; }
-.v2-apps h3 a { text-decoration: none; }
-.v2-apps h3 a:hover { text-decoration: underline; }
-.v2-apps p { margin-top: 0.3rem; color: var(--ink-soft); }
-.v2-apps .v2-meta { color: var(--ink-muted); font-size: 0.85rem; }
-
-/* Cloud copy and Private. */
-.v2-table { margin: 1.4rem 0; overflow-x: auto; }
-.v2-table table {
-  width: 100%;
-  min-width: 34rem;
-  border-collapse: collapse;
-  font-size: 0.94rem;
-}
-.v2-table th,
-.v2-table td {
-  padding: 0.7rem 1rem 0.7rem 0;
-  text-align: left;
-  vertical-align: top;
-  border-bottom: 1px solid var(--line);
-}
-.v2-table thead th { color: var(--ink); font-weight: 600; border-bottom-color: var(--line-strong); }
-.v2-table tbody th { width: 26%; color: var(--ink-muted); font-weight: 400; }
-.v2-table td { width: 37%; color: var(--ink-soft); }
-
-/* Label and text pairs. */
-.v2-facts { margin-top: 1rem; }
+.v2-apps-list,
+.v2-facts { margin-top: 1.1rem; }
+.v2-apps-list > div,
 .v2-facts > div {
   display: grid;
-  padding: 0.85rem 0;
-  grid-template-columns: 9rem minmax(0, var(--reading));
+  padding: 0.6rem 0;
+  grid-template-columns: 7rem minmax(0, 1fr);
   gap: 1rem;
-  border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--color-border);
 }
-.v2-facts > div:last-child { border-bottom: 0; }
-.v2-facts dt { color: var(--ink-muted); }
-.v2-facts dd { margin: 0; color: var(--ink-soft); }
-
-.v2-section .button-row { margin-top: 1.4rem; }
-
-@media (max-width: 52rem) {
-  .v2-pair, .v2-columns { grid-template-columns: minmax(0, 1fr); }
-  .v2-apps { grid-template-columns: minmax(0, 1fr); }
-}
+.v2-apps-list dd,
+.v2-facts dd { margin: 0; color: var(--color-text-soft); }
+.v2-facts dt { color: var(--color-text-muted); }
+.v2-facts { margin-top: 2.25rem; font-size: 0.94rem; }
 
 @media (max-width: 35rem) {
-  .v2-facts > div { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
-  .v2-section { margin-top: 3rem; }
+  .v2-apps-list > div,
+  .v2-facts > div { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
 }

@@ -454,6 +454,37 @@
         ambient(next);
       }
 
+      // Apps on any device reach the collection through mdbase's copy, which
+      // stays in sync with your devices and answers while they are off.
+      function layoutServe(bounds) {
+        const compact = bounds.w < 480;
+        const laptop = addNode("serve-laptop", "Laptop", "", rect(bounds, 0.00, 0.06, 0.27, 0.36), "standard");
+        const desktop = addNode("serve-desktop", compact ? "Desktop · off" : "Desktop · switched off", "",
+          rect(bounds, 0.00, 0.58, 0.27, 0.36), "replica");
+        const hosted = addNode("serve-hosted", "mdbase", "", rect(bounds, 0.37, 0.18, 0.26, 0.64), "accent");
+        const apps = [
+          ["serve-app-0", "TaskNotes", "on a phone"],
+          ["serve-app-1", "Editor", "in a browser"],
+          ["serve-app-2", "Reader", "in a browser"]
+        ].map(([id, label, line], index) => addCard(id, label, [{ text: compact ? line.split(" ").pop() : line, tone: "faint" }],
+          rect(bounds, 0.73, 0.04 + index * 0.33, 0.27, 0.26), "app"));
+        const sync = [pointOnNode(laptop, "right"), pointOnNode(hosted, "left", 0.25)];
+        addEdge(sync, null, "", false).relationship = true;
+        addEdge([pointOnNode(desktop, "right"), pointOnNode(hosted, "left", 0.75)], null, "", true).relationship = true;
+        gridParticles(0, 80, laptop);
+        gridParticles(80, 80, desktop, "replica");
+        gridParticles(160, 120, hosted, "metadata");
+        pathParticles(280, 6, sync);
+        let next = 286;
+        apps.forEach((app, index) => {
+          const path = [pointOnNode(app, "left"), pointOnNode(hosted, "right", 0.2 + index * 0.3)];
+          addEdge(path, null, "", true);
+          pathParticles(next, 6, index % 2 ? path.slice().reverse() : path);
+          next += 6;
+        });
+        ambient(next);
+      }
+
       function layoutOptions(bounds) {
         const compact = bounds.w < 480;
         const panels = [
@@ -546,7 +577,7 @@
         const layouts = {
           intro: layoutIntro, collection: layoutCollection, structure: layoutStructure,
           apps: layoutApps, merge: layoutMerge, sync: layoutSync, options: layoutOptions,
-          grant: layoutGrant, sharing: layoutSharing
+          grant: layoutGrant, sharing: layoutSharing, serve: layoutServe
         };
         (layouts[name] || layoutIntro)(bounds);
 

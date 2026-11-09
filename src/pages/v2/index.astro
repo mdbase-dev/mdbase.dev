@@ -1,244 +1,100 @@
 ---
-// Draft of a quieter homepage, for comparison with the current one at /.
-import BaseLayout from "../../layouts/BaseLayout.astro";
+// Draft homepage, for comparison with the current one at /.
+import HomeLayout from "../../layouts/HomeLayout.astro";
 import AppShot from "../../components/AppShot.astro";
 import "../../styles/v2.css";
-
-const apps = [
-  {
-    shot: "tasknotes",
-    name: "TaskNotes",
-    href: "https://app.tasknotes.dev/",
-    text: "Tasks with lists, calendars, recurrence and reminders. Web, iOS and Android.",
-    status: "Public beta",
-    alt: "TaskNotes showing today's tasks and an overdue section."
-  },
-  {
-    shot: "editor",
-    name: "Editor",
-    href: "/apps/editor/",
-    text: "Edit any collection: records, frontmatter, links, backlinks and types.",
-    status: "Public beta",
-    alt: "mdbase Editor showing a collection's folders beside an open note."
-  },
-  {
-    shot: "reader",
-    name: "Reader",
-    href: "/apps/reader/",
-    text: "Read and highlight PDFs, EPUBs and web pages. Each highlight is a record.",
-    status: "Development build",
-    alt: "mdbase Reader showing a chapter with two highlighted passages."
-  },
-  {
-    shot: "writer",
-    name: "Writer",
-    href: "/apps/writer/",
-    text: "Write papers, theses and books in Markdown, with citations from Reader and PDF or Word export.",
-    status: "Development build",
-    alt: "mdbase Writer showing a paper's Markdown source beside its typeset preview."
-  }
-] as const;
 ---
 
-<BaseLayout
+<HomeLayout
   title="mdbase (draft homepage)"
   description="Draft homepage for mdbase."
-  current="home"
   noIndex
-  wide
 >
-  <div class="v2">
-    <header class="v2-intro">
-      <h1>Structured data in ordinary Markdown files</h1>
-      <p class="v2-lede">
-        mdbase keeps notes, tasks and projects as Markdown files in a folder you
-        own. Apps read and change those files with the permissions you give
-        them, and mdbase syncs the folder between your devices.
-      </p>
-      <div class="button-row">
-        <a class="button button--primary" href="https://connect.mdbase.dev/signup">Create an account</a>
-        <a class="button" href="/downloads/">Download the desktop app</a>
-      </div>
-      <p class="v2-status">
-        Connect is in beta. Keep independent backups of important collections.
-      </p>
-    </header>
+  <div id="material" aria-hidden="true"><canvas id="atmosphere"></canvas><div id="grain"></div></div>
+  <canvas id="diagram" aria-hidden="true"></canvas>
+  <nav class="chapter-index" aria-label="Sections">
+    <a href="#intro">Home</a>
+    <a href="#files">Files</a>
+    <a href="#apps">Apps</a>
+    <a href="#sync">Sync</a>
+    <a href="#anywhere">Anywhere</a>
+    <a href="#permission">Permissions</a>
+    <a href="#sharing">Sharing</a>
+    <a href="#start">Get started</a>
+    <button class="chapter-index__motion" type="button" data-motion-control>Pause motion</button>
+  </nav>
+<main id="main" tabindex="-1">
+<section id="intro" class="chapter is-active" data-scene="intro" aria-label="Introduction"><div class="chapter__inner">
+<h1 class="home-title">Structured data in ordinary Markdown files</h1>
+<p>Keep notes, tasks and projects as Markdown files. mdbase syncs them between your devices and serves them to the apps you use, on any device, with the permissions you give each app.</p>
+<div class="chapter__actions home-actions"><a class="home-action home-action--primary" href="https://connect.mdbase.dev/signup">Create an account</a><a class="home-action" href="/downloads/">Download the desktop app</a></div>
+<p class="v2-status">mdbase is in beta. Keep independent backups of important collections.</p>
+</div></section>
 
-    <section class="v2-section" aria-labelledby="same-record">
-      <h2 id="same-record">The same task in an app and on disk</h2>
-      <div class="v2-pair">
-        <AppShot name="tasknotes" alt="TaskNotes showing today's tasks. The first is Send the research summary to Rowan, due tomorrow, high priority." eager />
-        <figure class="v2-file">
-          <figcaption><span>tasks/research-summary-for-rowan.md</span></figcaption>
-<pre class="file-tree"><code><span class="k">---</span>
-<span class="f">title:</span> Send the research summary to Rowan
-<span class="f">status:</span> open
-<span class="f">priority:</span> high
-<span class="f">scheduled:</span> 2026-11-09
-<span class="f">due:</span> 2026-11-10
-<span class="k">---</span>
+<section id="files" class="chapter" data-scene="collection" aria-label="Files"><div class="chapter__inner">
+<h2>The same task in an app and on disk</h2>
+<p>A collection is a folder of Markdown records. Each record’s frontmatter holds fields that apps can validate and query, and its body stays ordinary prose.</p>
+<AppShot name="tasknotes" alt="TaskNotes showing today's tasks. The first is Send the research summary to Rowan, due tomorrow, high priority." />
+<pre class="record-example v2-record" aria-label="The task as a file: tasks/research-summary-for-rowan.md"><code><span class="v2-path">tasks/research-summary-for-rowan.md</span>
+<span class="fm-rule">---</span>
+<span class="fm-key">title:</span> Send the research summary to Rowan
+<span class="fm-key">status:</span> open
+<span class="fm-key">priority:</span> high
+<span class="fm-key">due:</span> 2026-11-10
+<span class="fm-rule">---</span>
 
 Include the interview notes from
 the field visit.</code></pre>
-        </figure>
-      </div>
-      <p>
-        When you tick the task in TaskNotes, the app sets
-        <code>status: done</code> in this file. When you edit the file in a text
-        editor on a synced computer, TaskNotes shows the change. The folder works
-        with git, backups and any other tool that reads text files, and it stays
-        on your computer if you stop using mdbase.
-      </p>
-    </section>
+<p>When you tick the task in TaskNotes, the app sets <code>status: done</code> in this file. Because records are plain files, the folder works with git, backups and any text editor, and it stays yours if you stop using mdbase.</p>
+</div></section>
 
-    <section class="v2-section" aria-labelledby="collection">
-      <h2 id="collection">What a collection contains</h2>
-      <div class="v2-columns">
-        <p>
-          A collection is a folder of Markdown records. Type definitions in
-          <code>_types/</code> say which fields a kind of record has, so apps can
-          validate and query them. The body of each record stays ordinary prose.
-          The file format is an <a href="/spec/">open specification</a>.
-        </p>
-        <pre class="file-tree v2-tree" aria-label="Example collection layout"><code>mdbase.yaml
-_types/
-  task.md
-  project.md
-tasks/
-  research-summary-for-rowan.md
-  book-the-project-room.md
-projects/
-  field-research.md</code></pre>
-      </div>
-    </section>
+<section id="apps" class="chapter" data-scene="apps" aria-label="Apps"><div class="chapter__inner">
+<h2>One collection, many apps</h2>
+<p>Apps built on mdbase work on these files directly. Several can open the same collection at once, so nothing is exported from one app to another.</p>
+<dl class="v2-apps-list">
+<div><dt><a href="https://app.tasknotes.dev/">TaskNotes</a></dt><dd>Tasks, calendars and reminders, on the web, iOS and Android.</dd></div>
+<div><dt><a href="/apps/editor/">Editor</a></dt><dd>Any collection: records, frontmatter, links and types.</dd></div>
+<div><dt><a href="/apps/reader/">Reader</a></dt><dd>PDFs, EPUBs and web pages, with each highlight kept as a record.</dd></div>
+<div><dt><a href="/apps/writer/">Writer</a></dt><dd>Papers and books in Markdown, with citations from Reader.</dd></div>
+</dl>
+<p><a href="/apps/">All apps</a></p>
+</div></section>
 
-    <section class="v2-section" aria-labelledby="apps">
-      <h2 id="apps">Apps</h2>
-      <p>Several apps can open the same collection at the same time.</p>
-      <ul class="v2-apps" role="list">
-        {apps.map((app) => (
-          <li>
-            <AppShot name={app.shot} alt={app.alt} />
-            <h3><a href={app.href}>{app.name}</a></h3>
-            <p>{app.text}</p>
-            <p class="v2-meta">{app.status}</p>
-          </li>
-        ))}
-      </ul>
-      <p><a href="/apps/">All apps and their documentation</a></p>
-    </section>
+<section id="sync" class="chapter" data-scene="sync" aria-label="Sync"><div class="chapter__inner">
+<h2>Every device keeps the whole collection</h2>
+<p>With the desktop app, your computers keep a complete copy of the collection as ordinary files. Each copy works offline and catches up when it reconnects.</p>
+<p>When the same record is edited in two places, mdbase works out what each edit changed, field by field, and combines edits to different fields.</p>
+<p>Changes are encrypted and signed on the device that made them before they are sent.</p>
+</div></section>
 
-    <section class="v2-section" aria-labelledby="sync">
-      <h2 id="sync">Sync and what mdbase can read</h2>
-      <p>
-        Every synced device keeps a complete copy of the collection as files and
-        works offline. Each change is encrypted and signed on the device that
-        made it. When two devices edit the same record, changes to different
-        fields are merged. Each collection syncs in one of two ways:
-      </p>
-      <div class="v2-table">
-        <table>
-          <thead>
-            <tr><th scope="col"></th><th scope="col">Cloud copy</th><th scope="col">Private</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">Who holds the key</th>
-              <td>Your devices and mdbase</td>
-              <td>Only your devices</td>
-            </tr>
-            <tr>
-              <th scope="row">Can mdbase read records</th>
-              <td>Yes. It serves apps from its copy.</td>
-              <td>No. It stores and relays encrypted changes.</td>
-            </tr>
-            <tr>
-              <th scope="row">Where apps connect</th>
-              <td>mdbase’s copy, so web apps work while your devices are off</td>
-              <td>One of your devices, while it is running</td>
-            </tr>
-            <tr>
-              <th scope="row">Adding a device</th>
-              <td>Sign in</td>
-              <td>Sign in, then enter your encryption password or recovery key</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p>
-        In both, mdbase sees account details, members, devices, app permissions,
-        and the sizes and times of changes. The <a href="/security/">security page</a>
-        sets out the details and the known limits.
-      </p>
-    </section>
+<section id="anywhere" class="chapter" data-scene="serve" aria-label="Apps on any device"><div class="chapter__inner">
+<h2>Open it from any device</h2>
+<p>mdbase also keeps a copy of the collection and serves it to your apps. TaskNotes on your phone or the Editor in a browser opens the collection through mdbase, and keeps working while your computers are switched off.</p>
+<p>A new device joins when you sign in. A new account starts with a small collection that opens in the Editor straight away, before you install anything.</p>
+<p>The <a href="/security/">security page</a> sets out what mdbase stores and can read, and the option to sync a collection that mdbase can’t read.</p>
+</div></section>
 
-    <section class="v2-section" aria-labelledby="access">
-      <h2 id="access">Access to apps and people</h2>
-      <dl class="v2-facts">
-        <div>
-          <dt>Apps</dt>
-          <dd>
-            An app asks for one collection and lists the operations it needs,
-            such as reading and editing tasks. You approve it in Connect, and you
-            can narrow or revoke it later. Revoking it ends the app’s sessions.
-          </dd>
-        </div>
-        <div>
-          <dt>People</dt>
-          <dd>
-            Invite viewers, who can read, or editors, who can also change
-            records. Removing someone changes the collection key. They keep the
-            files they already had and receive no later changes.
-          </dd>
-        </div>
-      </dl>
-    </section>
+<section id="permission" class="chapter" data-scene="grant" aria-label="Application access"><div class="chapter__inner">
+<h2>Apps ask first</h2>
+<p>An app asks for access to one collection and lists the operations it needs. You might let a project planner find, create and edit project records while leaving deletion blocked.</p>
+<p>You approve each app in Connect, and you can narrow or revoke its access at any time. Revoking it ends the app’s sessions.</p>
+</div></section>
 
-    <section class="v2-section" aria-labelledby="status">
-      <h2 id="status">Status and source</h2>
-      <dl class="v2-facts">
-        <div>
-          <dt>Service</dt>
-          <dd>
-            Connect is in beta and has no availability guarantee. Service
-            incidents are summarised on the <a href="/incidents/">incidents page</a>.
-          </dd>
-        </div>
-        <div>
-          <dt>Source</dt>
-          <dd>
-            The specification, Connect, Reader and Writer are open source under
-            the MIT licence, <a href="https://github.com/mdbase-dev">on GitHub</a>.
-          </dd>
-        </div>
-        <div>
-          <dt>Policies</dt>
-          <dd>
-            <a href="/privacy/">Privacy policy</a>, <a href="/terms/">service terms</a>,
-            <a href="/account-deletion/">deleting your account</a>.
-          </dd>
-        </div>
-        <div>
-          <dt>Developers</dt>
-          <dd>
-            Any app can work with a collection. Read the <a href="/sdk/">SDK
-            documentation</a> and the <a href="/spec/">specification</a>.
-          </dd>
-        </div>
-      </dl>
-    </section>
+<section id="sharing" class="chapter" data-scene="sharing" aria-label="Sharing"><div class="chapter__inner">
+<h2>Share a collection</h2>
+<p>Invite viewers, who can read, or editors, who can also change records. Each person uses their own apps, within the role you gave them.</p>
+<p>You can change a member’s role or remove them at any time. A removed member stops receiving changes and keeps the files they already had.</p>
+</div></section>
 
-    <section class="v2-section" aria-labelledby="start">
-      <h2 id="start">Get started</h2>
-      <p>
-        A new account starts with a small Cloud copy collection that opens in the
-        Editor. To sync a folder on your computer, as Cloud copy or Private,
-        install the desktop app. Apps receive no access until you approve them.
-      </p>
-      <div class="button-row">
-        <a class="button button--primary" href="https://connect.mdbase.dev/signup">Create an account</a>
-        <a class="button" href="/downloads/">Download the desktop app</a>
-      </div>
-    </section>
-  </div>
-</BaseLayout>
+<section id="start" class="chapter" data-scene="intro" aria-label="Get started"><div class="chapter__inner">
+<h2>Get started</h2>
+<p>Create an account to open your first collection in the Editor. To sync a folder on your computer, install the desktop app. Apps receive no access until you approve them.</p>
+<div class="chapter__actions home-actions"><a class="home-action home-action--primary" href="https://connect.mdbase.dev/signup">Create an account</a><a class="home-action" href="/downloads/">Download the desktop app</a></div>
+<dl class="v2-facts">
+<div><dt>Status</dt><dd>Connect is in beta and has no availability guarantee. Service incidents are summarised on the <a href="/incidents/">incidents page</a>.</dd></div>
+<div><dt>Source</dt><dd>The specification, Connect, Reader and Writer are open source under the MIT licence, <a href="https://github.com/mdbase-dev">on GitHub</a>.</dd></div>
+<div><dt>Developers</dt><dd>Any app can work with a collection. Read the <a href="/sdk/">SDK documentation</a> and the <a href="/spec/">specification</a>.</dd></div>
+</dl>
+</div></section>
+</main>
+</HomeLayout>
