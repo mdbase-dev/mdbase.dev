@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import AppShot from "../../components/AppShot.astro";
 import "../../styles/apps.css";
 
 type CatalogueEntry = {
@@ -9,6 +10,7 @@ type CatalogueEntry = {
   runsOn: string;
   collections: string;
   links: Array<{ label: string; href: string }>;
+  shot?: { name: "tasknotes" | "editor" | "reader" | "writer"; alt: string };
 };
 
 const applications: CatalogueEntry[] = [
@@ -20,9 +22,12 @@ const applications: CatalogueEntry[] = [
     collections: "Cloud copy, or Private through one of your devices",
     links: [
       { label: "Open TaskNotes", href: "https://app.tasknotes.dev/" },
-      { label: "Try the demo", href: "https://app.tasknotes.dev/?demo=30" },
       { label: "Source", href: "https://github.com/callumalpass/tasknotes-app" }
-    ]
+    ],
+    shot: {
+      name: "tasknotes",
+      alt: "TaskNotes showing today's tasks, with priorities, due dates and projects, and an overdue section."
+    }
   },
   {
     name: "mdbase Editor",
@@ -34,7 +39,11 @@ const applications: CatalogueEntry[] = [
       { label: "Open Editor", href: "https://editor.mdbase.dev/" },
       { label: "Documentation", href: "/apps/editor/" },
       { label: "Source", href: "https://github.com/mdbase-dev/mdbase-connect/tree/main/apps/editor" }
-    ]
+    ],
+    shot: {
+      name: "editor",
+      alt: "mdbase Editor showing a collection's folders and notes beside an open note with a diagram."
+    }
   },
   {
     name: "mdbase Reader",
@@ -45,9 +54,12 @@ const applications: CatalogueEntry[] = [
     links: [
       { label: "Open Reader", href: "https://reader.mdbase.dev/" },
       { label: "Documentation", href: "/apps/reader/" },
-      { label: "Try the preview", href: "https://reader.mdbase.dev/?preview=1" },
       { label: "Chrome extension", href: "https://chromewebstore.google.com/detail/mdbase-reader/kimdfjefhbfgfecconmaiaaindjccidp" }
-    ]
+    ],
+    shot: {
+      name: "reader",
+      alt: "mdbase Reader showing a chapter of The Principles of Psychology with two highlighted passages."
+    }
   },
   {
     name: "mdbase writer",
@@ -57,9 +69,12 @@ const applications: CatalogueEntry[] = [
     collections: "Cloud copy, or Private through one of your devices",
     links: [
       { label: "Open writer", href: "https://writer.mdbase.dev/" },
-      { label: "Documentation", href: "/apps/writer/" },
-      { label: "Try the demo", href: "https://lab.mdbase-writer.pages.dev/?demo" }
-    ]
+      { label: "Documentation", href: "/apps/writer/" }
+    ],
+    shot: {
+      name: "writer",
+      alt: "mdbase writer showing a paper's Markdown source, with citations, beside its typeset article preview."
+    }
   },
   {
     name: "mdbase for Obsidian",
@@ -97,22 +112,12 @@ const applications: CatalogueEntry[] = [
     </p>
   </header>
 
-  <section class="content-section" aria-labelledby="reaching-collections">
-    <h2 id="reaching-collections">How apps reach a collection</h2>
-    <p>
-      Web apps can use a Cloud copy collection at any time. They reach a Private
-      collection through one of your devices, so one of them must be online,
-      such as a computer running the <a href="/downloads/">desktop app</a>.
-      Several apps can use one collection at once, each within the permission
-      you gave it. <a href="/connect/#apps">How permissions work</a>.
-    </p>
-  </section>
-
   <section class="catalogue-section" aria-label="Current applications and tools">
     <div class="app-list">
       {
         applications.map((app) => (
-          <article class="app-entry">
+          <article class:list={["app-entry", { "app-entry--shot": app.shot }]}>
+            {app.shot && <AppShot name={app.shot.name} alt={app.shot.alt} />}
             <h2>{app.name}</h2>
             <div class="app-entry__description">
               <p>{app.description}</p>

@@ -1,0 +1,174 @@
+<button class="site-search__open" type="button" data-search-open aria-haspopup="dialog" aria-keyshortcuts="/ Control+K Meta+K">
+  <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"></circle><path d="m10.4 10.4 3.6 3.6"></path></svg>
+  <span>Search</span>
+</button>
+
+<dialog class="site-search" aria-label="Search mdbase.dev" data-search-dialog>
+  <div class="site-search__bar">
+    <strong>Search mdbase.dev</strong>
+    <button type="button" class="site-search__close" data-search-close>Close</button>
+  </div>
+  <div id="site-search-ui" class="site-search__ui"></div>
+  <p class="site-search__status" data-search-status hidden></p>
+</dialog>
+
+<script is:inline>
+  (() => {
+    const dialog = document.querySelector("[data-search-dialog]");
+    const opener = document.querySelector("[data-search-open]");
+    if (!(dialog instanceof HTMLDialogElement) || !opener) return;
+    const status = dialog.querySelector("[data-search-status]");
+    let loading;
+
+    const load = () => {
+      loading ??= new Promise((resolve, reject) => {
+        const style = document.createElement("link");
+        style.rel = "stylesheet";
+        style.href = "/pagefind/pagefind-ui.css";
+        document.head.append(style);
+        const script = document.createElement("script");
+        script.src = "/pagefind/pagefind-ui.js";
+        script.onload = () => {
+          // eslint-disable-next-line no-undef
+          new PagefindUI({
+            element: "#site-search-ui",
+            showSubResults: true,
+            showImages: false,
+            resetStyles: false,
+            autofocus: true,
+            translations: { placeholder: "Search the docs, apps and specification" }
+          });
+          resolve();
+        };
+        script.onerror = reject;
+        document.head.append(script);
+      });
+      return loading;
+    };
+
+    const open = async () => {
+      if (dialog.open) return;
+      dialog.showModal();
+      try {
+        await load();
+        status.hidden = true;
+        dialog.querySelector("input")?.focus();
+      } catch {
+        loading = undefined;
+        status.textContent = "Search isn’t available in this build. Run a production build to create the index.";
+        status.hidden = false;
+      }
+    };
+
+    opener.addEventListener("click", open);
+    dialog.querySelector("[data-search-close]")?.addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+    document.addEventListener("keydown", (event) => {
+      const target = event.target;
+      const typing = target instanceof HTMLElement
+        && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+      if ((event.key === "k" && (event.metaKey || event.ctrlKey)) || (event.key === "/" && !typing)) {
+        event.preventDefault();
+        open();
+      }
+    });
+  })();
+</script>
+
+<style is:global>
+  .site-search__open {
+    display: inline-flex;
+    margin-left: auto;
+    padding: 0;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-text);
+    background: transparent;
+    border: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .site-search__open:hover { color: var(--color-text-soft); }
+
+  @media (max-width: 35rem) {
+    .site-search__open span {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+
+  .site-search__open:focus-visible,
+  .site-search__close:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+
+  .site-search__open svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.4;
+    stroke-linecap: round;
+  }
+
+  .site-search {
+    width: min(calc(100% - 32px), 44rem);
+    max-height: min(80vh, 46rem);
+    margin: 10vh auto auto;
+    padding: 1rem 1.25rem 1.25rem;
+    color: var(--color-text);
+    background: var(--color-canvas);
+    border: 1px solid var(--color-text);
+    border-radius: 4px;
+  }
+
+  .site-search::backdrop { background: var(--color-scrim, rgb(0 0 0 / 0.35)); }
+
+  .site-search__bar {
+    display: flex;
+    margin-bottom: 0.75rem;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .site-search__bar strong { font-weight: 400; }
+
+  .site-search__close {
+    padding: 0;
+    color: var(--color-text);
+    background: transparent;
+    border: 0;
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  .site-search__status { color: var(--color-text-soft); }
+
+  .site-search .pagefind-ui {
+    --pagefind-ui-scale: 0.8;
+    --pagefind-ui-primary: var(--color-accent);
+    --pagefind-ui-text: var(--color-text);
+    --pagefind-ui-background: var(--color-canvas);
+    --pagefind-ui-border: var(--color-border-strong);
+    --pagefind-ui-tag: var(--color-surface-subtle);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: 4px;
+    --pagefind-ui-font: var(--sans, inherit);
+  }
+
+  .site-search .pagefind-ui mark {
+    color: inherit;
+    background: color-mix(in oklch, var(--color-accent) 22%, transparent);
+  }
+</style>

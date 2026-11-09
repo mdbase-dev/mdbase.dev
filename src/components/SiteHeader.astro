@@ -1,20 +1,23 @@
 ---
 import BrandMark from "./BrandMark.astro";
+import SiteSearch from "./SiteSearch.astro";
 
 interface Props {
   current?: "home" | "apps" | "downloads" | "connect" | "sdk" | "runtime" | "spec";
 }
 
 const { current } = Astro.props;
+const section = current === "sdk" || current === "runtime" || current === "spec" ? "developers" : current;
 const links = [
   { href: "/", label: "Home", key: "home" },
   { href: "/connect/", label: "Connect", key: "connect" },
   { href: "/downloads/", label: "Downloads", key: "downloads" },
-  { href: "/apps/", label: "Apps", key: "apps" }
+  { href: "/apps/", label: "Apps", key: "apps" },
+  { href: "/sdk/", label: "Developers", key: "developers" }
 ] as const;
 ---
 
-<header class="site-header">
+<header class="site-header" data-pagefind-ignore="all">
   <div class="site-header__inner">
     <div class="site-header__identity">
       <a class="wordmark" href="/" aria-label="mdbase home"><BrandMark /><span>mdbase</span></a>
@@ -23,11 +26,12 @@ const links = [
     <nav class="site-nav" aria-label="Primary navigation">
       {
         links.map((link) => (
-          <a href={link.href} aria-current={current === link.key ? "page" : undefined}>
+          <a href={link.href} aria-current={section === link.key ? "page" : undefined}>
             {link.label}
           </a>
         ))
       }
+      <SiteSearch />
       <button class="theme-toggle" type="button" aria-label="Use dark mode" title="Use dark mode" hidden>
         <svg class="theme-toggle__icon" viewBox="0 0 16 16" aria-hidden="true">
           <circle cx="8" cy="8" r="5.5"></circle>

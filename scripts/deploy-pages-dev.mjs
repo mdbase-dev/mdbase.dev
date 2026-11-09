@@ -37,6 +37,7 @@ export async function deployDevelopmentSite(
 
   await dependencies.run(pnpm, ["build"], deploymentEnvironment);
   await dependencies.run(pnpm, ["import:spec"], deploymentEnvironment);
+  await dependencies.run(pnpm, ["index:site"], deploymentEnvironment);
   await dependencies.prepareBuild();
   await dependencies.run(pnpm, ["check:links"], deploymentEnvironment);
   await dependencies.verifyBuild();

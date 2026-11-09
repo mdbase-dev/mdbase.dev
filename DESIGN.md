@@ -33,14 +33,14 @@ synchronised by the build. The site overrides only the canvas, in
 The mark is the square-bar icon (`src/components/BrandMark.astro`). It sits
 beside the wordmark in the header, and a hover ripple runs through the bars in
 reading order, matching the apps. The favicon and the social card
-(`public/og-card.png`, 1200×630) use the same mark.
+(`public/og-card.jpg`, 1200×630) use the same mark.
 
 The homepage pairs a moving sky (`public/mdbase-atmosphere.js`) with one field
 of 361 record particles (`public/mdbase-murmuration.js`). The field begins as a
 murmuration and becomes concrete diagrams as the reader scrolls: files, apps,
-editing, sync, Cloud copy and Private, permissions, and sharing. Canvas
-surfaces, labels, edges and particles use the page's colour roles. Dashed boxes
-mark copies that are offline, locked or removed; they keep a solid surface so
+sync, apps reaching the collection through mdbase, permissions, and sharing.
+Canvas surfaces, labels, edges and particles use the page's colour roles.
+Dashed boxes mark copies that are offline, switched off or removed; they keep a solid surface so
 they read against the sky.
 
 ## Typography

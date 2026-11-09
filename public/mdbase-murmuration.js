@@ -365,37 +365,6 @@
         }
       }
 
-      function layoutMerge(bounds) {
-        const compact = bounds.w < 480;
-        const laptop = addCard("merge-laptop", "Laptop · text editor", [
-          { text: "status: active", tone: "remove" },
-          { text: "status: done", tone: "add" }
-        ], compact ? rect(bounds, 0.00, 0.00, 0.48, 0.36) : rect(bounds, 0.00, 0.06, 0.40, 0.28));
-        const phone = addCard("merge-phone", "Phone · TaskNotes", [
-          { text: "due: 2026-11-02", tone: "add" }
-        ], compact ? rect(bounds, 0.52, 0.00, 0.48, 0.36) : rect(bounds, 0.00, 0.66, 0.40, 0.28));
-        const result = addCard("merge-result", "website-redesign.md", [
-          { text: "---", tone: "faint" },
-          "title: Website redesign",
-          { text: "status: done", tone: "add" },
-          'owner: "[[people/sam.md]]"',
-          { text: "due: 2026-11-02", tone: "add" },
-          { text: "---", tone: "faint" }
-        ], compact ? rect(bounds, 0.14, 0.50, 0.72, 0.50) : rect(bounds, 0.53, 0.25, 0.47, 0.50));
-        const fromLaptop = compact
-          ? [pointOnNode(laptop, "bottom"), pointOnNode(result, "top", 0.3)]
-          : [pointOnNode(laptop, "right"), pointOnNode(result, "left", 0.3)];
-        const fromPhone = compact
-          ? [pointOnNode(phone, "bottom"), pointOnNode(result, "top", 0.7)]
-          : [pointOnNode(phone, "right"), pointOnNode(result, "left", 0.7)];
-        addEdge(fromLaptop, null, "one field", true);
-        addEdge(fromPhone, null, "another field", true);
-        if (!compact) addNote("both changes kept", result.box.x + result.box.w / 2, result.box.y + result.box.h + 26);
-        pathParticles(0, 10, fromLaptop);
-        pathParticles(10, 10, fromPhone);
-        ambient(20);
-      }
-
       function lockedLines(count) {
         return Array.from({ length: count }, (_, index) =>
           ({ text: "▒▒▒▒▒▒▒▒  locked", tone: index === count - 1 ? "add" : "faint" }));
@@ -454,36 +423,33 @@
         ambient(next);
       }
 
-      function layoutOptions(bounds) {
+      // Apps on any device reach the collection through mdbase's copy, which
+      // stays in sync with your devices and answers while they are off.
+      function layoutServe(bounds) {
         const compact = bounds.w < 480;
-        const panels = [
-          ["cloud", "Cloud copy", 0.00],
-          ["private", "Private", 0.53]
-        ];
-        let next = 0;
-        panels.forEach(([id, label, x]) => {
-          addNode(`${id}-panel`, label, "", rect(bounds, x, 0.02, 0.47, 0.96), "boundary");
-          const devices = addNode(`${id}-devices`, "your devices", "", rect(bounds, x + 0.04, 0.14, 0.39, 0.22), "standard");
-          const log = addCard(`${id}-log`, "mdbase sync", [{ text: "▒▒▒▒▒▒  locked", tone: "faint" }],
-            rect(bounds, x + 0.04, 0.47, 0.39, 0.15), "log");
-          const cloud = id === "cloud"
-            ? addNode(`${id}-copy`, compact ? "readable copy" : "readable copy · apps work while devices are off", "", rect(bounds, x + 0.04, 0.70, 0.39, 0.24), "accent")
-            : addCard(`${id}-copy`, compact ? "locked" : "locked · only your devices", [{ text: "apps go through", tone: "faint" }, { text: "your devices", tone: "faint" }],
-              rect(bounds, x + 0.04, 0.70, 0.39, 0.24), "replica");
-          const up = [pointOnNode(devices, "bottom"), pointOnNode(log, "top")];
-          addEdge(up, null, "", false).relationship = true;
-          gridParticles(next, 90, devices);
-          next += 90;
-          pathParticles(next, 6, up);
+        const laptop = addNode("serve-laptop", "Laptop", "", rect(bounds, 0.00, 0.06, 0.27, 0.36), "standard");
+        const desktop = addNode("serve-desktop", compact ? "Desktop · off" : "Desktop · switched off", "",
+          rect(bounds, 0.00, 0.58, 0.27, 0.36), "replica");
+        const hosted = addNode("serve-hosted", "mdbase", "", rect(bounds, 0.37, 0.18, 0.26, 0.64), "accent");
+        const apps = [
+          ["serve-app-0", "TaskNotes", "on a phone"],
+          ["serve-app-1", "Editor", "in a browser"],
+          ["serve-app-2", "Reader", "in a browser"]
+        ].map(([id, label, line], index) => addCard(id, label, [{ text: compact ? line.split(" ").pop() : line, tone: "faint" }],
+          rect(bounds, 0.73, 0.04 + index * 0.33, 0.27, 0.26), "app"));
+        const sync = [pointOnNode(laptop, "right"), pointOnNode(hosted, "left", 0.25)];
+        addEdge(sync, null, "", false).relationship = true;
+        addEdge([pointOnNode(desktop, "right"), pointOnNode(hosted, "left", 0.75)], null, "", true).relationship = true;
+        gridParticles(0, 80, laptop);
+        gridParticles(80, 80, desktop, "replica");
+        gridParticles(160, 120, hosted, "metadata");
+        pathParticles(280, 6, sync);
+        let next = 286;
+        apps.forEach((app, index) => {
+          const path = [pointOnNode(app, "left"), pointOnNode(hosted, "right", 0.2 + index * 0.3)];
+          addEdge(path, null, "", true);
+          pathParticles(next, 6, index % 2 ? path.slice().reverse() : path);
           next += 6;
-          if (id === "cloud") {
-            const down = [pointOnNode(log, "bottom"), pointOnNode(cloud, "top")];
-            addEdge(down, null, "", false).relationship = true;
-            gridParticles(next, 90, cloud, "metadata");
-            next += 90;
-            pathParticles(next, 6, down);
-            next += 6;
-          }
         });
         ambient(next);
       }
@@ -545,8 +511,8 @@
 
         const layouts = {
           intro: layoutIntro, collection: layoutCollection, structure: layoutStructure,
-          apps: layoutApps, merge: layoutMerge, sync: layoutSync, options: layoutOptions,
-          grant: layoutGrant, sharing: layoutSharing
+          apps: layoutApps, sync: layoutSync,
+          grant: layoutGrant, sharing: layoutSharing, serve: layoutServe
         };
         (layouts[name] || layoutIntro)(bounds);
 

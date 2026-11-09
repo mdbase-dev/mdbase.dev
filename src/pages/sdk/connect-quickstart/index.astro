@@ -80,12 +80,11 @@ const operate = `async function startApp(db) {
   ]}
 >
   <div class="callout" id="before">
-    <strong>The SDK is not on npm yet.</strong>
+    <strong>Test without an account first.</strong>
     <p>
-      Signing in to real collections needs a packaged SDK release, and none is
-      published yet. Until then, write and test your app against
-      {" "}<a href="/sdk/testing/">createApplicationFixture()</a>.
-      This page will say when a release is out.
+      You can write and test the whole flow on this page against
+      {" "}<a href="/sdk/testing/">createApplicationFixture()</a> before
+      signing in to a real collection.
     </p>
   </div>
 
@@ -99,7 +98,7 @@ const operate = `async function startApp(db) {
   <h2 id="install">2. Install</h2>
   <CodeBlock code={install} language="sh" label="Terminal" />
   <p>
-    The package is not on npm yet; see the
+    The SDK is in beta; pin an exact version in an app you ship. See the
     {" "}<a href="/sdk/quickstart/#build">quickstart</a>.
   </p>
 

@@ -14,9 +14,9 @@ const { title, description, active, section = "sdk", headings = [] } = Astro.pro
 const { label, navLabel, headerCurrent, sourcePath, meta, groups: docGroups } = docsSections[section];
 ---
 
-<BaseLayout title={title} description={description} current={headerCurrent} wide>
+<BaseLayout title={`${title} · ${label}`} description={description} current={headerCurrent} wide>
   <div class="docs-shell">
-    <aside class="docs-nav">
+    <aside class="docs-nav" data-pagefind-ignore="all">
       <details open data-docs-nav>
         <summary>{label}</summary>
         <nav aria-label={navLabel}>
@@ -41,14 +41,14 @@ const { label, navLabel, headerCurrent, sourcePath, meta, groups: docGroups } = 
         <strong>{meta.value}</strong>
       </div>
     </aside>
-    <article class="docs-article">
+    <article class="docs-article" data-pagefind-meta={`title:${title} · ${label}`}>
       <header class="docs-title">
         <p>{label}</p>
         <h1>{title}</h1>
         <span>{description}</span>
       </header>
       <slot />
-      <footer class="docs-edit">
+      <footer class="docs-edit" data-pagefind-ignore="all">
         <a href={`https://github.com/mdbase-dev/mdbase.dev/tree/main/${sourcePath}`}>
           Edit this page on GitHub
         </a>
@@ -56,7 +56,7 @@ const { label, navLabel, headerCurrent, sourcePath, meta, groups: docGroups } = 
     </article>
     {
       headings.length > 0 && (
-        <aside class="docs-toc">
+        <aside class="docs-toc" data-pagefind-ignore="all">
           <strong>On this page</strong>
           <nav aria-label="On this page">
             {headings.map((heading) => <a href={heading.href}>{heading.label}</a>)}

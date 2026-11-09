@@ -1,0 +1,110 @@
+---
+// A screenshot of a real app in a quiet window frame. Each app is captured in
+// light and dark (public/images/apps/<name>-light|dark.webp, 1600×1000 from a
+// 1120×700 window at 2×), and the frame shows the capture matching the site's
+// theme. The hidden capture is display: none, so the browser never loads it.
+interface Props {
+  name: "tasknotes" | "editor" | "reader" | "writer";
+  alt: string;
+  eager?: boolean;
+}
+
+const hosts = {
+  tasknotes: "app.tasknotes.dev",
+  editor: "editor.mdbase.dev",
+  reader: "reader.mdbase.dev",
+  writer: "writer.mdbase.dev"
+} as const;
+
+const { name, alt, eager = false } = Astro.props;
+const hasCaption = Astro.slots.has("caption");
+const loading = eager ? "eager" : "lazy";
+---
+
+<figure class="app-shot">
+  <div class="app-shot__window">
+    <div class="app-shot__bar" aria-hidden="true"><span>{hosts[name]}</span></div>
+    <img
+      class="app-shot__image app-shot__image--light"
+      src={`/images/apps/${name}-light.webp`}
+      alt={alt}
+      width="1600"
+      height="1000"
+      loading={loading}
+      decoding="async"
+    />
+    <img
+      class="app-shot__image app-shot__image--dark"
+      src={`/images/apps/${name}-dark.webp`}
+      alt={alt}
+      width="1600"
+      height="1000"
+      loading={loading}
+      decoding="async"
+    />
+  </div>
+  {hasCaption && <figcaption><slot name="caption" /></figcaption>}
+</figure>
+
+<style is:global>
+  .app-shot {
+    --app-shot-shadow:
+      0 1px 2px oklch(25% 0.02 250 / 0.06),
+      0 8px 18px -10px oklch(25% 0.02 250 / 0.18),
+      0 28px 56px -28px oklch(25% 0.03 250 / 0.32);
+    margin: 0;
+  }
+
+  .app-shot__window {
+    overflow: hidden;
+    background: var(--color-surface, var(--color-canvas));
+    border: 1px solid var(--color-border-strong, var(--color-border));
+    border-radius: 8px;
+    box-shadow: var(--app-shot-shadow);
+  }
+
+  .app-shot__bar {
+    display: flex;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    background: var(--color-surface-subtle, var(--color-canvas));
+    border-bottom: 1px solid var(--color-border);
+    font: 400 0.68rem/1 var(--mono, monospace);
+    letter-spacing: 0.01em;
+  }
+
+  .app-shot__image {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .app-shot__image--dark { display: none; }
+
+  :root[data-theme="dark"] .app-shot__image--light { display: none; }
+  :root[data-theme="dark"] .app-shot__image--dark { display: block; }
+
+  :root[data-theme="dark"] .app-shot {
+    --app-shot-shadow:
+      0 1px 2px oklch(0% 0 0 / 0.3),
+      0 28px 56px -24px oklch(0% 0 0 / 0.6);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) .app-shot__image--light { display: none; }
+    :root:not([data-theme]) .app-shot__image--dark { display: block; }
+    :root:not([data-theme]) .app-shot {
+      --app-shot-shadow:
+        0 1px 2px oklch(0% 0 0 / 0.3),
+        0 28px 56px -24px oklch(0% 0 0 / 0.6);
+    }
+  }
+
+  .app-shot figcaption {
+    margin-top: 0.75rem;
+    color: var(--color-text-soft);
+    font-size: 0.85em;
+  }
+</style>

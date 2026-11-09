@@ -15,3 +15,10 @@
 .build-section { display: block; }
 .build-section__body p { margin-top: 0.5rem; color: var(--ink-soft); }
 .build-section__body .button-row { margin-top: 0.8rem; }
+
+/* Apps with a screenshot lead with it, at the full page width; text keeps the reading measure. */
+.app-entry--shot { max-width: none; margin-bottom: 4.5rem; }
+.app-entry--shot > :not(.app-shot) { max-width: var(--reading); }
+.app-entry--shot .app-shot { margin-bottom: 1.4rem; }
+.app-list > .app-entry:first-child { margin-top: 0.5rem; }
+.app-entry--shot h2 { margin-bottom: 0.35rem; font-size: 1.3rem; font-weight: 600; }

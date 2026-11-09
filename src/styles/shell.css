@@ -120,7 +120,6 @@ body {
 .theme-toggle {
   width: 24px;
   height: 24px;
-  margin-left: auto;
   display: grid;
   place-items: center;
   cursor: pointer;

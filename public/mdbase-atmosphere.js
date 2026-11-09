@@ -131,7 +131,7 @@
   const currentDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : systemDark.matches;
   function sync() {
     dark = currentDark();
-    grain.style.backgroundImage = `url("/textures/${dark ? 'dark' : 'light'}-2.png")`;
+    grain.style.backgroundImage = `url("/textures/${dark ? 'dark' : 'light'}-2.webp")`;
     if (pauseControl) {
       pauseControl.textContent = paused ? 'Play motion' : 'Pause motion';
       pauseControl.hidden = reducedMotion.matches;
