@@ -14,6 +14,13 @@ const placements = {
   "writer-book": "src/pages/apps/writer/chapters/index.astro"
 };
 
+test("The domain challenge is packaged into the Pages deployment", () => {
+  assert.match(read("public/.well-known/openai-apps-challenge"), /^[A-Za-z0-9_-]+\n$/);
+  const deployment = read(".github/workflows/deploy.yml");
+  assert.match(deployment, /cmp public\/\.well-known\/openai-apps-challenge dist\/\.well-known\/openai-apps-challenge/);
+  assert.match(deployment, /uses: actions\/upload-pages-artifact@v5\s+with:\s+path: dist\s+include-hidden-files: true/);
+});
+
 test("Reader and Writer are listed with live applications and local documentation", () => {
   const catalogue = read("src/pages/apps/index.astro");
   for (const app of ["reader", "writer"]) {

@@ -127,9 +127,13 @@ jobs:
 
       - uses: actions/configure-pages@v6
 
+      - name: Verify OpenAI domain challenge is in the build
+        run: cmp public/.well-known/openai-apps-challenge dist/.well-known/openai-apps-challenge
+
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
+          include-hidden-files: true
 
   deploy:
     needs: build
