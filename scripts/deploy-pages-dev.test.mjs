@@ -42,16 +42,16 @@ test("builds, checks, and deploys only the Pages production branch", async () =>
   assert.equal(buildVerified, true);
   assert.equal(deploymentVerified, true);
   assert.deepEqual(
-    calls.slice(0, 3).map(({ arguments_ }) => arguments_),
-    [["build"], ["import:spec"], ["check:links"]],
+    calls.slice(0, 4).map(({ arguments_ }) => arguments_),
+    [["build"], ["import:spec"], ["index:site"], ["check:links"]],
   );
   assert.ok(
-    calls[3].arguments_.includes(
+    calls[4].arguments_.includes(
       `wrangler@${developmentDeployment.wranglerVersion}`,
     ),
   );
-  assert.ok(calls[3].arguments_.includes("--project-name=mdbase-dev"));
-  assert.ok(calls[3].arguments_.includes("--branch=main"));
+  assert.ok(calls[4].arguments_.includes("--project-name=mdbase-dev"));
+  assert.ok(calls[4].arguments_.includes("--branch=main"));
   assert.equal(
     calls.every(
       ({ environment }) =>

@@ -33,7 +33,7 @@ synchronised by the build. The site overrides only the canvas, in
 The mark is the square-bar icon (`src/components/BrandMark.astro`). It sits
 beside the wordmark in the header, and a hover ripple runs through the bars in
 reading order, matching the apps. The favicon and the social card
-(`public/og-card.png`, 1200×630) use the same mark.
+(`public/og-card.jpg`, 1200×630) use the same mark.
 
 The homepage pairs a moving sky (`public/mdbase-atmosphere.js`) with one field
 of 361 record particles (`public/mdbase-murmuration.js`). The field begins as a

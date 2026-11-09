@@ -15,3 +15,6 @@
 .build-section { display: block; }
 .build-section__body p { margin-top: 0.5rem; color: var(--ink-soft); }
 .build-section__body .button-row { margin-top: 0.8rem; }
+.app-entry__image { display: block; width: 100%; height: auto; margin: 0.6rem 0 0.8rem; border: 1px solid var(--line); border-radius: 4px; background: var(--paper-soft); }
+.try-list { margin: 0.6rem 0 0; padding-left: 1.2rem; }
+.try-list li + li { margin-top: 0.35rem; }

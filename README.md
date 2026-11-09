@@ -32,8 +32,16 @@ pnpm check
 pnpm build
 (cd ../mdbase-spec/site && npm ci && npm run build)
 pnpm import:spec
+pnpm index:site
 pnpm check:links
 ```
+
+`pnpm index:site` builds the Pagefind index for the header's search dialog,
+then writes a Markdown copy of each page (`index.md` beside its `index.html`),
+`/llms.txt` and `/llms-full.txt` (`scripts/build-llms.mjs`). It runs after the
+specification import so the specification is included. Each page's `<main>` is
+used; headers, footers and documentation sidebars are excluded, as are pages
+marked `noIndex` and the archived specification.
 
 The website repository owns the ecosystem pages and deployment cadence. The
 normative specification is built by `mdbase-spec` and imported under `/spec/`.
@@ -81,9 +89,9 @@ pnpm deploy:dev
 ```
 
 The command builds the current working tree for
-`https://mdbase-dev.pages.dev`, imports the specification, checks local links,
-and deploys the `main` branch of the standalone `mdbase-dev` Cloudflare Pages
-project. It verifies the live homepage, specification, canonical URLs, and
+`https://mdbase-dev.pages.dev`, imports the specification, builds the search
+index and Markdown copies, checks local links, and deploys the `main` branch of
+the standalone `mdbase-dev` Cloudflare Pages project. It verifies the live homepage, specification, canonical URLs, and
 indexing controls after deployment. The production GitHub Pages deployment and
 `mdbase.dev` domain are unchanged.
 

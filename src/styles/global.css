@@ -363,7 +363,7 @@ main[tabindex="-1"]:focus { outline: none; }
   --color-canvas: oklch(97% 0.009 245);
   --sky-cloud: oklch(76% 0.026 245);
   --sky-light: #fff;
-  --sky-grain: url("/textures/light-2.png");
+  --sky-grain: url("/textures/light-2.webp");
   --sky-grain-opacity: 0.17;
 }
 
@@ -371,7 +371,7 @@ main[tabindex="-1"]:focus { outline: none; }
   --color-canvas: oklch(20.5% 0.018 245);
   --sky-cloud: oklch(36% 0.03 245);
   --sky-light: oklch(27% 0.022 245);
-  --sky-grain: url("/textures/dark-2.png");
+  --sky-grain: url("/textures/dark-2.webp");
   --sky-grain-opacity: 0.11;
 }
 
@@ -380,7 +380,7 @@ main[tabindex="-1"]:focus { outline: none; }
     --color-canvas: oklch(20.5% 0.018 245);
     --sky-cloud: oklch(36% 0.03 245);
     --sky-light: oklch(27% 0.022 245);
-    --sky-grain: url("/textures/dark-2.png");
+    --sky-grain: url("/textures/dark-2.webp");
     --sky-grain-opacity: 0.11;
   }
 }

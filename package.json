@@ -13,6 +13,7 @@
     "sync:mcp-tools": "node scripts/sync-mcp-tools.mjs",
     "sync:contracts": "node scripts/sync-contracts.mjs",
     "import:spec": "node scripts/import-spec.mjs",
+    "index:site": "pagefind --site dist && node scripts/build-llms.mjs",
     "check:links": "node scripts/check-links.mjs",
     "check:release": "node scripts/check-connect-release.mjs",
     "check:release-order": "node scripts/check-connect-release-order.mjs",
@@ -21,7 +22,7 @@
     "test:home": "node --test scripts/home-animation.test.mjs",
     "test:docs": "node --test scripts/app-docs.test.mjs",
     "test:spec": "node --test scripts/spec-page.test.mjs",
-    "test": "pnpm test:spec && pnpm test:home && pnpm test:docs && pnpm test:deploy:dev && pnpm test:release-update && pnpm check:release && pnpm check && pnpm build && pnpm import:spec && pnpm check:links"
+    "test": "pnpm test:spec && pnpm test:home && pnpm test:docs && pnpm test:deploy:dev && pnpm test:release-update && pnpm check:release && pnpm check && pnpm build && pnpm import:spec && pnpm index:site && pnpm check:links"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
@@ -32,6 +33,8 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "pagefind": "1.5.2",
+    "turndown": "7.2.4",
     "typescript": "^6.0.3"
   }
 }

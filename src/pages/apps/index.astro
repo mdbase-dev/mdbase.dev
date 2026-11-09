@@ -9,6 +9,7 @@ type CatalogueEntry = {
   runsOn: string;
   collections: string;
   links: Array<{ label: string; href: string }>;
+  image?: { src: string; alt: string; width: number; height: number };
 };
 
 const applications: CatalogueEntry[] = [
@@ -20,7 +21,6 @@ const applications: CatalogueEntry[] = [
     collections: "Cloud copy, or Private through one of your devices",
     links: [
       { label: "Open TaskNotes", href: "https://app.tasknotes.dev/" },
-      { label: "Try the demo", href: "https://app.tasknotes.dev/?demo=30" },
       { label: "Source", href: "https://github.com/callumalpass/tasknotes-app" }
     ]
   },
@@ -47,7 +47,13 @@ const applications: CatalogueEntry[] = [
       { label: "Documentation", href: "/apps/reader/" },
       { label: "Try the preview", href: "https://reader.mdbase.dev/?preview=1" },
       { label: "Chrome extension", href: "https://chromewebstore.google.com/detail/mdbase-reader/kimdfjefhbfgfecconmaiaaindjccidp" }
-    ]
+    ],
+    image: {
+      src: "/images/apps/reader.webp",
+      alt: "mdbase Reader showing a chapter with two highlighted passages and their annotations, beside a text editor open on the same collection's Markdown files.",
+      width: 1600,
+      height: 900
+    }
   },
   {
     name: "mdbase writer",
@@ -59,7 +65,13 @@ const applications: CatalogueEntry[] = [
       { label: "Open writer", href: "https://writer.mdbase.dev/" },
       { label: "Documentation", href: "/apps/writer/" },
       { label: "Try the demo", href: "https://lab.mdbase-writer.pages.dev/?demo" }
-    ]
+    ],
+    image: {
+      src: "/images/apps/writer.webp",
+      alt: "mdbase writer showing a paper's Markdown source, with citations, beside its typeset article preview.",
+      width: 1600,
+      height: 792
+    }
   },
   {
     name: "mdbase for Obsidian",
@@ -108,12 +120,41 @@ const applications: CatalogueEntry[] = [
     </p>
   </section>
 
+  <section class="content-section" id="try" aria-labelledby="try-heading">
+    <h2 id="try-heading">Try without an account</h2>
+    <p>
+      Two apps have samples you can open in a browser tab. Nothing is saved to
+      an account, and changes are lost when you close the tab.
+    </p>
+    <ul class="try-list">
+      <li>
+        <a href="https://reader.mdbase.dev/?preview=1">Reader preview</a>:
+        a sample library of books, papers and web pages to read and highlight.
+      </li>
+      <li>
+        <a href="https://lab.mdbase-writer.pages.dev/?demo">Writer demo</a>:
+        a sample paper and book with citations from a Reader library.
+      </li>
+    </ul>
+  </section>
+
   <section class="catalogue-section" aria-label="Current applications and tools">
     <div class="app-list">
       {
         applications.map((app) => (
           <article class="app-entry">
             <h2>{app.name}</h2>
+            {app.image && (
+              <img
+                class="app-entry__image"
+                src={app.image.src}
+                alt={app.image.alt}
+                width={app.image.width}
+                height={app.image.height}
+                loading="lazy"
+                decoding="async"
+              />
+            )}
             <div class="app-entry__description">
               <p>{app.description}</p>
               <div class="app-entry__links">

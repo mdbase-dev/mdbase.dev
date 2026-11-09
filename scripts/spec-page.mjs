@@ -12,7 +12,8 @@ export function renderSpecPage(shell, source, archive) {
     .replace(/<!-- spec-navigation:start -->[\s\S]*?<!-- spec-navigation:end -->/, () =>
       `<!-- spec-navigation:start -->${navigation.replace(/<div class="spec-mobile-links"[^>]*>[\s\S]*?<\/div>/, "")}<!-- spec-navigation:end -->`)
     .replace(/<!-- spec-content:start -->[\s\S]*?<!-- spec-content:end -->/, () =>
-      `<!-- spec-content:start -->${content}<!-- spec-content:end -->`)
+      // Heading permalinks read as "#" in search results, so search skips them.
+      `<!-- spec-content:start -->${content.replaceAll('<a class="anchor" ', '<a class="anchor" data-pagefind-ignore ')}<!-- spec-content:end -->`)
     .replace(/<meta name="mdbase-spec-channel"[^>]*>/g, "")
     .replace("</head>", `<meta name="mdbase-spec-channel" content="${archive ? "v0.2-archive" : "v0.3-current"}"></head>`);
 }

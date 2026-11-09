@@ -436,3 +436,23 @@
     padding-left: 12px;
   }
 }
+
+/* A still of a real app, in the reading column of the Apps chapter. */
+.app-shot {
+  width: min(560px, 100%);
+  margin: 28px 0;
+}
+
+.app-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--color-canvas);
+  border: 1px solid var(--color-text);
+}
+
+.app-shot figcaption {
+  margin-top: .6rem;
+  color: var(--color-text-soft);
+  font-size: .85em;
+}

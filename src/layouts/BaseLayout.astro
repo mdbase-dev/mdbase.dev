@@ -13,10 +13,12 @@ interface Props {
   description: string;
   current?: "home" | "apps" | "downloads" | "connect" | "sdk" | "runtime" | "spec";
   noIndex?: boolean;
+  /** Leave the page out of site search, as for an archived copy of current content. */
+  searchable?: boolean;
   wide?: boolean;
 }
 
-const { title, description, current, noIndex = false, wide = false } = Astro.props;
+const { title, description, current, noIndex = false, searchable = true, wide = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
 ---
@@ -29,6 +31,7 @@ const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {searchable && !noIndex && <link rel="alternate" type="text/markdown" href="index.md" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="stylesheet" href="/mdbase-theme.css" />
@@ -38,7 +41,7 @@ const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content="mdbase" />
-    <meta property="og:image" content={new URL("/og-card.png", Astro.site)} />
+    <meta property="og:image" content={new URL("/og-card.jpg", Astro.site)} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="The mdbase mark beside the words: mdbase, Structured data in ordinary Markdown files" />
@@ -49,7 +52,7 @@ const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
   <body class:list={["site-body", { "site-body--wide": wide }]}>
     <a class="skip-link" href="#main">Skip to content</a>
     <SiteHeader current={current} />
-    <main id="main" tabindex="-1">
+    <main id="main" tabindex="-1" data-pagefind-body={searchable && !noIndex ? "" : undefined}>
       <slot />
     </main>
     <SiteFooter />
