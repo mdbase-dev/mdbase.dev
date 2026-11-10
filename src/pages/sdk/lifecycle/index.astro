@@ -1,0 +1,438 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+const render = `import { describeError } from "@mdbase-dev/sdk/describe";
+import { mdbase } from "./mdbase";
+
+mdbase.subscribe(() => render(mdbase.getSnapshot()));
+await mdbase.start();
+
+function render(snapshot) {
+  const { phase } = snapshot;
+  switch (phase.kind) {
+    case "starting":
+      return showSplash();
+    case "signed_out":
+      return showSignIn(phase.notice?.message);
+    case "authorizing":
+      return showWaiting("Continue in the mdbase window");
+    case "choosing":
+      return showPicker(snapshot.collections);
+    case "opening":
+      return showOpening(phase.displayName, { slow: phase.slow });
+    case "needs_approval":
+      return showApprove(phase.displayName);
+    case "needs_setup":
+      return showSetup(phase.collection);
+    case "ready":
+    case "unsynced":
+      return showApp(phase.connection);
+    case "problem":
+    case "unavailable":
+      return showProblem(phase.problem);
+    case "closed":
+      return;
+  }
+}`;
+
+const gestures = `// Each of these opens the mdbase window, so call it directly in the
+// click handler. After an await, the browser blocks the window.
+signInButton.onclick = () => mdbase.signIn();
+addButton.onclick = () => mdbase.addCollection();
+approveButton.onclick = () => mdbase.approve();
+reconnectButton.onclick = () => mdbase.reauthorize();`;
+
+const collections = `const { collections, selectedCollectionId } = mdbase.getSnapshot();
+
+for (const item of collections) {
+  // item.collectionId, item.displayName, item.role: "owner" | "editor" | "viewer"
+  addRow(item.displayName, () => mdbase.select(item.collectionId));
+}
+
+// Back to the list; the browser's Back button returns to the collection.
+switchButton.onclick = () => mdbase.chooseAnother();
+
+// Hide one on this device. It stays approved and nothing is deleted.
+await mdbase.forget(collectionId);`;
+
+const setup = `const plan = await mdbase.setup.plan();
+
+if (plan.status === "current") {
+  // Nothing to do.
+} else if (plan.canApply) {
+  showReview(plan.summary, plan.changes.map((change) => change.message));
+  // When the user accepts:
+  const result = await mdbase.setup.apply(plan);
+  if (result.outcome === "changed") {
+    // The collection changed while the user was reading. Plan again.
+  }
+} else {
+  showBlocked(plan.refusal?.message, plan.conflicts.map((c) => c.message));
+}`;
+
+const access = `// The manifest lists "add" under files.optional.
+attachButton.onclick = async () => {
+  const result = await mdbase.requestAccess(
+    { files: ["add"] },
+    { reason: "Attach images to your entries" },
+  );
+  if (result.status === "granted") await attachImage();
+};`;
+
+const signOut = `import { isMdbaseError } from "@mdbase-dev/sdk";
+
+try {
+  await mdbase.signOut();
+} catch (error) {
+  if (isMdbaseError(error) && error.reason === "sign_out_pending_writes") {
+    // Changes on this device have not reached mdbase yet.
+    if (await confirmDiscard()) await mdbase.signOut({ discard: true });
+  } else {
+    throw error;
+  }
+}`;
+
+const problem = `import { describeError } from "@mdbase-dev/sdk/describe";
+
+function showProblem(problem) {
+  // problem.title, problem.message, and one action to offer.
+  title.textContent = problem.title;
+  body.textContent = problem.message;
+}
+
+// The same for anything a call throws:
+try {
+  await mdbase.select(id);
+} catch (error) {
+  const described = describeError(error);
+  if (described) showProblem(described);
+}`;
+
+const opener = `import { Browser } from "@capacitor/browser";
+
+export const mdbase = createMdbase(declaration, {
+  signIn: {
+    open: (url) => Browser.open({ url }),
+    close: () => Browser.close(),
+    returnUrl: "dev.example.worklog://auth/mdbase/callback",
+  },
+});`;
+---
+
+<DocsLayout
+  title="Sign-in and collections"
+  description="The phases an app moves through between opening and showing a collection, and the call that moves it from each one."
+  active="lifecycle"
+  headings={[
+    { href: "#snapshot", label: "The snapshot" },
+    { href: "#phases", label: "Phases" },
+    { href: "#gestures", label: "Calls that open a window" },
+    { href: "#collections", label: "Collections" },
+    { href: "#url", label: "The URL" },
+    { href: "#setup", label: "Setup" },
+    { href: "#access", label: "Asking for more access" },
+    { href: "#lost", label: "Lost access" },
+    { href: "#sign-out", label: "Signing out" },
+    { href: "#problems", label: "Problems" },
+    { href: "#opener", label: "Sign-in outside a popup" }
+  ]}
+>
+  <p>
+    <code>createMdbase()</code> returns one object for your whole app. It
+    holds a snapshot of where the user is, and the actions that move them on.
+    {" "}<a href="/sdk/ui/"><code>CollectionGate</code></a> draws every screen
+    on this page for you; read on if you draw them yourself, or want to know
+    what the gate is doing.
+  </p>
+
+  <h2 id="snapshot">The snapshot</h2>
+  <p>
+    <code>mdbase.getSnapshot()</code> returns the current state, and
+    {" "}<code>mdbase.subscribe(listener)</code> calls you when it changes.
+    The snapshot object is replaced on every change, so it works with
+    {" "}<a href="/sdk/react/"><code>useSyncExternalStore</code></a> and with
+    plain equality checks.
+  </p>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>phase</code></td><td>Where the user is. Render from this.</td></tr>
+      <tr><td><code>collections</code></td><td>The collections this app may open, for a picker.</td></tr>
+      <tr><td><code>selectedCollectionId</code></td><td>The open collection, or null.</td></tr>
+      <tr><td><code>sync</code></td><td>Sync state of the open collection, as <code>summarizeStatus()</code> returns it.</td></tr>
+      <tr><td><code>writes</code></td><td>Unconfirmed and refused writes of the open collection. See <a href="/sdk/offline-sync/">Pending writes and sync status</a>.</td></tr>
+      <tr><td><code>links</code></td><td><code>account</code> and <code>manageAccess</code>: mdbase pages to link to for the account and for who can reach the collection.</td></tr>
+      <tr><td><code>unsyncedWork</code></td><td>Set when work saved before connecting has not been brought in. See <a href="/sdk/unsynced/">Work before connecting</a>.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="phases">Phases</h2>
+  <p>
+    <code>snapshot.phase.kind</code> is always exactly one of these. Switch on
+    it; do not build a ready check from other fields.
+  </p>
+  <CodeBlock code={render} language="ts" label="main.ts" />
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>The user is</th>
+        <th>What moves them on</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>starting</code></td>
+        <td>Waiting for the SDK to restore a signed-in device</td>
+        <td>Nothing; it settles by itself</td>
+      </tr>
+      <tr>
+        <td><code>signed_out</code></td>
+        <td>Not signed in. <code>notice</code> says why when sign-in just ended.</td>
+        <td><code>signIn()</code></td>
+      </tr>
+      <tr>
+        <td><code>authorizing</code></td>
+        <td>In the mdbase window. <code>purpose</code> is <code>sign_in</code>, <code>add</code> or <code>approve</code>.</td>
+        <td>The user finishes or closes the window</td>
+      </tr>
+      <tr>
+        <td><code>choosing</code></td>
+        <td>Signed in with nothing open</td>
+        <td><code>select(id)</code>, <code>addCollection()</code></td>
+      </tr>
+      <tr>
+        <td><code>opening</code></td>
+        <td>Waiting for a collection to open. <code>slow</code> turns true after 15 seconds.</td>
+        <td>Nothing; <code>chooseAnother()</code> to leave</td>
+      </tr>
+      <tr>
+        <td><code>needs_approval</code></td>
+        <td>Looking at a collection this app is not approved for, usually from a shared link</td>
+        <td><code>approve()</code></td>
+      </tr>
+      <tr>
+        <td><code>needs_setup</code></td>
+        <td>In a collection that lacks something the manifest provides, such as your types</td>
+        <td><code>setup.plan()</code> then <code>setup.apply(plan)</code></td>
+      </tr>
+      <tr>
+        <td><code>ready</code></td>
+        <td>In an open collection. Use <code>phase.connection</code>.</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><code>unsynced</code></td>
+        <td>Working before connecting. Use <code>phase.connection</code> as when ready.</td>
+        <td><code>signIn()</code> to connect</td>
+      </tr>
+      <tr>
+        <td><code>problem</code></td>
+        <td>Stopped. <code>phase.problem</code> has the wording and one action.</td>
+        <td>The action in <code>problem.action</code></td>
+      </tr>
+      <tr>
+        <td><code>unavailable</code></td>
+        <td>Somewhere the SDK cannot run: server rendering, or an unsupported browser</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><code>closed</code></td>
+        <td>After <code>close()</code></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    Once a collection is <code>ready</code> it stays ready through
+    re-checks and passing problems; <code>phase.rechecking</code> and
+    {" "}<code>phase.problem</code> report them for a status line. Your app
+    screen is not torn down while the network drops and returns.
+  </p>
+  <p>
+    <code>phase.connection</code> has <code>records</code> (the
+    {" "}<a href="/sdk/operations/"><code>MdbaseClient</code></a>),
+    {" "}<code>files</code>, <code>people</code> and, when the manifest asks
+    for them, <code>timers</code>.
+  </p>
+
+  <h2 id="gestures">Calls that open a window</h2>
+  <p>
+    Sign-in and approval happen on mdbase’s own pages, in a window the SDK
+    opens. Browsers only allow that during a click or key press.
+  </p>
+  <CodeBlock code={gestures} language="ts" label="main.ts" />
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Call</th>
+        <th>What the user does in the window</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>signIn()</code></td><td>Signs in, then picks or creates a collection and approves your app for it</td></tr>
+      <tr><td><code>addCollection()</code></td><td>Picks another collection or creates one. Nothing is preselected.</td></tr>
+      <tr><td><code>approve(id?)</code></td><td>Approves one named collection; by default, the one the URL asks for</td></tr>
+      <tr><td><code>reauthorize()</code></td><td>Approves the open collection again, after access was lost or the app’s manifest asks for more</td></tr>
+      <tr><td><code>requestAccess()</code></td><td>Allows an optional file action. See <a href="#access">below</a>.</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Each call resolves with the new snapshot when the window closes. In the
+    {" "}<code>choosing</code> phase, <code>phase.lastApproval.outcome</code>
+    {" "}says how the last one ended: <code>added</code>,
+    {" "}<code>unchanged</code>, <code>declined</code> or <code>closed</code>.
+  </p>
+
+  <h2 id="collections">Collections</h2>
+  <CodeBlock code={collections} language="ts" label="picker.ts" />
+  <ul>
+    <li>
+      The list is re-read when the page regains focus. Call
+      {" "}<code>refreshCollectionList()</code> to re-read it at another
+      moment, such as when a menu opens.
+    </li>
+    <li>
+      <code>deleteCollection(id, &#123; confirmName &#125;)</code> deletes a
+      collection for everyone, on every device. Only its owner can, and
+      {" "}<code>confirmName</code> must be the collection’s name as the user
+      typed it.
+    </li>
+    <li>
+      A collection kept on the user’s own computers has
+      {" "}<code>kind: "private"</code>. It opens the same way; see
+      {" "}<a href="/sdk/authorization/#private">Private collections</a>.
+    </li>
+  </ul>
+
+  <h2 id="url">The URL</h2>
+  <p>
+    The SDK keeps the open collection in the page URL as
+    {" "}<code>?collection=&lt;id&gt;</code> and follows Back and Forward. A
+    link with that parameter opens that collection for anyone the app is
+    approved for, and takes others to <code>needs_approval</code>. The rest of
+    the URL, path and hash included, is yours.
+  </p>
+
+  <h2 id="setup">Setup</h2>
+  <p>
+    A collection is in <code>needs_setup</code> when it lacks something your
+    manifest’s <a href="/sdk/manifest/#provisioning">provisions</a> supply.
+    Setup shows the user what would be added and applies it only when they
+    accept.
+  </p>
+  <CodeBlock code={setup} language="ts" label="setup.ts" />
+  <ul>
+    <li>
+      <code>plan.summary</code> and each <code>change.message</code> are
+      written to be shown as they are. <code>plan.staged</code> has the
+      documents themselves, for a details view.
+    </li>
+    <li>
+      Setup needs the <code>definitions.manage</code> capability. An app that
+      lacks it gets a plan with <code>refusal.code</code>
+      {" "}<code>"setup_forbidden"</code>.
+    </li>
+    <li>
+      When a file already in the collection differs from yours, the plan has
+      <code>status: "conflict"</code>. Conflicts listed in
+      {" "}<code>plan.adoptable</code> can be resolved by taking your version:
+      pass them back as <code>setup.plan(&#123; adopt &#125;)</code>.
+    </li>
+    <li>
+      <code>setup.plan(&#123; records &#125;)</code> adds starter records,
+      such as a welcome note, written with the setup when their path is free.
+    </li>
+    <li>
+      <code>configure()</code> plans and applies in one call, for an app with
+      nothing to review.
+    </li>
+  </ul>
+  <p>
+    A collection the user creates while signing in to your app is set up
+    during sign-in, so new users do not see this screen.
+  </p>
+
+  <h2 id="access">Asking for more access</h2>
+  <p>
+    File actions listed as <code>optional</code> in the manifest are asked for
+    at the moment the user first needs them.
+  </p>
+  <CodeBlock code={access} language="ts" label="attach.ts" />
+  <p>
+    The result is <code>granted</code>, <code>declined</code> or
+    {" "}<code>cancelled</code>. An action that is already allowed resolves
+    {" "}<code>granted</code> at once and opens nothing. The reason is one
+    line of at most 140 characters, shown to the user. The collection stays
+    open throughout.
+  </p>
+
+  <h2 id="lost">Lost access</h2>
+  <p>
+    A user can remove your app’s access on their account page at any time.
+    The collection then stops with a problem whose action is
+    {" "}<code>approve</code>; offer a button that calls
+    {" "}<code>reauthorize()</code>. Link to
+    {" "}<code>snapshot.links.manageAccess</code> wherever your app says who
+    can reach the collection; that page is where access is managed.
+  </p>
+
+  <h2 id="sign-out">Signing out</h2>
+  <CodeBlock code={signOut} language="ts" label="account.ts" />
+  <p>
+    Signing out ends the session and removes this browser’s copy of the
+    account’s collections and keys. It is refused while changes are still
+    waiting to sync, so that work is not thrown away by accident.
+  </p>
+
+  <h2 id="problems">Problems</h2>
+  <CodeBlock code={problem} language="ts" label="problem.ts" />
+  <p>
+    <code>describeError()</code> accepts a thrown error, a refused write’s
+    {" "}<code>receipt.problem</code>, or a phase’s problem, and returns a
+    title, a message and one action. It returns <code>null</code> when there
+    is nothing to show, such as a request your own code aborted.
+  </p>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th><code>action</code></th>
+        <th>What to offer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>sign_in</code></td><td>A button that calls <code>signIn()</code></td></tr>
+      <tr><td><code>approve</code></td><td>A button that calls <code>approve()</code> or <code>reauthorize()</code></td></tr>
+      <tr><td><code>choose_collection</code></td><td><code>chooseAnother()</code></td></tr>
+      <tr><td><code>set_up</code></td><td>Your <a href="#setup">setup</a> review</td></tr>
+      <tr><td><code>retry</code></td><td><code>start()</code>, or the call that failed</td></tr>
+      <tr><td><code>wait</code></td><td>Nothing to press; <code>retryAfterMs</code> may say how long</td></tr>
+      <tr><td><code>reload</code></td><td>Reload the page</td></tr>
+      <tr><td><code>update_app</code></td><td>A link to <code>updateUrl</code></td></tr>
+      <tr><td><code>free_space</code>, <code>check_connection</code>, <code>resolve_outcome</code>, <code>contact_support</code>, <code>none</code></td><td>The message says what to do; there is nothing to call</td></tr>
+    </tbody>
+  </table>
+  <p>
+    <code>actionLabel</code> is the button’s wording, and
+    {" "}<code>transient</code> is true for problems the SDK clears by itself,
+    which can be shown quietly.
+  </p>
+
+  <h2 id="opener">Sign-in outside a popup</h2>
+  <p>
+    A native shell or a browser extension cannot open a popup. Pass a
+    {" "}<code>signIn</code> opener and the SDK gives it the URL to show:
+  </p>
+  <CodeBlock code={opener} language="ts" label="mdbase.ts" />
+  <p>
+    <code>returnUrl</code> must be one of the manifest’s
+    {" "}<code>redirect_uris</code>. mdbase sends the browser there when
+    sign-in ends. It carries no credential; the SDK learns the result itself.
+  </p>
+</DocsLayout>

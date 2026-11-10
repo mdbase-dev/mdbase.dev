@@ -84,7 +84,13 @@ import DocsLayout from "../../../components/DocsLayout.astro";
 
   <h2 id="origins">Origins and callbacks</h2>
   <ul>
-    <li>Your homepage, icon and browser callbacks use HTTPS.</li>
+    <li>
+      Your homepage, icon and browser callbacks use HTTPS. The one exception
+      is an app on this computer:
+      {" "}<a href="/sdk/local-development/">a localhost origin</a> may use
+      HTTP, and the approval screen then says the app’s identity is
+      unverified.
+    </li>
     <li>Browser callbacks stay on the homepage’s origin.</li>
     <li>Native callback schemes match or extend your application ID.</li>
     <li>The <code>origin</code> you give <code>createMdbase()</code> is the exact origin you serve from.</li>

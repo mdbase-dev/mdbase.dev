@@ -78,6 +78,13 @@ jobs:
       - name: Install website dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check the Worklog example and the generated API reference
+        run: |
+          npm ci --prefix examples/worklog
+          npm run check --prefix examples/worklog
+          npm run build --prefix examples/worklog
+          pnpm check:sdk-api
+
       - name: Build contract catalog
         working-directory: .sources/mdbase-contracts
         run: npm ci && npm run build

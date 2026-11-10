@@ -1,222 +1,177 @@
 ---
 import DocsLayout from "../../../components/DocsLayout.astro";
 import CodeBlock from "../../../components/CodeBlock.astro";
+import DocText from "../../../components/DocText.astro";
+import api from "../../../data/sdk-api.json";
 
-const connectSignature = `connect(options: ClientOptions): Promise<MdbaseClient>
+type Member = { name: string; signature: string; description: string; deprecated?: string | boolean };
+type Export = {
+  name: string;
+  kind: string;
+  description: string;
+  signature?: string;
+  members?: Member[];
+  deprecated?: string | boolean;
+};
 
-interface ClientOptions {
-  connector: Connector;
-  app: { name: string; version: string };
-  timezone?: string;              // IANA zone for writes and queries; default: the host's
-  features?: string[];            // optional features to request, such as "presence"
-  reconnect?: false | { minDelayMs?: number; maxDelayMs?: number }; // on by default
-  waitForDevice?: boolean;        // Private: wait for a device instead of failing
-  onWaiting?: (why: MdbaseError) => void;
-  signal?: AbortSignal;
-}`;
+const slug = (specifier: string) =>
+  specifier === api.package ? "core" : specifier.slice(api.package.length + 1).replace(/[^a-z0-9]+/g, "-");
+const anchor = (specifier: string, name: string) => `${slug(specifier)}-${name}`;
+const entries = api.entries as Array<{ specifier: string; title: string; featured: Export[]; index: Export[] }>;
 
-const writeOptions = `interface WriteOptions {
-  mutationId?: string;            // default: a new UUIDv7
-  conflictMode?: "record" | "reject";
-  timezone?: string;
-  include?: Include;
-  dryRun?: boolean;
-  wait?: "pending" | "confirmed" | "published";
-  signal?: AbortSignal;
-}`;
+// The codes and recoveries come from the SDK's types. The sentence beside each
+// is written here, and the build fails when the two lists differ.
+const when: Record<string, string> = {
+  invalid_request: "Malformed parameters, an unsafe path, or an expired query cursor",
+  invalid_record: "The write fails validation; see issues",
+  not_found: "No such record, file, hold or transfer",
+  conflict: "The current state does not allow this write; reason says why, such as revision or path_taken",
+  unauthenticated: "No session, an expired one, or a revoked grant",
+  forbidden: "The grant lacks the capability, or the person’s role does not allow it",
+  collection_invalid: "The collection’s configuration or type files cannot be loaded",
+  unavailable: "The replica cannot be reached, for example when no device is online",
+  rate_limited: "Too many requests; see retryAfterMs",
+  quota_exceeded: "The collection is over its storage quota",
+  too_large: "A request or file is over its limit",
+  upgrade_required: "This SDK version is too old for the replica or the collection",
+  outcome_unknown: "A write’s outcome cannot be determined; read again and decide",
+  cancelled: "Your code cancelled the request",
+  internal: "A bug; the request may be retried once",
+};
+const errors = api.errors as Array<{ code: string; recovery: string }>;
+const undescribed = errors.filter((error) => !(error.code in when)).map((error) => error.code);
+const stale = Object.keys(when).filter((code) => !errors.some((error) => error.code === code));
+if (undescribed.length || stale.length) {
+  throw new Error(
+    `src/pages/sdk/api/index.astro: error codes without a description: [${undescribed}]; descriptions without a code: [${stale}]`,
+  );
+}
 ---
 
 <DocsLayout
   title="API reference"
-  description="A compact reference for @mdbase-dev/sdk: connect, the client, writes, status, files and errors."
+  description={`Generated from the type declarations of ${api.package} ${api.version}.`}
   active="api"
   headings={[
-    { href: "#constructor", label: "connect()" },
-    { href: "#client", label: "Reads" },
-    { href: "#operations", label: "Writes" },
-    { href: "#connection", label: "Status and link" },
-    { href: "#records", label: "Holds and conflicts" },
-    { href: "#files", label: "Files" },
-    { href: "#session", label: "createMdbase" },
-    { href: "#notifications", label: "Other exports" },
-    { href: "#errors", label: "Errors" }
+    ...entries.map((entry) => ({ href: `#${slug(entry.specifier)}`, label: entry.title })),
+    { href: "#errors", label: "Errors" },
   ]}
 >
   <p>
-    This page lists the main public API. The package’s TypeScript declarations
-    are the full reference.
+    This page is generated from the declarations published in
+    {" "}<code>{api.package}</code> <code>{api.version}</code>, so every
+    signature and description is the one your editor shows. The main types are
+    listed in full under each entry point, followed by an index of its other
+    exports. The guide pages explain how the parts fit together; start with
+    {" "}<a href="/sdk/connect-quickstart/">Build an app</a>.
   </p>
 
-  <h2 id="constructor">connect()</h2>
-  <CodeBlock code={connectSignature} language="ts" label="Signature" />
-  <p>
-    Connectors: <code>relayConnector</code> and
-    {" "}<code>nextRelayConnector</code> (remote, through the relay or to the
-    hosted replica), <code>inProcessConnector</code>,
-    {" "}<code>localLinkConnector</code>, and from
-    {" "}<code>@mdbase-dev/sdk/node</code>, <code>ipcConnector</code> and
-    {" "}<code>connectDaemonLocalhost</code>. In tests,
-    {" "}<code>new MemoryReplica().connector()</code>.
-  </p>
-
-  <h2 id="client">Reads</h2>
-  <table class="api-table">
-    <thead>
-      <tr><th>Method</th><th>Returns</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><code>get(ref, include?, signal?)</code></td><td><code>RecordView</code>; throws <code>not_found</code></td></tr>
-      <tr><td><code>find(ref, include?, signal?)</code></td><td><code>RecordView | null</code></td></tr>
-      <tr><td><code>readMany(refs, …)</code></td><td>Several records in one call</td></tr>
-      <tr><td><code>query(query, include?, signal?)</code></td><td>One <code>QueryResult</code> page; <code>cursor</code> when there is more</td></tr>
-      <tr><td><code>pages(query, include?, signal?, &#123; onReset &#125;)</code></td><td>An async iterator over every page</td></tr>
-      <tr><td><code>live(query, include?)</code></td><td>A <code>LiveQuery</code>: <code>records</code>, <code>stale</code>, <code>complete</code>, <code>ready</code>, <code>subscribe(fn)</code>, <code>setQuery(q)</code>, <code>close()</code></td></tr>
-      <tr><td><code>changes(cursor?, limit?)</code></td><td><code>&#123; changes, cursor, reset &#125;</code></td></tr>
-      <tr><td><code>watchChanges(cursor, onChanges)</code></td><td>A stop function with <code>ready</code> and <code>state</code></td></tr>
-      <tr><td><code>backlinks(…)</code></td><td>Records that link to a record</td></tr>
-      <tr><td><code>describe()</code></td><td>Types, contracts and settings of the collection</td></tr>
-      <tr><td><code>queryContract(&#123; id, version &#125;, options?)</code></td><td>Records through a contract’s field names</td></tr>
-      <tr><td><code>validate(refs?)</code></td><td>Validation issues per record</td></tr>
-      <tr><td><code>views.list()</code>, <code>views.execute(…)</code></td><td>Saved views</td></tr>
-    </tbody>
-  </table>
-  <p>
-    A <code>RecordRef</code> is a record ID, <code>&#123; path &#125;</code>,
-    or a <code>RecordView</code>. <code>Include</code> is
-    {" "}<code>&#123; body, effective, document, links, diagnostics &#125;</code>,
-    each a boolean.
-  </p>
-
-  <h2 id="operations">Writes</h2>
-  <table class="api-table">
-    <thead>
-      <tr><th>Method</th><th>Notes</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><code>create(&#123; id?, type?, path?, frontmatter?, body?, document? &#125;, options?)</code></td><td>The ID is minted locally and usable at once</td></tr>
-      <tr><td><code>update(ref, &#123; patch, unset, add, remove, body, bodyEdits, ifRevision &#125;, options?)</code></td><td>Pass a <code>RecordView</code> to merge field by field</td></tr>
-      <tr><td><code>replaceDocument(ref, source, options?)</code></td><td>Replace the whole Markdown source</td></tr>
-      <tr><td><code>rename(view, to, &#123; updateRefs, ifRevision &#125;)</code></td><td><code>updateRefs</code> defaults to <code>true</code></td></tr>
-      <tr><td><code>delete(ref, &#123; ifRevision &#125;)</code></td><td></td></tr>
-      <tr><td><code>preflightRename(view, to)</code>, <code>preflightDelete(ref)</code></td><td>What the change would touch</td></tr>
-      <tr><td><code>receipt(mutationId)</code>, <code>awaitReceipt(mutationId, timeoutMs?)</code></td><td>The current receipt; or wait until it leaves <code>pending</code></td></tr>
-      <tr><td><code>pendingWrites()</code></td><td>Writes still waiting</td></tr>
-      <tr><td><code>records.open(ref, &#123; autosave, timeoutMs, signal, recovery &#125;)</code></td><td>A record session lease; see <a href="/sdk/editing/">Editing records</a></td></tr>
-    </tbody>
-  </table>
-  <CodeBlock code={writeOptions} language="ts" label="WriteOptions" />
-  <p>
-    Every write resolves to a <code>Write</code>:
-    {" "}<code>state</code>, <code>receipt</code>, <code>records</code> (the
-    optimistic view), <code>mutationId</code>, <code>onReceipt(fn)</code>,
-    {" "}<code>confirmed</code> and <code>published</code> (promises).
-    {" "}<code>confirmed</code> rejects with an <code>MdbaseError</code> if the
-    write is rejected or its outcome is unknown. <code>published</code>
-    {" "}settles when a file-backed replica has written the change to disk,
-    which can be before confirmation.
-  </p>
-
-  <h2 id="connection">Status and link</h2>
-  <table class="api-table">
-    <thead>
-      <tr><th>Member</th><th>Notes</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><code>getStatus()</code>, <code>onStatus(fn)</code>, <code>status</code></td><td><code>SyncStatus</code>: <code>mode</code>, <code>confirmedThrough</code>, <code>headKnown</code>, <code>pending</code>, <code>holds</code>, <code>unresolved</code>, <code>connection</code>, <code>installing</code></td></tr>
-      <tr><td><code>summarizeStatus(status)</code></td><td><code>&#123; kind, text, pending, holds, conflicts, confirmedThrough &#125;</code></td></tr>
-      <tr><td><code>link</code>, <code>onLink(fn)</code></td><td><code>"open"</code>, <code>"reconnecting"</code> or <code>"closed"</code></td></tr>
-      <tr><td><code>hello</code></td><td>What the replica reported at connect, including the grant’s role and capabilities</td></tr>
-      <tr><td><code>close()</code></td><td>Close the client and its subscriptions</td></tr>
-    </tbody>
-  </table>
-
-  <h2 id="records">Holds and conflicts</h2>
-  <table class="api-table">
-    <thead>
-      <tr><th>Member</th><th>Notes</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><code>listHolds()</code>, <code>onHolds(fn)</code></td><td><code>Hold[]</code>: <code>id</code>, <code>path</code>, <code>reason</code>, <code>mine</code>, <code>theirs</code></td></tr>
-      <tr><td><code>resolveHold(id, how, use?)</code></td><td><code>how</code>: <code>keep_mine</code>, <code>take_theirs</code>, <code>use</code>, <code>delete</code>, <code>keep_both</code></td></tr>
-      <tr><td><code>describeHold(hold, &#123; collectionId &#125;)</code>, <code>holdNotice(holds)</code></td><td>Plain-language text and the actions that apply</td></tr>
-      <tr><td><code>listConflicts(recordId?)</code>, <code>onConflicts(fn)</code></td><td><code>ConflictEntry[]</code></td></tr>
-      <tr><td><code>resolveConflict(entry, field, value)</code>, <code>dismissConflict(entry)</code></td><td>Choose a value, or keep what the record has</td></tr>
-    </tbody>
-  </table>
-
-  <h2 id="files">Files</h2>
-  <table class="api-table">
-    <thead>
-      <tr><th>Member of <code>db.files</code></th><th>Notes</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><code>list(&#123; folder, media &#125;)</code>, <code>listPage(…)</code>, <code>get(ref)</code></td><td><code>FileView</code>: <code>id</code>, <code>path</code>, <code>size</code>, <code>digest</code>, <code>media</code>, <code>state</code></td></tr>
-      <tr><td><code>upload(path, source, &#123; onProgress, transferId, fileId, ifRevision, signal &#125;)</code></td><td><code>source</code>: <code>Uint8Array</code>, <code>ArrayBuffer</code> or <code>Blob</code></td></tr>
-      <tr><td><code>download(ref)</code>, <code>downloadStream(ref, &#123; range &#125;)</code></td><td><code>download</code> is capped at 64 MiB</td></tr>
-      <tr><td><code>move(view, to)</code>, <code>delete(ref)</code></td><td>Both take <code>ifRevision</code></td></tr>
-    </tbody>
-  </table>
-
-  <h2 id="session">createMdbase</h2>
-  <p>
-    <code>createMdbase(declaration)</code> is the entry point for web apps. Its
-    snapshot has a <code>phase</code> that says what to show; when
-    {" "}<code>phase.kind</code> is <code>"ready"</code>,
-    {" "}<code>phase.connection</code> is the open connection. Its actions
-    include <code>start</code>, <code>signIn</code>, <code>select</code>,
-    {" "}<code>forget</code>, <code>signOut</code> and <code>close</code>.
-  </p>
-  <p>
-    <code>new MdbaseConnect(declaration)</code> is the same entry under its
-    previous name. Its <code>application()</code> returns an object with
-    {" "}<code>getSnapshot</code>, <code>subscribe</code>, <code>start</code>,
-    {" "}<code>authorize</code>, <code>select</code>, <code>assess</code>,
-    {" "}<code>configure</code>, <code>clearSelection</code>,
-    {" "}<code>forget</code>, <code>setForeground</code> and
-    {" "}<code>close</code>. <code>connection(collectionId)</code> returns a
-    connection whose <code>records</code> is an <code>MdbaseClient</code>.
-    See <a href="/sdk/connect-quickstart/">Connect a browser app</a> for its
-    current status.
-  </p>
-
-  <h2 id="notifications">Other exports</h2>
-  <ul>
-    <li><code>toPlain</code>, <code>toValue</code>, <code>valueEquals</code>, <code>uuidv7</code>: values and IDs.</li>
-    <li><code>loadOrCreateClientKey</code>, <code>indexedDbKeyStorage</code>, <code>memoryKeyStorage</code>: your app’s session key.</li>
-    <li><code>isConfirmed(receipt)</code>: whether a receipt is confirmed.</li>
-    <li><code>TimersApi</code>: see <a href="/sdk/notifications/">Notifications and timers</a>.</li>
-    <li><code>@mdbase-dev/sdk/testing</code>: <code>MemoryReplica</code>, <code>createApplicationFixture</code>.</li>
-  </ul>
+  {
+    entries.map((entry) => (
+      <>
+        <h2 id={slug(entry.specifier)}>{entry.title}</h2>
+        <p>
+          <code>import &#123; … &#125; from "{entry.specifier}"</code>
+        </p>
+        {entry.featured.map((item) => (
+          <section class="api-item">
+            <h3 id={anchor(entry.specifier, item.name)}>
+              <code>{item.name}</code> <span class="api-kind">{item.kind}</span>
+            </h3>
+            {item.deprecated && (
+              <p class="api-deprecated">
+                Deprecated{typeof item.deprecated === "string" ? <>: <DocText text={item.deprecated} inline /></> : "."}
+              </p>
+            )}
+            <DocText text={item.description} />
+            {item.members ? (
+              <dl class="api-members">
+                {item.members.map((member) => (
+                  <>
+                    <dt>
+                      <code>{member.signature}</code>
+                    </dt>
+                    <dd>
+                      {member.deprecated && (
+                        <p class="api-deprecated">
+                          Deprecated{typeof member.deprecated === "string" ? <>: <DocText text={member.deprecated} inline /></> : "."}
+                        </p>
+                      )}
+                      <DocText text={member.description} />
+                    </dd>
+                  </>
+                ))}
+              </dl>
+            ) : (
+              <CodeBlock code={item.signature ?? ""} language="ts" label={item.kind} />
+            )}
+          </section>
+        ))}
+        {entry.index.length > 0 && (
+          <>
+            <h3 id={`${slug(entry.specifier)}-exports`}>
+              {entry.featured.length > 0 ? "Other exports" : "Exports"}
+            </h3>
+            <table class="api-table api-index">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Kind</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {entry.index.map((item) => (
+                  <tr>
+                    <td>
+                      <code>{item.name}</code>
+                    </td>
+                    <td>{item.kind}</td>
+                    <td>
+                      {item.deprecated ? "Deprecated. " : ""}
+                      <DocText text={item.description} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+      </>
+    ))
+  }
 
   <h2 id="errors">Errors</h2>
   <p>
-    Failures throw <code>MdbaseError</code> with <code>code</code>,
-    {" "}<code>recovery</code>, and often <code>reason</code>,
+    Failures throw <code>MdbaseError</code> with a <code>code</code>, a
+    {" "}<code>recovery</code>, and often a <code>reason</code>,
     {" "}<code>details</code>, <code>issues</code> or
-    {" "}<code>retryAfterMs</code>. Use <code>isMdbaseError(e, code?)</code>.
-    Branch on <code>code</code> and <code>reason</code>; <code>message</code>
-    {" "}is for developers. Each code has one recovery.
+    {" "}<code>retryAfterMs</code>. Check them with
+    {" "}<code>isMdbaseError(error, code?)</code>. Branch on <code>code</code>
+    {" "}and <code>reason</code>; <code>message</code> is for developers. A
+    write the collection refuses does not throw: its <code>Write</code> has
+    {" "}<code>state: "rejected"</code> and the same fields under
+    {" "}<code>receipt.problem</code>. To show a failure to a person, pass it
+    to <a href="#describe"><code>describeError()</code></a>.
   </p>
   <table class="api-table">
     <thead>
-      <tr><th>Code</th><th>Recovery</th><th>When</th></tr>
+      <tr>
+        <th>Code</th>
+        <th>Recovery</th>
+        <th>When</th>
+      </tr>
     </thead>
     <tbody>
-      <tr><td><code>invalid_request</code></td><td><code>fix_request</code></td><td>Malformed parameters, unsafe paths, an expired query cursor</td></tr>
-      <tr><td><code>invalid_record</code></td><td><code>fix_request</code></td><td>The write fails validation; see <code>issues</code></td></tr>
-      <tr><td><code>not_found</code></td><td><code>refresh</code></td><td>No such record, file, hold or transfer</td></tr>
-      <tr><td><code>conflict</code></td><td><code>resolve_conflict</code></td><td>The current state doesn’t allow this write: <code>revision</code>, <code>path_taken</code>, <code>duplicate_value</code>, …</td></tr>
-      <tr><td><code>unauthenticated</code></td><td><code>reauthorize</code></td><td>No session, an expired one, or a revoked grant</td></tr>
-      <tr><td><code>forbidden</code></td><td><code>reauthorize</code></td><td>The grant lacks the capability, or the role doesn’t allow it</td></tr>
-      <tr><td><code>collection_invalid</code></td><td><code>repair_collection</code></td><td>The collection’s config or type files can’t be loaded</td></tr>
-      <tr><td><code>unavailable</code></td><td><code>retry</code></td><td>The replica can’t be reached, for example no device online</td></tr>
-      <tr><td><code>rate_limited</code></td><td><code>retry</code></td><td>Too many requests; see <code>retryAfterMs</code></td></tr>
-      <tr><td><code>quota_exceeded</code></td><td><code>free_space</code></td><td>The collection is over its storage quota</td></tr>
-      <tr><td><code>too_large</code></td><td><code>fix_request</code></td><td>A request or file over its limit</td></tr>
-      <tr><td><code>upgrade_required</code></td><td><code>upgrade</code></td><td>This SDK version is too old for the replica or collection</td></tr>
-      <tr><td><code>outcome_unknown</code></td><td><code>resolve_outcome</code></td><td>A write’s outcome can’t be determined; read again and decide</td></tr>
-      <tr><td><code>cancelled</code></td><td><code>none</code></td><td>You cancelled the request</td></tr>
-      <tr><td><code>internal</code></td><td><code>contact_support</code></td><td>A bug; the request may be retried once</td></tr>
+      {
+        errors.map((error) => (
+          <tr>
+            <td><code>{error.code}</code></td>
+            <td><code>{error.recovery}</code></td>
+            <td>{when[error.code]}</td>
+          </tr>
+        ))
+      }
     </tbody>
   </table>
 </DocsLayout>

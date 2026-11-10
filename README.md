@@ -58,6 +58,25 @@ remain traceable to the release artifacts they document.
 The first-party contract catalog is built from the commit pinned in
 `site-sources.json`, then published as static files under `/contracts/`.
 
+## SDK guide example and API reference
+
+`examples/worklog` is the app the SDK tutorial builds. The tutorial and the
+other SDK pages import their listings from its files, so a listing cannot drift
+from code that compiles. CI installs, type-checks and builds it.
+
+```sh
+cd examples/worklog
+npm ci
+npm run dev      # http://localhost:5173, against production mdbase
+npm run build    # WORKLOG_ORIGIN=https://… sets the deployed origin
+```
+
+`/sdk/api/` is rendered from `src/data/sdk-api.json`, which
+`pnpm build:sdk-api` reads out of the type declarations of the
+`@mdbase-dev/sdk` version the example installs. After changing that version,
+run `npm install` in `examples/worklog`, then `pnpm build:sdk-api`, and commit
+both. CI fails (`pnpm check:sdk-api`) when the committed file is stale.
+
 ## Connect release updates
 
 A published Connect desktop release dispatches its immutable tag to

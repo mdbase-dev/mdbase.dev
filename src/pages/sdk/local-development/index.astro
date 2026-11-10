@@ -1,0 +1,256 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+const manifest = `{
+  "manifest_version": 1,
+  "id": "dev.example.worklog",
+  "name": "Worklog (development)",
+  "homepage": "http://localhost:5173/",
+  "redirect_uris": ["http://localhost:5173/"],
+  "requirements": {
+    "access": "full_collection",
+    "contracts": [],
+    "capabilities": {
+      "contract_version": 2,
+      "required": ["collection.read", "records.create", "records.edit"]
+    }
+  }
+}`;
+
+const entry = `import { createMdbase } from "@mdbase-dev/sdk";
+import manifest from "./mdbase-app.json"; // the development or the deployed one
+
+export const mdbase = createMdbase({
+  id: manifest.id,
+  name: manifest.name,
+  origin: new URL(manifest.homepage).origin, // "http://localhost:5173"
+  environment: "production",
+  manifest,
+});`;
+
+const validate = `npx mdbase-connect-dev validate-manifest mdbase-app.dev.json --allow-local
+npx mdbase-connect-dev validate-manifest mdbase-app.json`;
+
+const port = `import { defineConfig } from "vite";
+
+export default defineConfig({
+  server: { port: 5173, strictPort: true },
+});`;
+---
+
+<DocsLayout
+  title="Develop on localhost"
+  description="Run your app from a local development server against real mdbase accounts and collections."
+  active="local-development"
+  headings={[
+    { href: "#rule", label: "What is accepted" },
+    { href: "#manifest", label: "A development manifest" },
+    { href: "#entry", label: "Declare the app" },
+    { href: "#separate", label: "A separate application" },
+    { href: "#consent", label: "What the user sees" },
+    { href: "#redirect", label: "Redirect URIs" },
+    { href: "#server", label: "Development servers" },
+    { href: "#no-account", label: "Working with no account" },
+    { href: "#problems", label: "Common problems" }
+  ]}
+>
+  <p>
+    You develop against the same mdbase service your users use. There is no
+    development mode, sandbox key or allowlist to apply for.
+  </p>
+  <div class="callout">
+    <strong>SDK version</strong>
+    <p>
+      Use an <code>@mdbase-dev/sdk</code> release after
+      {" "}<code>0.1.0-beta.168</code>. Earlier releases refuse an
+      {" "}<code>http://localhost</code> origin and fail to load under
+      {" "}<code>vite dev</code>.
+    </p>
+  </div>
+
+  <h2 id="rule">What is accepted</h2>
+  <p>
+    Your app’s origin may be plain HTTP when it is on this computer:
+  </p>
+  <ul>
+    <li><code>http://localhost:&lt;port&gt;</code></li>
+    <li><code>http://127.0.0.1:&lt;port&gt;</code></li>
+    <li><code>http://[::1]:&lt;port&gt;</code></li>
+  </ul>
+  <p>
+    Any port works. Every other app origin must be HTTPS, including a
+    development machine reached by its LAN address or a tunnel hostname.
+  </p>
+
+  <h2 id="manifest">A development manifest</h2>
+  <p>
+    A manifest names the origin its app is served from, so keep two: the one
+    you publish, with your HTTPS homepage, and one for development whose
+    {" "}<code>homepage</code> and <code>redirect_uris</code> use the
+    development server’s origin.
+  </p>
+  <CodeBlock code={manifest} language="json" label="mdbase-app.dev.json" />
+  <p>
+    Everything else can be the same. You can keep two files, or write both
+    from one script as the <a href="/sdk/connect-quickstart/#manifest">Worklog tutorial</a>
+    {" "}does.
+  </p>
+  <p>
+    The manifest checker refuses an HTTP homepage by default, so that a
+    development manifest is caught before it ships. Pass
+    {" "}<code>--allow-local</code> for the development one:
+  </p>
+  <CodeBlock code={validate} language="sh" label="Terminal" />
+  <p>
+    The published
+    {" "}<a href="/connect/schemas/mdbase-app.v1.json">JSON Schema</a>
+    {" "}describes the deployed form, so an editor that validates against it
+    marks an HTTP homepage. The checker with <code>--allow-local</code> is the
+    authority for a development manifest.
+  </p>
+
+  <h2 id="entry">Declare the app</h2>
+  <CodeBlock code={entry} language="ts" label="mdbase.ts" />
+  <p>
+    <code>environment</code> stays <code>"production"</code>. It names the
+    mdbase service your app talks to, and that is the same one in development.
+    Only <code>origin</code> and the manifest change between development and
+    your deployed site.
+  </p>
+
+  <h2 id="separate">A separate application</h2>
+  <p>
+    mdbase identifies an app by its manifest and binds what a user approves to
+    the exact origin, port included. Your localhost build is therefore its own
+    application:
+  </p>
+  <ul>
+    <li>
+      Collections approved on <code>localhost:5173</code> are approved for
+      that origin only. Your deployed app asks its users separately.
+    </li>
+    <li>
+      Sign-in state and the on-device copy of a collection belong to the
+      origin. Changing the port starts again from signed out.
+    </li>
+    <li>
+      Give the development manifest its own <code>name</code>, such as
+      “Worklog (development)”, so the two are easy to tell apart on your
+      account page.
+    </li>
+  </ul>
+  <p>
+    The records are real. A development build that opens your own collection
+    reads and writes your own files, so use a collection made for testing.
+  </p>
+
+  <h2 id="consent">What the user sees</h2>
+  <p>
+    When a localhost app asks for access, the approval screen calls it “an
+    app running on this computer”, says its identity is unverified, and shows
+    no icon. A page on the internet cannot give itself a localhost origin, so
+    the only program that can be there is one already running on the person’s
+    machine. The screen says that plainly instead of presenting the manifest’s
+    name as a brand.
+  </p>
+  <p>
+    Account sign-in, the collection choice and the list of capabilities are
+    the same as for a deployed app.
+  </p>
+
+  <h2 id="redirect">Redirect URIs</h2>
+  <p>
+    <code>redirect_uris</code> must list at least one URL on the app’s origin.
+    A browser app needs no page there. Sign-in happens in a window that the
+    SDK opens, and the SDK learns the result itself; that window never
+    navigates to your redirect URI and no token is delivered to it. Listing
+    the homepage is enough.
+  </p>
+  <p>
+    The redirect URI is used when you pass your own sign-in opener, as a
+    native shell or browser extension does. mdbase then sends the person’s
+    browser to <code>returnUrl</code> when sign-in ends, to bring them back to
+    your app. It carries no credential, so any page or deep link of yours can
+    receive it. See <a href="/sdk/lifecycle/#opener">Sign-in outside a popup</a>.
+  </p>
+
+  <h2 id="server">Development servers</h2>
+  <p>
+    The SDK runs its engine in a Web Worker and loads WebAssembly files that
+    ship inside the package. With Vite, <code>vite dev</code> and
+    {" "}<code>vite build</code> both work with the default configuration.
+  </p>
+  <p>
+    Fix the port, since the manifest names it:
+  </p>
+  <CodeBlock code={port} language="ts" label="vite.config.ts" />
+  <p>
+    With another bundler, the requirement is that the files under the
+    package’s <code>dist/</code> are served from your own origin, beside the
+    SDK’s modules. For a page with no bundler, use the
+    {" "}<a href="/sdk/portable-apps/">browser bundle</a>.
+  </p>
+
+  <h2 id="no-account">Working with no account</h2>
+  <p>
+    Much of an app can be built before you sign in at all:
+  </p>
+  <ul>
+    <li>
+      <code>createMdbase(declaration, &#123; unsynced: true &#125;)</code>
+      {" "}opens a real collection kept in the browser. See
+      {" "}<a href="/sdk/unsynced/">Work before connecting</a>.
+    </li>
+    <li>
+      <code>MemoryReplica</code> and <code>createApplicationFixture()</code>
+      {" "}run the same client in tests. See <a href="/sdk/testing/">Testing</a>.
+    </li>
+  </ul>
+
+  <h2 id="problems">Common problems</h2>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>What you see</th>
+        <th>Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>“The app couldn’t load” as soon as the page opens</td>
+        <td>
+          The SDK release predates localhost support, or the SDK’s files are
+          not served from your origin.
+        </td>
+      </tr>
+      <tr>
+        <td>The entry refuses to start with an origin error</td>
+        <td>
+          <code>origin</code> differs from the page’s origin, or from the
+          manifest’s <code>homepage</code> origin. <code>localhost</code> and
+          {" "}<code>127.0.0.1</code> are different origins.
+        </td>
+      </tr>
+      <tr>
+        <td>Signed out after restarting the development server</td>
+        <td>The server picked another port. Set <code>strictPort</code>.</td>
+      </tr>
+      <tr>
+        <td>The checker reports <code>/homepage</code></td>
+        <td>
+          An HTTP homepage needs <code>--allow-local</code>, or
+          {" "}<code>allowLocal: true</code> when you call
+          {" "}<code>validateAppManifest()</code>.
+        </td>
+      </tr>
+      <tr>
+        <td>The sign-in window does not open</td>
+        <td>
+          <code>signIn()</code> was called after an <code>await</code>. Call
+          it directly in the click handler.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</DocsLayout>

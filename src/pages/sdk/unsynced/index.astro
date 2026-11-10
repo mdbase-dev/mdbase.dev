@@ -1,0 +1,206 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+const enable = `import { createMdbase } from "@mdbase-dev/sdk";
+import manifest from "./mdbase-app.json";
+
+export const mdbase = createMdbase(
+  { id: manifest.id, name: manifest.name, origin: location.origin, environment: "production", manifest },
+  { unsynced: true },
+);`;
+
+const render = `function render(snapshot) {
+  const { phase } = snapshot;
+  if (phase.kind === "ready" || phase.kind === "unsynced") {
+    showApp(phase.connection.records);
+    savedOnlyHere.hidden = phase.kind !== "unsynced" || !snapshot.unsyncedWork;
+  }
+}
+
+// "Connect to sync your work"
+connectButton.onclick = () => mdbase.signIn();
+
+// On a sign-in screen: "Continue without connecting"
+continueButton.onclick = () => mdbase.unsynced.open();`;
+
+const transfer = `// A collection is open (phase "ready") and snapshot.unsyncedWork is set.
+const plan = await mdbase.unsynced.planTransfer();
+
+// plan.counts: { create, present, skipped, renamed, changed }
+// plan.missingTypes: types the records use that this collection lacks
+if (plan.missingTypes.length > 0 && (await userAgreesToAddTypes(plan.missingTypes))) {
+  return bringIn(await mdbase.unsynced.planTransfer({ addTypes: true }));
+}
+await bringIn(plan);
+
+async function bringIn(plan) {
+  const result = await mdbase.unsynced.transfer(plan, {
+    onProgress: ({ done, total }) => showProgress(done, total),
+  });
+  if (result.failed.length > 0) {
+    // Plan and transfer again to retry. Nothing already done repeats.
+  }
+}`;
+
+const map = `const plan = await mdbase.unsynced.planTransfer({
+  map: (record) => {
+    if (!record.types.includes("worklog-entry")) return null; // leave it out
+    // Each record arrives with its body and complete source.
+    return { path: \`journal/\${record.path}\`, document: record.document };
+  },
+});`;
+
+const discard = `if (await confirm("Delete the work saved in this browser? This cannot be undone.")) {
+  await mdbase.unsynced.discard();
+}`;
+---
+
+<DocsLayout
+  title="Work before connecting"
+  description="Let people use your app before they sign in. Their work is kept in the browser and brought into a collection when they connect one."
+  active="unsynced"
+  headings={[
+    { href: "#what", label: "What it is" },
+    { href: "#enable", label: "Turn it on" },
+    { href: "#render", label: "Show it" },
+    { href: "#transfer", label: "Bring the work in" },
+    { href: "#map", label: "Reshape records" },
+    { href: "#discard", label: "Discard" },
+    { href: "#limits", label: "Limits" }
+  ]}
+>
+  <h2 id="what">What it is</h2>
+  <p>
+    With the <code>unsynced</code> option, a signed-out visitor gets a
+    working app straight away. The SDK opens an <strong>unsynced
+    collection</strong>: a real collection, with your types installed, stored
+    in this browser and nowhere else. Your code reads and writes it through
+    the same <code>MdbaseClient</code> as a synced one.
+  </p>
+  <p>
+    When the person later signs in and opens a collection, the work they did
+    can be brought into it.
+  </p>
+  <p>
+    The <a href="/sdk/ui/">shared UI</a> handles all of this when you pass
+    {" "}<code>unsynced</code> to <code>CollectionGate</code> and
+    {" "}<code>CollectionSwitcher</code>. The rest of this page is for apps
+    that draw it themselves.
+  </p>
+
+  <h2 id="enable">Turn it on</h2>
+  <CodeBlock code={enable} language="ts" label="mdbase.ts" />
+  <p>
+    With the option set, <code>start()</code> opens the unsynced collection
+    whenever the person is signed out and the URL names no collection. The
+    phase is <code>unsynced</code>. The types in your manifest’s
+    {" "}<a href="/sdk/manifest/#provisioning">provisions</a> are installed
+    in it automatically.
+  </p>
+
+  <h2 id="render">Show it</h2>
+  <CodeBlock code={render} language="ts" label="main.ts" />
+  <ul>
+    <li>
+      Treat <code>unsynced</code> like <code>ready</code>:
+      {" "}<code>phase.connection</code> is the same kind of connection.
+    </li>
+    <li>
+      Tell the person where their work is. Once something has been saved,
+      {" "}<code>snapshot.unsyncedWork</code> is set; show a line such as
+      “Saved only in this browser” with a way to connect.
+    </li>
+    <li>
+      The unsynced collection is never listed in
+      {" "}<code>snapshot.collections</code>.
+    </li>
+    <li>
+      A signed-in person with no collection open is in the
+      {" "}<code>choosing</code> phase as usual.
+      {" "}<code>mdbase.unsynced.open()</code> opens the unsynced collection
+      from there, or from a sign-in screen that offers “Continue without
+      connecting”.
+    </li>
+  </ul>
+
+  <h2 id="transfer">Bring the work in</h2>
+  <p>
+    After the person connects, <code>snapshot.unsyncedWork</code> stays set
+    while the collection they opened does not have the work yet. Plan the
+    transfer, show what it would do when there is something to decide, then
+    run it.
+  </p>
+  <CodeBlock code={transfer} language="ts" label="bring-in.ts" />
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Item outcome</th>
+        <th>Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>create</code></td><td>The record will be created, with the same ID.</td></tr>
+      <tr><td><code>present</code></td><td>An earlier transfer already brought it in.</td></tr>
+      <tr><td><code>skipped</code></td><td>Your <code>map</code> left it out.</td></tr>
+      <tr><td><code>changed</code></td><td>It was brought in earlier and has changed here since. The newer version is created beside the first as a copy.</td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li>
+      Planning writes nothing. A plan is safe to throw away.
+    </li>
+    <li>
+      A transfer can be interrupted by a reload or a lost connection. Plan
+      and transfer again: only what is missing is created.
+    </li>
+    <li>
+      When a path is already taken in the destination, the record goes to a
+      free path beside it; the item’s <code>renamedFrom</code> has the path
+      you asked for.
+    </li>
+    <li>
+      The destination’s own types and settings are never replaced. With
+      {" "}<code>addTypes</code>, types it lacks are added from the unsynced
+      collection.
+    </li>
+    <li>
+      When everything is in the destination, <code>result.retired</code> is
+      true and the unsynced collection starts again empty.
+    </li>
+  </ul>
+
+  <h2 id="map">Reshape records</h2>
+  <p>
+    By default each record keeps its path and its whole Markdown source. Pass
+    {" "}<code>map</code> to change where records go, or to leave some out:
+  </p>
+  <CodeBlock code={map} language="ts" label="bring-in.ts" />
+  <p>
+    The function returns a <code>CreateInput</code>, or <code>null</code> to
+    leave the record out. A record always keeps its ID; returning a different
+    {" "}<code>id</code> is refused.
+  </p>
+
+  <h2 id="discard">Discard</h2>
+  <CodeBlock code={discard} language="ts" label="discard.ts" />
+  <p>
+    Discarding erases the unsynced collection from this browser. Ask first.
+  </p>
+
+  <h2 id="limits">Limits</h2>
+  <ul>
+    <li>
+      The work is in browser storage. Clearing site data, or a browser that
+      evicts storage under pressure, removes it. Say so in your interface, and
+      offer connecting early.
+    </li>
+    <li>
+      It is per browser and per origin. It is not on the person’s other
+      devices, and a development build on another port has its own.
+    </li>
+    <li>
+      There is one unsynced collection per app in a browser.
+    </li>
+  </ul>
+</DocsLayout>
