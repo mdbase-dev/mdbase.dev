@@ -225,6 +225,17 @@ main[tabindex="-1"]:focus { outline: none; }
 }
 .trust-table th, .profile-table th, .api-table th { color: var(--ink-muted); font: 400 0.68rem/1.4 var(--sans); }
 
+/* Generated API reference: one item per exported name, its members as a list. */
+.api-item h3 code { font-size: 1em; }
+.api-kind { margin-left: 0.4rem; color: var(--ink-muted); font: 400 0.68rem/1.4 var(--sans); }
+.api-item > p, .api-members dd p, .api-index td p { margin-top: 0.4rem; color: var(--ink-soft); }
+.api-index td p:first-child { margin-top: 0; }
+.api-members { margin-top: 1rem; }
+.api-members dt { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
+.api-members dt code { font-size: 0.76rem; line-height: 1.58; }
+.api-members dd { margin: 0; font-size: 0.82rem; }
+.api-deprecated { color: var(--ink-muted); }
+
 .status { color: var(--ink-soft); font-size: 0.82rem; }
 .status::before { display: none; }
 
@@ -303,7 +314,7 @@ main[tabindex="-1"]:focus { outline: none; }
 .docs-article > p, .docs-article li { color: var(--ink-soft); }
 .docs-article ul, .docs-article ol { padding-left: 1.2rem; }
 .docs-article li + li { margin-top: 0.3rem; }
-.docs-article :not(pre) > code { padding: 0; color: var(--ink); background: transparent; border: 0; }
+.docs-article :not(pre) > code { padding: 0; color: var(--ink); background: transparent; border: 0; overflow-wrap: break-word; }
 .docs-article kbd { padding: 0.05rem 0.3rem; color: var(--ink); font: 400 0.78em/1.4 var(--mono); border: 1px solid var(--line); border-radius: 2px; white-space: nowrap; }
 .docs-toc { padding-left: 1rem; border-left: 1px solid var(--ink); }
 .docs-toc > strong { color: var(--ink); }

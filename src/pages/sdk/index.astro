@@ -19,55 +19,93 @@ export async function listOpenTasks(db: MdbaseClient) {
 
 <DocsLayout
   title="SDK overview"
-  description="@mdbase-dev/sdk is the TypeScript client for mdbase collections: reads from a local view, optimistic writes and live queries."
+  description="Build apps whose data lives in the user’s own mdbase collection. @mdbase-dev/sdk is the TypeScript client: local reads, optimistic writes, live queries and sign-in."
   active="overview"
   headings={[
+    { href: "#why", label: "Why build on mdbase" },
     { href: "#start", label: "Where to start" },
     { href: "#model", label: "How the SDK works" },
     { href: "#choose-a-surface", label: "Getting a client" },
     { href: "#application-shape", label: "Application shape" },
-    { href: "#package-map", label: "Package map" }
+    { href: "#package-map", label: "Packages" },
+    { href: "#publish", label: "Publishing an app" },
+    { href: "#status", label: "Stability" },
+    { href: "#help", label: "Getting help" }
   ]}
 >
   <p>
-    Web apps, Node scripts and editor plugins use it to read, query, watch
-    and change records and files in one collection.
+    An mdbase collection is a folder of Markdown files with typed
+    frontmatter, synced across a person’s devices. An app built with the SDK
+    reads and writes the records in a collection its user chooses.
   </p>
+
+  <h2 id="why">Why build on mdbase</h2>
+  <ul>
+    <li>
+      <strong>You run no backend.</strong> The user’s collection is your
+      app’s database. A finished app is a folder of static files: no server,
+      no database to operate and no API key to guard.
+    </li>
+    <li>
+      <strong>Sign-in, sync and offline are done.</strong> The SDK signs the
+      user in, keeps a copy of the collection on the device, saves writes
+      there at once and syncs them when it can. Edits made on two devices
+      merge field by field, and a value that loses is kept for review.
+    </li>
+    <li>
+      <strong>Users bring their data, and keep it.</strong> Records are
+      Markdown files the user owns. They can open them in mdbase’s
+      {" "}<a href="/apps/">Editor, Reader and Writer</a>, in Obsidian, or in
+      a text editor, and they still have them if they stop using your app.
+    </li>
+    <li>
+      <strong>Apps can share records.</strong> A
+      {" "}<a href="/sdk/contracts/">contract</a> names a shape of record,
+      such as a task. Two apps that use the same contract work on the same
+      records in one collection, with no integration between them.
+    </li>
+    <li>
+      <strong>Access is the user’s decision.</strong> Your app asks for the
+      capabilities in its <a href="/sdk/manifest/">manifest</a>, the user
+      approves them for one collection, and can withdraw them later. See the
+      {" "}<a href="/sdk/security/">security model</a>.
+    </li>
+  </ul>
 
   <h2 id="start">Where to start</h2>
   <div class="start-options">
     <div>
       <strong>Quickstart</strong>
       <p>
-        Run a short script against an in-memory replica. It needs no account
-        or service.
+        Run a short script against an in-memory collection. It needs no
+        account or service, and shows reads, writes and live queries.
       </p>
       <a href="/sdk/quickstart/">Run the quickstart</a>
     </div>
     <div>
-      <strong>Connect an app</strong>
+      <strong>Build an app</strong>
       <p>
-        Declare your app, sign the user in and use the collection they pick.
+        Build Worklog, a small React app, from an empty folder to a deployed
+        site: types, manifest, sign-in, live list and writes.
       </p>
-      <a href="/sdk/connect-quickstart/">Connect a browser app</a>
+      <a href="/sdk/connect-quickstart/">Follow the tutorial</a>
+    </div>
+    <div>
+      <strong>Develop on localhost</strong>
+      <p>
+        Run your app from a development server against real accounts and
+        collections.
+      </p>
+      <a href="/sdk/local-development/">Set up local development</a>
     </div>
     <div>
       <strong>The format</strong>
       <p>
-        Build tools that read and write mdbase collections directly, without
-        the SDK.
+        Build tools that read and write mdbase collections as files, with no
+        SDK.
       </p>
       <a href="/spec/">Read the specification</a>
     </div>
-  </div>
-  <div class="callout">
-    <strong>Release status</strong>
-    <p>
-      <code>@mdbase-dev/sdk</code> is in beta on
-      {" "}<a href="https://www.npmjs.com/package/@mdbase-dev/sdk">npm</a>. New
-      betas are published as Connect changes, and the API can change between
-      them, so pin an exact version in an app you ship.
-    </p>
   </div>
 
   <h2 id="model">How the SDK works</h2>
@@ -119,7 +157,7 @@ export async function listOpenTasks(db: MdbaseClient) {
         <td>
           <code>createMdbase()</code> signs the user in and hands you a
           connection. Its client is an ordinary <code>MdbaseClient</code>.
-          See <a href="/sdk/connect-quickstart/">Connect a browser app</a>.
+          See <a href="/sdk/connect-quickstart/">Build an app</a>.
         </td>
       </tr>
       <tr>
@@ -147,7 +185,41 @@ export async function listOpenTasks(db: MdbaseClient) {
   </p>
   <CodeBlock code={seam} language="ts" label="tasks.ts" />
 
-  <h2 id="package-map">Package map</h2>
+  <h2 id="package-map">Packages</h2>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Package</th>
+        <th>What it is for</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>@mdbase-dev/sdk</code></td>
+        <td>
+          The client. <code>createMdbase</code> for apps,
+          {" "}<code>connect</code> and <code>MdbaseClient</code> for
+          everything that reads and writes records.
+          {" "}<a href="/sdk/api/">API reference</a>.
+        </td>
+      </tr>
+      <tr>
+        <td><code>@mdbase-dev/ui</code></td>
+        <td>
+          The sign-in, collection picker, approval and setup screens as React
+          components. <a href="/sdk/ui/">UI components</a>.
+        </td>
+      </tr>
+      <tr>
+        <td><code>@mdbase-dev/connect-dev</code></td>
+        <td>
+          Build-time tools: the manifest checker and the type pack builder.
+          {" "}<a href="/sdk/connect-dev/">Developer kit</a>.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <p>The SDK has several entry points:</p>
   <table class="api-table">
     <thead>
       <tr>
@@ -159,17 +231,21 @@ export async function listOpenTasks(db: MdbaseClient) {
       <tr>
         <td><code>@mdbase-dev/sdk</code></td>
         <td>
-          <code>connect</code>, <code>MdbaseClient</code>,
-          {" "}<code>createMdbase</code>, errors, status helpers and connectors
+          <code>createMdbase</code>, <code>connect</code>,
+          {" "}<code>MdbaseClient</code>, errors and status helpers
         </td>
       </tr>
       <tr>
-        <td><code>@mdbase-dev/sdk/node</code></td>
-        <td>Connectors to the desktop app over local IPC or localhost</td>
+        <td><code>@mdbase-dev/sdk/describe</code></td>
+        <td><code>describeError</code>: a title, message and action for any failure</td>
       </tr>
       <tr>
         <td><code>@mdbase-dev/sdk/testing</code></td>
         <td><code>MemoryReplica</code> and test fixtures</td>
+      </tr>
+      <tr>
+        <td><code>@mdbase-dev/sdk/node</code></td>
+        <td>Connectors to the desktop app over local IPC or localhost</td>
       </tr>
       <tr>
         <td><code>@mdbase-dev/sdk/browser</code></td>
@@ -182,17 +258,70 @@ export async function listOpenTasks(db: MdbaseClient) {
         <td><code>@mdbase-dev/sdk/account</code></td>
         <td>Encryption password and recovery key set-up for Private collections</td>
       </tr>
-      <tr>
-        <td><code>@mdbase-dev/sdk/app-host</code>, <code>@mdbase-dev/sdk/app-storage</code></td>
-        <td>
-          The parts that let an app run its own replica in the browser. These
-          are for mdbase’s own apps at launch.
-        </td>
-      </tr>
     </tbody>
   </table>
   <p>
-    The package needs Node 20 or later outside the browser. It is what apps
-    use instead of the <code>@mdbase-dev/connect</code> beta.
+    The SDK needs Node 20 or later outside the browser. It is what apps use
+    instead of the <code>@mdbase-dev/connect</code> beta.
   </p>
+
+  <h2 id="publish">Publishing an app</h2>
+  <p>
+    There is no review, registration form or API key. The SDK registers your
+    manifest with mdbase the first time your app starts, and each user
+    approves the app for their own collection. To publish, deploy the built
+    files to an HTTPS origin; the
+    {" "}<a href="/sdk/connect-quickstart/#deploy">tutorial</a> ends with
+    that step.
+  </p>
+  <p>
+    The approval screen shows your app’s name and the site it is served
+    from. mdbase does not verify who publishes an app, and an application ID
+    is a label, so serve your app from an origin your users recognise.
+  </p>
+  <p>
+    The <a href="/apps/">apps page</a> lists the apps mdbase makes. There is
+    no directory of other apps yet. If you build one, write to
+    {" "}<a href="mailto:callum@mdbase.dev">callum@mdbase.dev</a>.
+  </p>
+
+  <h2 id="status">Stability</h2>
+  <p>
+    <code>@mdbase-dev/sdk</code>, <code>@mdbase-dev/ui</code> and
+    {" "}<code>@mdbase-dev/connect-dev</code> are in beta on npm.
+  </p>
+  <ul>
+    <li>
+      The API can change between betas. Pin exact versions in an app you
+      ship, and read the
+      {" "}<a href="https://github.com/mdbase-dev/mdbase-connect/releases">release notes</a>
+      {" "}before you upgrade.
+    </li>
+    <li>
+      Publishing a new beta does not change an app that is already
+      deployed; it keeps the SDK it was built with. If the service ever needs
+      a newer one, the SDK reports a problem whose action is
+      {" "}<code>update_app</code>.
+    </li>
+    <li>
+      The <a href="/spec/">collection format</a> is specified separately and
+      does not change with SDK releases. Records your app writes stay
+      readable.
+    </li>
+  </ul>
+
+  <h2 id="help">Getting help</h2>
+  <ul>
+    <li>
+      Report a bug or ask a question in
+      {" "}<a href="https://github.com/mdbase-dev/mdbase-connect/issues">GitHub issues</a>.
+    </li>
+    <li>
+      Email <a href="mailto:callum@mdbase.dev">callum@mdbase.dev</a>.
+    </li>
+    <li>
+      Report a security problem as the
+      {" "}<a href="/security/">security page</a> describes.
+    </li>
+  </ul>
 </DocsLayout>

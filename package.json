@@ -15,6 +15,8 @@
     "import:spec": "node scripts/import-spec.mjs",
     "index:site": "pagefind --site dist && node scripts/build-llms.mjs",
     "check:links": "node scripts/check-links.mjs",
+    "build:sdk-api": "node scripts/build-sdk-api.mjs",
+    "check:sdk-api": "node scripts/build-sdk-api.mjs --check",
     "check:release": "node scripts/check-connect-release.mjs",
     "check:release-order": "node scripts/check-connect-release-order.mjs",
     "test:deploy:dev": "node --test scripts/deploy-pages-dev.test.mjs",

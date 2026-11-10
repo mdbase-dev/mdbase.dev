@@ -111,10 +111,27 @@ const provision = `"provisions": {
 
   <h2 id="web">Web apps</h2>
   <p>
-    A web app declares an HTTPS <code>homepage</code> and up to ten
-    {" "}<code>redirect_uris</code> on the homepage’s origin.
+    A web app declares an HTTPS <code>homepage</code> and between one and
+    ten <code>redirect_uris</code> on the homepage’s origin.
     {" "}<code>distribution</code> may be left out; it defaults to
     {" "}<code>"web"</code>.
+  </p>
+  <p>
+    For development, the homepage and redirect URIs may instead be on
+    {" "}<code>http://localhost</code>, <code>http://127.0.0.1</code> or
+    {" "}<code>http://[::1]</code>, with any port. That manifest is a separate
+    application from your published one; see
+    {" "}<a href="/sdk/local-development/">Develop on localhost</a>.
+  </p>
+  <p>
+    A browser app that signs in through the SDK’s own window can list its
+    homepage as its one redirect URI. See
+    {" "}<a href="/sdk/local-development/#redirect">Redirect URIs</a>.
+  </p>
+  <p>
+    You do not have to write the manifest by hand.
+    {" "}<a href="/sdk/connect-dev/"><code>@mdbase-dev/connect-dev</code></a>
+    {" "}checks it and builds its type packs.
   </p>
 
   <h2 id="requirements">Requirements</h2>
@@ -198,6 +215,15 @@ const provision = `"provisions": {
     A native app can list a private-use URI scheme in
     {" "}<code>redirect_uris</code>. The scheme must match or extend the
     application ID, as in <code>dev.example.worklog://auth/mdbase/callback</code>.
+  </p>
+  <p>
+    The <code>origin</code> you give <code>createMdbase()</code> is normally
+    the manifest’s <code>homepage</code> origin. A Capacitor shell
+    ({" "}<code>capacitor://</code>) or Chrome extension
+    ({" "}<code>chrome-extension://</code>) origin must also be listed under
+    the manifest’s <code>installation_origins</code>. Firefox extension
+    origins are not accepted. These apps sign in through an opener; see
+    {" "}<a href="/sdk/lifecycle/#opener">Sign-in outside a popup</a>.
   </p>
 
   <h2 id="changes">Changing the manifest</h2>

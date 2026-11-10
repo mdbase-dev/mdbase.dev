@@ -1,0 +1,185 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+import manifestScript from "../../../../examples/worklog/scripts/write-manifest.mjs?raw";
+
+const install = `npm install --save-dev --save-exact @mdbase-dev/connect-dev`;
+
+const cli = `npx mdbase-connect-dev validate-manifest mdbase-app.json
+npx mdbase-connect-dev validate-manifest mdbase-app.dev.json --allow-local
+npx mdbase-connect-dev validate-contract contracts/example.work-item.json`;
+
+const validate = `import { formatValidationIssues, validateAppManifest } from "@mdbase-dev/connect-dev";
+
+const result = validateAppManifest(manifest, { allowLocal: false });
+if (!result.valid) {
+  // Each issue has a JSON pointer, such as /requirements/capabilities/required/2.
+  console.error(formatValidationIssues(result.issues));
+  process.exit(1);
+}`;
+
+const pack = `import { defineTypePack } from "@mdbase-dev/connect-dev";
+
+const types = defineTypePack({
+  id: "dev.example.worklog",
+  version: "1.0.0",
+  name: "Worklog",
+  resources: [
+    {
+      kind: "type",
+      mode: "seed",
+      source: "types/worklog-entry.md",
+      target: "_types/worklog-entry.md",
+      document: await readFile("mdbase/types/worklog-entry.md", "utf8"),
+    },
+  ],
+});
+
+// In the manifest:
+//   "provisions": { "type_packs": [types] }`;
+
+const contract = `import { dataContractDigest, defineDataContract } from "@mdbase-dev/connect-dev";
+
+const workItem = defineDataContract({
+  // the contract document; see Contracts and adapters
+});
+
+// The digest to put in requirements.contracts and in a type pack's provides.
+const digest = dataContractDigest(workItem);`;
+---
+
+<DocsLayout
+  title="Developer kit"
+  description="@mdbase-dev/connect-dev checks a manifest before you ship it and builds the type packs a manifest carries."
+  active="connect-dev"
+  headings={[
+    { href: "#install", label: "Install" },
+    { href: "#cli", label: "Check a manifest" },
+    { href: "#build", label: "Check it in a build" },
+    { href: "#type-packs", label: "Build a type pack" },
+    { href: "#modes", label: "Seed and managed" },
+    { href: "#contracts", label: "Contracts" },
+    { href: "#script", label: "A whole manifest script" },
+    { href: "#sandbox", label: "The sandbox" }
+  ]}
+>
+  <p>
+    A build-time package. Nothing from it runs in your app; install it as a
+    development dependency.
+  </p>
+
+  <h2 id="install">Install</h2>
+  <CodeBlock code={install} language="sh" label="Terminal" />
+
+  <h2 id="cli">Check a manifest</h2>
+  <CodeBlock code={cli} language="sh" label="Terminal" />
+  <p>
+    <code>validate-manifest</code> runs the parser mdbase uses when your app
+    registers. It exits non-zero with a list of problems, each with the path
+    of the field at fault.
+  </p>
+  <p>
+    An HTTP homepage is refused unless you pass <code>--allow-local</code>.
+    Use the flag for a <a href="/sdk/local-development/">development
+    manifest</a> and leave it off for the one you publish, so a localhost
+    address cannot reach production by mistake.
+  </p>
+
+  <h2 id="build">Check it in a build</h2>
+  <CodeBlock code={validate} language="js" label="scripts/write-manifest.mjs" />
+  <p>
+    The SDK also validates the manifest when the app starts. Checking in the
+    build moves the failure from your users’ browsers to your own terminal.
+  </p>
+
+  <h2 id="type-packs">Build a type pack</h2>
+  <p>
+    A <a href="/sdk/manifest/#provisioning">type pack</a> carries the type
+    and contract files your app adds to a collection. Inside a manifest every
+    file is pinned by a SHA-256 digest. <code>defineTypePack()</code> reads
+    the documents, computes the digests and returns the object to place under
+    {" "}<code>provisions.type_packs</code>:
+  </p>
+  <CodeBlock code={pack} language="js" label="scripts/write-manifest.mjs" />
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Resource field</th>
+        <th>Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>kind</code></td><td><code>"type"</code>, <code>"contract"</code> or <code>"schema"</code></td></tr>
+      <tr><td><code>mode</code></td><td><code>"seed"</code> or <code>"managed"</code>; see below</td></tr>
+      <tr><td><code>source</code></td><td>The file’s name inside the pack</td></tr>
+      <tr><td><code>target</code></td><td>Where it goes in the collection, such as <code>_types/worklog-entry.md</code>. Defaults to <code>source</code>.</td></tr>
+      <tr><td><code>document</code></td><td>The file’s exact text</td></tr>
+      <tr><td><code>upgradeFrom</code></td><td>Seed types only: earlier versions you shipped, oldest first, that a collection may be upgraded from</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Keep the documents as real files in your repository and read them in the
+    script. They are then reviewable in a pull request, and the manifest is a
+    build output.
+  </p>
+
+  <h2 id="modes">Seed and managed</h2>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>Mode</th>
+        <th>Who owns the file after setup</th>
+        <th>Use it for</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>seed</code></td>
+        <td>The user. Your app writes it once; later edits by the user stay.</td>
+        <td>A type people may want to extend with fields of their own</td>
+      </tr>
+      <tr>
+        <td><code>managed</code></td>
+        <td>Your app. A new version of your pack updates it.</td>
+        <td>A contract, or a type whose exact shape your app depends on</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    Adding files to a collection needs the
+    {" "}<code>definitions.manage</code> capability in your manifest, and the
+    user sees and accepts the change first. See
+    {" "}<a href="/sdk/lifecycle/#setup">Setup</a>.
+  </p>
+
+  <h2 id="contracts">Contracts</h2>
+  <p>
+    <code>defineDataContract()</code> validates a
+    {" "}<a href="/sdk/contracts/">contract</a> document as you write it, and
+    {" "}<code>dataContractDigest()</code> computes the digest a manifest
+    names it by.
+  </p>
+  <CodeBlock code={contract} language="js" label="contracts.mjs" />
+  <p>
+    <code>validate-contract</code> on the command line checks a contract file
+    the same way.
+  </p>
+
+  <h2 id="script">A whole manifest script</h2>
+  <p>
+    The Worklog example writes its development and deployed manifests from one
+    script, validating each:
+  </p>
+  <CodeBlock code={manifestScript} language="js" label="scripts/write-manifest.mjs" />
+
+  <h2 id="sandbox">The sandbox</h2>
+  <p>
+    The package also exports <code>createSandbox()</code>. It is for the
+    older <code>@mdbase-dev/connect</code> client. With
+    {" "}<code>@mdbase-dev/sdk</code>, test against
+    {" "}<code>MemoryReplica</code> and
+    {" "}<code>createApplicationFixture()</code>; see
+    {" "}<a href="/sdk/testing/">Testing</a>.
+  </p>
+</DocsLayout>

@@ -1,0 +1,204 @@
+---
+import DocsLayout from "../../../components/DocsLayout.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+
+const snapshot = `import { useSyncExternalStore } from "react";
+import { mdbase } from "./mdbase";
+
+export function useMdbase() {
+  return useSyncExternalStore(mdbase.subscribe, mdbase.getSnapshot, mdbase.getSnapshot);
+}`;
+
+const phase = `import { useEffect } from "react";
+import { mdbase } from "./mdbase";
+import { useMdbase } from "./use-mdbase";
+
+export function App() {
+  const { phase } = useMdbase();
+
+  useEffect(() => {
+    void mdbase.start();
+  }, []);
+
+  switch (phase.kind) {
+    case "ready":
+    case "unsynced":
+      return <Worklog key={phase.connection.id} db={phase.connection.records} />;
+    case "signed_out":
+      return <button onClick={() => mdbase.signIn()}>Sign in with mdbase</button>;
+    default:
+      return <Waiting phase={phase} />;
+  }
+}`;
+
+const live = `import type { MdbaseClient, Query, RecordView } from "@mdbase-dev/sdk";
+import { useEffect, useState } from "react";
+
+export function useLiveQuery(db: MdbaseClient, query: Query) {
+  const [state, setState] = useState<{ records: readonly RecordView[]; stale: boolean }>({
+    records: [],
+    stale: true,
+  });
+  // A query is plain data, so its JSON is a stable dependency.
+  const key = JSON.stringify(query);
+
+  useEffect(() => {
+    const live = db.live(JSON.parse(key) as Query);
+    const stop = live.subscribe((next) => setState({ records: next.records, stale: next.stale }));
+    return () => {
+      stop();
+      live.close();
+    };
+  }, [db, key]);
+
+  return state;
+}`;
+
+const use = `function Entries({ db }: { db: MdbaseClient }) {
+  const { records, stale } = useLiveQuery(db, {
+    types: ["worklog-entry"],
+    order_by: [{ field: "date", direction: "desc" }],
+    limit: 100,
+  });
+
+  return (
+    <ul aria-busy={stale}>
+      {records.map((entry) => (
+        <li key={entry.id}>{String(entry.frontmatter.get("summary"))}</li>
+      ))}
+    </ul>
+  );
+}`;
+
+const write = `async function complete(task: RecordView) {
+  const write = await db.update(task, { patch: { status: "done" } });
+  if (write.state === "rejected") {
+    setProblem(describeError(write.receipt.problem)?.message ?? null);
+  }
+}`;
+
+const status = `import { useMdbase } from "./use-mdbase";
+
+export function SyncStatus() {
+  const { sync } = useMdbase();
+  return sync ? <span>{sync.text}</span> : null;
+}`;
+---
+
+<DocsLayout
+  title="React"
+  description="Use the SDK from React: the snapshot as a store, a hook for live queries, and where the shared components fit."
+  active="react"
+  headings={[
+    { href: "#packages", label: "What there is" },
+    { href: "#snapshot", label: "The snapshot as a store" },
+    { href: "#live", label: "A live query hook" },
+    { href: "#writes", label: "Writes" },
+    { href: "#status", label: "Sync status" },
+    { href: "#rules", label: "Things to get right" }
+  ]}
+>
+  <h2 id="packages">What there is</h2>
+  <p>
+    The SDK has no React dependency and needs no provider. Two things make
+    it fit React directly:
+  </p>
+  <ul>
+    <li>
+      The entry from <code>createMdbase()</code> is an external store:
+      {" "}<code>subscribe</code> and <code>getSnapshot</code> have the shapes
+      {" "}<code>useSyncExternalStore</code> expects.
+    </li>
+    <li>
+      <a href="/sdk/ui/"><code>@mdbase-dev/ui</code></a> has the sign-in and
+      collection screens as components. With <code>CollectionGate</code> you
+      may not need the first hook on this page at all.
+    </li>
+  </ul>
+  <p>
+    The <a href="/sdk/connect-quickstart/">Worklog tutorial</a> is a complete
+    React app built this way.
+  </p>
+
+  <h2 id="snapshot">The snapshot as a store</h2>
+  <CodeBlock code={snapshot} language="ts" label="use-mdbase.ts" />
+  <p>
+    The snapshot is replaced only when something changes, so components
+    re-render only then. The third argument is the server snapshot: where the
+    SDK cannot run, the phase is <code>unavailable</code>, so a
+    server-rendered page gets a defined state.
+  </p>
+  <CodeBlock code={phase} language="tsx" label="App.tsx" />
+  <p>
+    Create the entry once, in a module, as the tutorial’s
+    {" "}<code>mdbase.ts</code> does. Do not create it inside a component.
+  </p>
+
+  <h2 id="live">A live query hook</h2>
+  <CodeBlock code={live} language="ts" label="use-live-query.ts" />
+  <CodeBlock code={use} language="tsx" label="Entries.tsx" />
+  <ul>
+    <li>
+      The effect’s cleanup both unsubscribes and closes the query. Closing
+      tells the collection to stop sending changes.
+    </li>
+    <li>
+      <code>stale</code> is true until the first result arrives, and again
+      while a query is reset. The previous records stay in place meanwhile, so
+      the list does not flash empty.
+    </li>
+    <li>
+      Give lists a <code>limit</code> and leave bodies out. To page, raise
+      the limit; <code>live.setQuery()</code> changes a running query without
+      a new subscription.
+    </li>
+  </ul>
+
+  <h2 id="writes">Writes</h2>
+  <p>
+    Call the client from event handlers. A write resolves when it is saved on
+    the device, and a live query already shows it, so there is no cache to
+    update and nothing to refetch.
+  </p>
+  <CodeBlock code={write} language="tsx" label="Tasks.tsx" />
+  <p>
+    For a screen where someone types into one record, use a
+    {" "}<a href="/sdk/editing/">record session</a>. It keeps the text field
+    and the record in step while other devices edit the same record.
+  </p>
+
+  <h2 id="status">Sync status</h2>
+  <CodeBlock code={status} language="tsx" label="SyncStatus.tsx" />
+  <p>
+    <code>snapshot.sync</code> is the open collection’s status as a short
+    line of text with counts, and <code>snapshot.writes</code> lists writes
+    that are still waiting or were refused. See
+    {" "}<a href="/sdk/offline-sync/">Pending writes and sync status</a>.
+  </p>
+
+  <h2 id="rules">Things to get right</h2>
+  <ul>
+    <li>
+      <strong>Key your screen on the connection.</strong>
+      {" "}<code>key=&#123;connection.id&#125;</code> resets component state
+      when the user switches collection.
+    </li>
+    <li>
+      <strong>Call sign-in from the click.</strong>
+      {" "}<code>onClick=&#123;() =&gt; mdbase.signIn()&#125;</code> works.
+      Awaiting something first loses the browser’s permission to open the
+      window.
+    </li>
+    <li>
+      <strong>Strict Mode is fine.</strong> <code>start()</code> is safe to
+      call twice, and the live query hook above cleans up after the first
+      mount.
+    </li>
+    <li>
+      <strong>Server rendering.</strong> The SDK runs in the browser.
+      Creating the entry and reading its snapshot on the server is safe; the
+      phase there is <code>unavailable</code>. Call <code>start()</code> only
+      in the browser, from an effect: on the server it rejects.
+    </li>
+  </ul>
+</DocsLayout>

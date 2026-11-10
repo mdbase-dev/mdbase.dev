@@ -1,0 +1,30 @@
+{
+  "name": "mdbase-worklog-example",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "manifest": "node scripts/write-manifest.mjs",
+    "dev": "npm run manifest -- --dev && vite",
+    "check": "npm run manifest && tsc --noEmit",
+    "build": "npm run manifest && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@lingui/core": "6.9.0",
+    "@lingui/react": "6.9.0",
+    "@mdbase-dev/i18n": "0.1.0-beta.166",
+    "@mdbase-dev/sdk": "0.1.0-beta.168",
+    "@mdbase-dev/ui": "0.1.0-beta.166",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@mdbase-dev/connect-dev": "0.1.0-beta.166",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.7"
+  }
+}

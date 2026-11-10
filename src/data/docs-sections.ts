@@ -23,24 +23,35 @@ export const docsSections: Record<DocsSectionId, DocsSection> = {
       {
         label: "Start",
         docs: [
+          { href: "/sdk/", label: "SDK overview", key: "overview" },
           { href: "/sdk/quickstart/", label: "Quickstart", key: "quickstart" },
-          { href: "/sdk/connect-quickstart/", label: "Connect a browser app", key: "connect-quickstart" },
-          { href: "/sdk/", label: "SDK overview", key: "overview" }
+          { href: "/sdk/connect-quickstart/", label: "Build an app", key: "connect-quickstart" },
+          { href: "/sdk/local-development/", label: "Develop on localhost", key: "local-development" }
         ]
       },
       {
         label: "Build",
         docs: [
-          { href: "/sdk/portable-apps/", label: "Browser bundle", key: "portable-apps" },
-          { href: "/sdk/manifest/", label: "Application manifest", key: "manifest" },
-          { href: "/sdk/contracts/", label: "Contracts and adapters", key: "contracts" },
-          { href: "/sdk/authorization/", label: "Authorization", key: "authorization" },
           { href: "/sdk/operations/", label: "Records and operations", key: "operations" },
           { href: "/sdk/editing/", label: "Editing records", key: "editing" },
-          { href: "/sdk/routing/", label: "How apps reach a collection", key: "routing" },
-          { href: "/sdk/testing/", label: "Testing", key: "testing" },
+          { href: "/sdk/lifecycle/", label: "Sign-in and collections", key: "lifecycle" },
+          { href: "/sdk/unsynced/", label: "Work before connecting", key: "unsynced" },
+          { href: "/sdk/manifest/", label: "Application manifest", key: "manifest" },
+          { href: "/sdk/authorization/", label: "Authorization", key: "authorization" },
+          { href: "/sdk/contracts/", label: "Contracts and adapters", key: "contracts" },
+          { href: "/sdk/offline-sync/", label: "Pending writes and sync status", key: "offline-sync" },
           { href: "/sdk/notifications/", label: "Notifications and timers", key: "notifications" },
-          { href: "/sdk/offline-sync/", label: "Pending writes and sync status", key: "offline-sync" }
+          { href: "/sdk/testing/", label: "Testing", key: "testing" },
+          { href: "/sdk/routing/", label: "How apps reach a collection", key: "routing" },
+          { href: "/sdk/portable-apps/", label: "Browser bundle", key: "portable-apps" }
+        ]
+      },
+      {
+        label: "Packages",
+        docs: [
+          { href: "/sdk/react/", label: "React", key: "react" },
+          { href: "/sdk/ui/", label: "UI components", key: "ui" },
+          { href: "/sdk/connect-dev/", label: "Developer kit", key: "connect-dev" }
         ]
       },
       {
