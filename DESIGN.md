@@ -53,8 +53,7 @@ semibold; body text is 17px. Reading columns use a 72ch measure.
 ## Layout
 
 The homepage has long chapters in a left reading column, a fixed canvas on the
-right, and a chapter index in the left gutter on wide screens. On narrow
-screens, the canvas moves above each chapter. Interior pages open with a
+right. On narrow screens, the canvas moves above each chapter. Interior pages open with a
 visible title and lede (`.page-intro`) under a still band of sky at the top
 right; documentation pages keep their three-column layout. Navigation, buttons,
 tables, callouts, and footer links remain visually quiet.

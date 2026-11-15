@@ -1072,10 +1072,6 @@
         chapters.forEach((chapter, chapterIndex) => {
           chapter.classList.toggle("is-active", chapterIndex === index);
         });
-        document.querySelectorAll(".chapter-index a").forEach((link, linkIndex) => {
-          if (linkIndex === index) link.setAttribute("aria-current", "step");
-          else link.removeAttribute("aria-current");
-        });
         buildScene(scene, true);
       }
 

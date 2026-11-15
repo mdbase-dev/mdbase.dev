@@ -26,7 +26,7 @@ function harness(width, height, reducedMotion = true) {
     querySelector: selector => selector === '#diagram' ? canvas : {
       getBoundingClientRect: () => ({ bottom: width <= 350 ? 137 : 107 }),
     },
-    querySelectorAll: selector => selector.includes('chapter-index') ? [] : chapters,
+    querySelectorAll: () => chapters,
     documentElement: { style: { setProperty() {} }, addEventListener() {}, scrollHeight: height * 8 },
     fonts: { ready: { then() {} } },
     addEventListener() {},
