@@ -4,11 +4,11 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="Terms"
-  description="Service terms for the mdbase.dev website and mdbase Connect open beta."
+  description="Service terms for the mdbase.dev website and mdbase Connect, including the Free and Plus plans."
 >
   <header class="page-intro">
     <h1>Terms</h1>
-    <p class="page-intro__lede">Terms for the public website and pre-release Connect services.</p>
+    <p class="page-intro__lede">Terms for the public website and the Connect service, including paid plans.</p>
   </header>
   <article class="legal">
     <h2>Open source materials</h2>
@@ -18,12 +18,68 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       conformance fixtures, examples, and documentation distributed with the
       projects.
     </p>
+    <h2>Who provides Connect</h2>
+    <p>
+      mdbase Connect is provided by MDBASE (ABN 88 767 454 765), an Australian
+      business. Contact us at
+      <a href="mailto:support@mdbase.dev">support@mdbase.dev</a>.
+    </p>
     <h2>Open beta</h2>
     <p>
       mdbase Connect is pre-release software. Availability, storage, routing,
       and account features may change before a stable release. Keep independent
       backups of important collections. Treat the open beta as a working copy
       of data. The service has no availability or data-retention guarantee.
+    </p>
+    <h2 id="plans">Plans and payment</h2>
+    <p>
+      Every account starts on the Free plan. New accounts also get extra
+      storage for their first 30 days. The Plus plan is a subscription, billed
+      monthly or yearly. The <a href="/pricing/">pricing page</a> lists each
+      plan’s price and limits. Accounts created during the beta keep their beta
+      allowance.
+    </p>
+    <p>
+      Plus is sold through Link, a Stripe service, which acts as the seller and
+      merchant of record. Link takes payment, calculates and collects any sales
+      tax, VAT or GST, and sends receipts. Link’s own terms apply to the
+      purchase. Plus renews automatically at the end of each billing period
+      until you cancel. Switching between monthly and yearly takes effect
+      immediately, with the unused part of your current period credited towards
+      the new one.
+    </p>
+    <p>
+      If a renewal payment fails, Plus continues for 7 days while you update
+      your payment method, then ends.
+    </p>
+    <h2 id="cancellation">Cancellation and plan changes</h2>
+    <p>
+      Cancel Plus at any time with <strong>Manage billing</strong> on your
+      account page, or from your Link account. Plus continues until the end of
+      the period you’ve paid for and doesn’t renew. An account with Plus that is
+      set to renew can’t be deleted until you cancel.
+    </p>
+    <p>
+      When Plus or the storage trial ends, your account returns to the Free
+      plan’s limits. Nothing is deleted. Collections and files you already have
+      stay and keep syncing. While you’re over a limit, you can’t upload new
+      files or add collections.
+    </p>
+    <h2 id="refunds">Refunds</h2>
+    <p>
+      If you ask within 14 days of a Plus payment, by emailing
+      <a href="mailto:support@mdbase.dev">support@mdbase.dev</a> or through
+      <a href="https://support.link.com/topics/sold-through-link">Link support</a>,
+      we’ll refund that payment and Plus ends. After 14 days, payments aren’t
+      refunded, except as required by law. Cancelling stops future renewals but
+      doesn’t refund the current period.
+    </p>
+    <h2>Changes to prices and these terms</h2>
+    <p>
+      We’ll email you at least 30 days before a price change applies to your
+      subscription, and before a change to these terms that affects a paid
+      plan. A price change takes effect at your next renewal after that notice.
+      If you don’t agree, cancel before then.
     </p>
     <h2>Acceptable use</h2>
     <p>
@@ -37,6 +93,12 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       Pre-release services carry no warranty to the extent permitted by law.
       Open source components retain the warranty terms in their respective
       licenses.
+    </p>
+    <h2>Consumer law</h2>
+    <p>
+      Nothing in these terms excludes, restricts or modifies any right or
+      remedy you have under the Australian Consumer Law or other consumer
+      protection law that can’t lawfully be excluded.
     </p>
   </article>
 </BaseLayout>

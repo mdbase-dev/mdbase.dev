@@ -3,7 +3,7 @@ import BrandMark from "./BrandMark.astro";
 import SiteSearch from "./SiteSearch.astro";
 
 interface Props {
-  current?: "home" | "apps" | "downloads" | "connect" | "sdk" | "runtime" | "spec";
+  current?: "home" | "apps" | "downloads" | "connect" | "pricing" | "sdk" | "runtime" | "spec";
 }
 
 const { current } = Astro.props;
@@ -13,6 +13,7 @@ const links = [
   { href: "/connect/", label: "Connect", key: "connect" },
   { href: "/downloads/", label: "Downloads", key: "downloads" },
   { href: "/apps/", label: "Apps", key: "apps" },
+  { href: "/pricing/", label: "Pricing", key: "pricing" },
   { href: "/sdk/", label: "Developers", key: "developers" }
 ] as const;
 ---
