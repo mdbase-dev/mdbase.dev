@@ -24,8 +24,8 @@ export const docsSections: Record<DocsSectionId, DocsSection> = {
         label: "Start",
         docs: [
           { href: "/sdk/", label: "SDK overview", key: "overview" },
-          { href: "/sdk/quickstart/", label: "Quickstart", key: "quickstart" },
           { href: "/sdk/connect-quickstart/", label: "Build an app", key: "connect-quickstart" },
+          { href: "/sdk/quickstart/", label: "Try the SDK in memory", key: "quickstart" },
           { href: "/sdk/local-development/", label: "Develop on localhost", key: "local-development" }
         ]
       },

@@ -8,8 +8,8 @@ interface Props {
 
 const { current } = Astro.props;
 const section = current === "sdk" || current === "runtime" || current === "spec" ? "developers" : current;
+// The wordmark is the link home, so the list starts with the product pages.
 const links = [
-  { href: "/", label: "Home", key: "home" },
   { href: "/connect/", label: "Connect", key: "connect" },
   { href: "/downloads/", label: "Downloads", key: "downloads" },
   { href: "/apps/", label: "Apps", key: "apps" },
@@ -18,13 +18,25 @@ const links = [
 ] as const;
 ---
 
-<header class="site-header" data-pagefind-ignore="all">
+<header class="site-header" data-pagefind-ignore="all" data-site-header>
   <div class="site-header__inner">
     <div class="site-header__identity">
       <a class="wordmark" href="/" aria-label="mdbase home"><BrandMark /><span>mdbase</span></a>
-      <a class="site-header__signup" href="https://connect.mdbase.dev/signup">Sign up</a>
+      <div class="site-header__tools">
+        <SiteSearch />
+        <button class="theme-toggle" type="button" aria-label="Use dark mode" title="Use dark mode" hidden>
+          <svg class="theme-toggle__icon" viewBox="0 0 16 16" aria-hidden="true">
+            <circle cx="8" cy="8" r="5.5"></circle>
+            <path d="M8 2.5a5.5 5.5 0 0 0 0 11Z"></path>
+          </svg>
+        </button>
+        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle hidden>
+          Menu
+        </button>
+        <a class="site-header__signup" href="https://connect.mdbase.dev/signup">Sign up</a>
+      </div>
     </div>
-    <nav class="site-nav" aria-label="Primary navigation">
+    <nav class="site-nav" id="site-nav" aria-label="Primary navigation">
       {
         links.map((link) => (
           <a href={link.href} aria-current={section === link.key ? "page" : undefined}>
@@ -32,13 +44,29 @@ const links = [
           </a>
         ))
       }
-      <SiteSearch />
-      <button class="theme-toggle" type="button" aria-label="Use dark mode" title="Use dark mode" hidden>
-        <svg class="theme-toggle__icon" viewBox="0 0 16 16" aria-hidden="true">
-          <circle cx="8" cy="8" r="5.5"></circle>
-          <path d="M8 2.5a5.5 5.5 0 0 0 0 11Z"></path>
-        </svg>
-      </button>
     </nav>
   </div>
 </header>
+
+<script is:inline>
+  // On narrow screens the page links fold behind a Menu button. Without
+  // scripts the button stays hidden and the links stay visible.
+  (() => {
+    const header = document.querySelector("[data-site-header]");
+    const toggle = header?.querySelector("[data-nav-toggle]");
+    if (!header || !toggle) return;
+    const setOpen = (open) => {
+      toggle.setAttribute("aria-expanded", String(open));
+      header.toggleAttribute("data-nav-open", open);
+    };
+    header.toggleAttribute("data-nav-collapsible", true);
+    toggle.hidden = false;
+    toggle.addEventListener("click", () => setOpen(toggle.getAttribute("aria-expanded") !== "true"));
+    header.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && header.hasAttribute("data-nav-open")) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+  })();
+</script>
