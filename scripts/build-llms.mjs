@@ -59,7 +59,10 @@ export function createTurndown() {
     filter: (node) => node.nodeName === "PRE" && node.firstChild?.nodeName === "CODE",
     replacement: (_content, node) => {
       const code = node.firstChild;
-      const language = (code.getAttribute("class") ?? "").match(/language-(\S+)/)?.[1] ?? "";
+      // Shiki marks the language on the <pre>; unhighlighted blocks on the <code>.
+      const language = node.getAttribute("data-language")
+        ?? (code.getAttribute("class") ?? "").match(/language-(\S+)/)?.[1]
+        ?? "";
       const text = code.textContent.replace(/\n$/, "");
       const fence = text.includes("```") ? "~~~~" : "```";
       return `\n\n${fence}${language === "text" ? "" : language}\n${text}\n${fence}\n\n`;

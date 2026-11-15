@@ -37,6 +37,14 @@ about data ownership, and repetitive card grids. Do not imply that Connect is
 the mdbase specification, that TaskNotes owns the ecosystem, or that hosted
 collections are zero-knowledge.
 
+## Language
+
+Use literal headings and ordinary sentences. State the current artifact,
+profile, security boundary, or release status directly. Avoid slogans,
+competitive framing, and language that comments on how candid or precise the
+site itself is. Avoid correlative contrast constructions such as “not X, but
+Y,” “without X,” and “rather than X.” State the relevant behavior directly.
+
 ## Design Principles
 
 - Show a real collection and its routes before making abstract claims.

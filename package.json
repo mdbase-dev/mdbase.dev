@@ -27,6 +27,7 @@
     "test": "pnpm test:spec && pnpm test:home && pnpm test:docs && pnpm test:deploy:dev && pnpm test:release-update && pnpm check:release && pnpm check && pnpm build && pnpm import:spec && pnpm index:site && pnpm check:links"
   },
   "dependencies": {
+    "@astrojs/markdown-satteri": "0.3.4",
     "@astrojs/sitemap": "^3.7.3",
     "@fontsource/atkinson-hyperlegible": "^5.3.0",
     "@fontsource/azeret-mono": "^5.3.0",

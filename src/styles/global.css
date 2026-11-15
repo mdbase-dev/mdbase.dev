@@ -210,7 +210,7 @@ main[tabindex="-1"]:focus { outline: none; }
 .plain-sequence li::before { color: var(--ink-muted); font: 400 0.72rem/1.5 var(--sans); content: counter(plain-sequence, decimal-leading-zero); }
 .plain-sequence span, .glossary-list dd { color: var(--ink-soft); }
 
-.trust-table, .profile-table, .api-table {
+.trust-table, .profile-table, .api-table, .docs-article table {
   width: 100%;
   margin-top: 1.5rem;
   border-collapse: collapse;
@@ -218,13 +218,14 @@ main[tabindex="-1"]:focus { outline: none; }
 }
 .trust-table th, .trust-table td,
 .profile-table th, .profile-table td,
-.api-table th, .api-table td {
+.api-table th, .api-table td,
+.docs-article table th, .docs-article table td {
   padding: 0.65rem 0.5rem;
   border-bottom: 1px solid var(--line);
   text-align: left;
   vertical-align: top;
 }
-.trust-table th, .profile-table th, .api-table th { color: var(--ink-soft); font: 400 0.76rem/1.4 var(--sans); }
+.trust-table th, .profile-table th, .api-table th, .docs-article table th { color: var(--ink-soft); font: 400 0.76rem/1.4 var(--sans); }
 
 /* Generated API reference: one item per exported name, its members as a list. */
 .api-item h3 code { font-size: 1em; }
@@ -263,7 +264,23 @@ main[tabindex="-1"]:focus { outline: none; }
 .code-block pre:not(.file-tree):not(.record-example) { margin: 0; border: 0; }
 .code-block code { font-size: inherit; }
 
-.callout {
+/* Shiki's css-variables theme, coloured from the shared syntax roles. */
+:root {
+  --astro-code-foreground: var(--code-ink);
+  --astro-code-background: var(--canvas);
+  --astro-code-token-keyword: var(--syntax-keyword);
+  --astro-code-token-string: var(--syntax-string);
+  --astro-code-token-string-expression: var(--syntax-string);
+  --astro-code-token-comment: var(--syntax-comment);
+  --astro-code-token-constant: var(--syntax-number);
+  --astro-code-token-link: var(--syntax-link);
+  --astro-code-token-function: var(--code-ink);
+  --astro-code-token-parameter: var(--code-ink);
+  --astro-code-token-punctuation: var(--ink-muted);
+}
+
+.callout,
+.docs-article blockquote {
   margin-block: 1.5rem;
   padding: 0 0 0 1rem;
   background: transparent !important;
@@ -272,7 +289,11 @@ main[tabindex="-1"]:focus { outline: none; }
   border-radius: 0;
 }
 .callout strong { display: block; margin-bottom: 0.3rem; }
-.callout p { color: var(--ink-soft); }
+.callout p, .docs-article blockquote p { color: var(--ink-soft); }
+/* A callout's first paragraph, when it is only bold text, is its title. */
+.docs-article blockquote > p:first-child:has(> strong:only-child) { color: var(--ink); }
+.docs-article blockquote p + p { margin-top: 0.8rem; }
+.docs-article blockquote > p:first-child:has(> strong:only-child) + p { margin-top: 0.3rem; }
 
 .start-options { display: block; margin-top: 1.25rem; border: 0; }
 .start-options > div,
@@ -309,13 +330,53 @@ main[tabindex="-1"]:focus { outline: none; }
 .docs-nav__meta strong { color: var(--ink-soft); }
 .docs-article { min-width: 0; }
 .docs-title { margin-bottom: 2rem; }
+
+/* A record's address and its two views: the rendered page and its file. */
+.record-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+.record-bar__file { display: flex; min-width: 0; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.6rem; color: var(--ink-muted); }
+.record-bar__file code { color: var(--ink-soft); font-size: 0.78rem; overflow-wrap: anywhere; }
+.record-bar__views { display: inline-flex; border: 1px solid var(--ink); }
+.record-bar__views button {
+  min-height: 1.9rem;
+  padding: 0 0.7rem;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 0;
+  font: 400 0.76rem/1 var(--sans);
+  cursor: pointer;
+}
+.record-bar__views button + button { border-left: 1px solid var(--ink); }
+.record-bar__views button:hover { color: var(--ink); }
+.record-bar__views button[aria-pressed="true"] { color: var(--canvas); background: var(--ink); }
+.record-bar__views button:focus-visible { outline-offset: 2px; }
+.record-bar + div > h1 { margin-top: 0.6rem; }
+.docs-title > div > span { display: block; margin-top: 0.6rem; color: var(--ink-soft); }
+.docs-shell [hidden] { display: none !important; }
+.record-source__note { max-width: var(--reading); color: var(--ink-muted); font-size: 0.82rem; }
+.record-source__note code { color: var(--ink-soft); }
+.record-source pre {
+  margin-block: 1rem 0;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.record-source pre code { white-space: inherit; }
 .docs-title > p { color: var(--ink-muted); }
 .docs-title h1 { margin-top: 0.4rem; }
 .docs-title > span { display: block; margin-top: 0.6rem; color: var(--ink-soft); }
 .docs-article h2 { margin-top: 2.75rem; padding: 0; border: 0; }
 .docs-article h3 { margin-top: 1.75rem; }
-.docs-article > p, .docs-article > ul, .docs-article > ol { margin-top: 0.8rem; }
-.docs-article > p, .docs-article li { color: var(--ink-soft); }
+/* The spec page puts its content in the article; DocsLayout in .docs-body. */
+:is(.docs-article, .docs-body) > :is(p, ul, ol) { margin-top: 0.8rem; }
+:is(.docs-article, .docs-body) > p, .docs-article li { color: var(--ink-soft); }
+.docs-body strong { color: var(--ink); }
 .docs-article ul, .docs-article ol { padding-left: 1.2rem; }
 .docs-article li + li { margin-top: 0.3rem; }
 .docs-article :not(pre) > code { padding: 0; color: var(--ink); background: transparent; border: 0; overflow-wrap: break-word; }
@@ -324,6 +385,15 @@ main[tabindex="-1"]:focus { outline: none; }
 .docs-toc > strong { color: var(--ink); }
 .docs-toc nav { margin-top: 0.5rem; }
 .docs-toc a { padding-block: 0.15rem; color: var(--ink-muted); font-size: 0.78rem; }
+.doc-video { margin: 1.5rem 0 2rem; }
+.doc-video figcaption { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.5rem; color: var(--ink); }
+.doc-video figcaption span { color: var(--ink-soft); font-family: var(--mono); font-size: 0.85em; }
+.doc-video video { display: block; width: 100%; height: auto; background: var(--surface); border: 1px solid var(--line); }
+.doc-video p { margin: 0.6rem 0; }
+.doc-video details { padding: 0.6rem 0; border-block: 1px solid var(--line); }
+.doc-video summary { cursor: pointer; }
+.doc-video details ol { margin-top: 0.5rem; padding-left: 1.2rem; }
+.doc-video-download { font-size: 0.85em; }
 .docs-edit { margin-top: 4rem; padding-top: 0.7rem; border-top: 1px solid var(--line); }
 .docs-edit a { color: var(--ink-muted); }
 
@@ -355,7 +425,7 @@ main[tabindex="-1"]:focus { outline: none; }
 
 @media (max-width: 42rem) {
   .site-body > main { width: calc(100% - 2rem); }
-  .trust-table, .profile-table, .api-table { display: block; overflow-x: auto; }
+  .trust-table, .profile-table, .api-table, .docs-article table { display: block; overflow-x: auto; }
   .download-option { grid-template-columns: 1fr; }
   .download-option__actions { justify-content: flex-start; }
   .plain-sequence li, .glossary-list > div { grid-template-columns: 2rem minmax(0, 1fr); }
