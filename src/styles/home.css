@@ -473,6 +473,9 @@
 /* The app screenshot keeps to the reading column. */
 .home-body .chapter .app-shot { width: min(560px, 100%); margin: 28px 0 0; }
 
+/* The explainer film uses the screenshot's window frame (AppShot styles), without the address bar. */
+.home-film video { display: block; width: 100%; height: auto; background: #fff; }
+
 /* The task's file sits just under its screenshot. */
 .home-body .record-example.home-record {
   width: min(560px, 100%);
