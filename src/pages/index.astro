@@ -9,17 +9,7 @@ import AppShot from "../components/AppShot.astro";
 >
   <div id="material" aria-hidden="true"><canvas id="atmosphere"></canvas><div id="grain"></div></div>
   <canvas id="diagram" aria-hidden="true"></canvas>
-  <nav class="chapter-index" aria-label="Sections">
-    <a href="#intro">Home</a>
-    <a href="#files">Files</a>
-    <a href="#apps">Apps</a>
-    <a href="#sync">Sync</a>
-    <a href="#anywhere">Anywhere</a>
-    <a href="#permission">Permissions</a>
-    <a href="#sharing">Sharing</a>
-    <a href="#start">Get started</a>
-    <button class="chapter-index__motion" type="button" data-motion-control>Pause motion</button>
-  </nav>
+  <button class="motion-control" type="button" data-motion-control>Pause motion</button>
 <main id="main" tabindex="-1" data-pagefind-body>
 <section id="intro" class="chapter is-active" data-scene="intro" aria-label="Introduction"><div class="chapter__inner">
 <h1 class="home-title">Structured data in ordinary Markdown files</h1>
@@ -28,7 +18,6 @@ import AppShot from "../components/AppShot.astro";
 <p class="home-status">mdbase is in beta. Keep independent backups of important collections.</p>
 <figure class="app-shot home-film">
 <div class="app-shot__window"><video controls playsinline preload="none" poster="/videos/mdbase-in-two-minutes.jpg" width="1920" height="1080" aria-label="What mdbase does, a silent film"><source src="/videos/mdbase-in-two-minutes.mp4" type="video/mp4" /></video></div>
-<figcaption>What mdbase does, in two minutes. No sound.</figcaption>
 </figure>
 </div></section>
 
