@@ -7,7 +7,7 @@
 .spec-docs .sidebar-group-label {
   margin-bottom: 0.2rem;
   color: var(--ink-muted);
-  font: 400 0.65rem/1.4 var(--mono);
+  font: 400 0.72rem/1.4 var(--mono);
 }
 .spec-docs .sidebar-link { display: block; }
 .spec-docs .num {

@@ -46,9 +46,11 @@ they read against the sky.
 ## Typography
 
 Atkinson Hyperlegible is the reading and display face. Azeret Mono is reserved
-for paths, package names, versions, operations, and structural labels. Page
-titles are large and regular (about 2.4rem); section headings are 1.3rem
-semibold; body text is 17px. Reading columns use a 72ch measure.
+for paths, package names, versions, operations, and structural labels, with
+ligatures off so code shows every character as typed. Page titles are large
+and regular (about 2.4rem); section headings are 1.3rem semibold; body text is
+17px. Paragraphs keep to about 75 characters a line (`34em`), and no text
+that carries meaning is set below 12px.
 
 ## Layout
 
@@ -57,6 +59,12 @@ right. On narrow screens, the canvas moves above each chapter. Interior pages op
 visible title and lede (`.page-intro`) under a still band of sky at the top
 right; documentation pages keep their three-column layout. Navigation, buttons,
 tables, callouts, and footer links remain visually quiet.
+
+The header is the same on every page: the wordmark (the link home), then
+Search, the theme control and a boxed "Sign up" on one row, and the five
+section links on a ruled row below. The current section is not underlined
+and carries a short bar on the lower rule. Below 28rem the section links fold behind a "Menu" button. Header
+controls keep a 44px-high target.
 
 ## Motion
 

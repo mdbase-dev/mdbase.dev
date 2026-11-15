@@ -33,6 +33,12 @@
   transform: none;
 }
 
+/* .home-body a sets link colour later in this file; keep the skip link's text readable on its dark box. */
+.home-body a.home-skip-link,
+.home-body a.home-skip-link:hover {
+  color: var(--color-canvas);
+}
+
 #diagram {
   z-index: 0;
   pointer-events: none;
@@ -325,7 +331,7 @@
   max-width: 34ch;
 }
 
-/* Filled primary actions; the header sign-up is a small button. */
+/* Filled primary actions. The header's boxed sign-up is styled in shell.css. */
 .home-body .home-action--primary {
   background: var(--color-text);
   color: var(--color-canvas);
@@ -338,15 +344,13 @@
   color: var(--color-canvas);
 }
 
-.home-body .site-header__signup {
-  border: 1px solid var(--color-text);
-  padding: .2rem .7rem;
+.home-body a.site-header__signup {
   text-decoration: none;
 }
 
-.home-body .site-header__signup:hover {
-  background: var(--color-text);
+.home-body a.site-header__signup:hover {
   color: var(--color-canvas);
+  background: var(--color-text);
 }
 
 /* Frontmatter colours match the diagram cards. */

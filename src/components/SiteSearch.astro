@@ -1,4 +1,4 @@
-<button class="site-search__open" type="button" data-search-open aria-haspopup="dialog" aria-keyshortcuts="/ Control+K Meta+K">
+<button class="site-search__open" type="button" data-search-open aria-haspopup="dialog" aria-keyshortcuts="/ Control+K Meta+K" title="Search (press /)">
   <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"></circle><path d="m10.4 10.4 3.6 3.6"></path></svg>
   <span>Search</span>
 </button>
@@ -80,9 +80,11 @@
 <style is:global>
   .site-search__open {
     display: inline-flex;
-    margin-left: auto;
+    min-width: 32px;
+    min-height: 44px;
     padding: 0;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     color: var(--color-text);
     background: transparent;

@@ -62,31 +62,51 @@ body {
 
 .site-header__identity {
   display: flex;
-  align-items: baseline;
+  margin-bottom: 12px;
+  align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
 }
 
+.site-header__tools {
+  display: flex;
+  align-items: center;
+  gap: 4px 14px;
+}
+
+/* The one boxed control in the header, on every page. */
 .site-header__signup {
+  padding: 0.2rem 0.7rem;
   color: var(--color-text);
   white-space: nowrap;
-  text-underline-offset: 0.2em;
+  border: 1px solid var(--color-text);
+  text-decoration: none;
 }
 
 .site-header__signup:hover {
-  color: var(--color-text-soft);
+  color: var(--color-canvas);
+  background: var(--color-text);
 }
 
-.site-header__signup:focus-visible {
+/* Shared focus ring for the header, footer and homepage. */
+:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 3px;
+}
+
+/* Azeret Mono joins "fi" and "fl"; code must show every character as typed. */
+code,
+pre,
+kbd,
+samp {
+  font-variant-ligatures: none;
 }
 
 .wordmark {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  margin-bottom: 18px;
   color: var(--color-text);
   font-weight: 400;
   text-decoration: none;
@@ -94,16 +114,24 @@ body {
 
 .site-nav {
   display: flex;
-  padding: 10px 0;
-  align-items: center;
+  min-height: 46px;
+  padding: 0;
+  align-items: stretch;
   flex-wrap: wrap;
   gap: 6px 22px;
   border-top: 1px solid var(--color-text);
   border-bottom: 1px solid var(--color-text);
 }
 
+.site-nav a {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .site-nav a,
-.theme-toggle {
+.theme-toggle,
+.site-nav__toggle {
   padding: 0;
   color: var(--color-text);
   background: transparent;
@@ -112,21 +140,41 @@ body {
   text-underline-offset: 0.2em;
 }
 
+/* The current section is not underlined, since it is not a way out, and
+   carries a short bar on the header's lower rule. */
 .site-nav a[aria-current="page"] {
-  font-weight: 400;
   text-decoration: none;
 }
 
+.site-nav a[aria-current="page"]::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 3px;
+  background: currentColor;
+  content: "";
+}
+
+/* Icon controls keep a 44px-high target around their small glyphs. */
 .theme-toggle {
-  width: 24px;
-  height: 24px;
+  min-width: 32px;
+  min-height: 44px;
   display: grid;
   place-items: center;
   cursor: pointer;
 }
 
-.theme-toggle[hidden] {
+.theme-toggle[hidden],
+.site-nav__toggle {
   display: none;
+}
+
+.site-nav__toggle {
+  min-height: 44px;
+  align-items: center;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .theme-toggle__icon {
@@ -213,6 +261,42 @@ body {
 
   .site-nav {
     gap: 6px 14px;
+  }
+}
+
+/* Below the width where all five links fit on one line, they fold behind Menu. */
+@media (max-width: 28rem) {
+  .site-header__tools {
+    gap: 4px 10px;
+  }
+
+  [data-nav-collapsible] .site-nav__toggle:not([hidden]) {
+    display: inline-flex;
+  }
+
+  [data-nav-collapsible]:not([data-nav-open]) .site-nav {
+    display: none;
+  }
+
+  [data-nav-collapsible]:not([data-nav-open]) .site-header__identity {
+    margin-bottom: 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--color-text);
+  }
+
+  [data-nav-collapsible] .site-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding: 4px 0;
+  }
+
+  [data-nav-collapsible] .site-nav a {
+    min-height: 44px;
+  }
+
+  [data-nav-collapsible] .site-nav a[aria-current="page"]::after {
+    bottom: 9px;
   }
 }
 

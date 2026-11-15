@@ -71,8 +71,8 @@ Open tasks: 1`;
 ---
 
 <DocsLayout
-  title="Quickstart"
-  description="Run a short script against an in-memory replica: read, watch, write and see a stale write refused."
+  title="Try the SDK in memory"
+  description="Run a short script against an in-memory replica, with no account: read, watch, write and see a stale write refused."
   active="quickstart"
   headings={[
     { href: "#prerequisites", label: "Prerequisites" },
@@ -151,8 +151,14 @@ Open tasks: 1`;
   </p>
 
   <h2 id="next">5. Next steps</h2>
+  <p>
+    To sign a user in and work with one of their collections, follow
+    {" "}<a href="/sdk/connect-quickstart/">Build an app</a>. The code that
+    reads and writes records stays the same; only the connector changes.
+  </p>
   <div class="button-row" style="margin-top: 1.5rem">
-    <a class="button button--primary" href="/sdk/operations/">Read and write records</a>
+    <a class="button button--primary" href="/sdk/connect-quickstart/">Build an app</a>
+    <a class="button" href="/sdk/operations/">Read and write records</a>
     <a class="button" href="/sdk/offline-sync/">Pending writes and sync status</a>
     <a class="button" href="/sdk/testing/">Test with MemoryReplica</a>
   </div>
