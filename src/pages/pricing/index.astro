@@ -1,0 +1,116 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Pricing"
+  description="mdbase Connect plans: Free, with a 30-day storage trial, and Plus for US$10 a month or US$96 a year."
+  current="pricing"
+>
+  <header class="page-intro">
+    <h1>Pricing</h1>
+    <p class="page-intro__lede">
+      Every Connect account starts on Free. Plus adds storage, collections and
+      people for US$10 a month or US$96 a year.
+    </p>
+    <div class="button-row">
+      <a class="button button--primary" href="https://connect.mdbase.dev/signup">Sign up</a>
+      <a class="button" href="https://connect.mdbase.dev/account">Upgrade an account</a>
+    </div>
+  </header>
+
+  <section class="content-section" aria-labelledby="plans">
+    <h2 id="plans">Plans</h2>
+    <table class="trust-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Free</th>
+          <th>Plus</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Price</td>
+          <td>Free</td>
+          <td>US$10 a month, or US$96 a year</td>
+        </tr>
+        <tr>
+          <td>Storage for uploaded files</td>
+          <td>250 MB, or 5 GB for your first 30 days</td>
+          <td>100 GB</td>
+        </tr>
+        <tr>
+          <td>Synced collections</td>
+          <td>1</td>
+          <td>10</td>
+        </tr>
+        <tr>
+          <td>Largest file</td>
+          <td>100 MB</td>
+          <td>250 MB</td>
+        </tr>
+        <tr>
+          <td>People you can share each collection with</td>
+          <td>1</td>
+          <td>5</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      Notes don’t count towards storage. Only uploaded files do, such as PDFs,
+      images and other attachments.
+    </p>
+  </section>
+
+  <section class="content-section" aria-labelledby="paying">
+    <h2 id="paying">Paying for Plus</h2>
+    <p>
+      Upgrade from your <a href="https://connect.mdbase.dev/account">account page</a>.
+      Plus is sold through Link, Stripe’s checkout service, which acts as the
+      seller. Checkout shows the price in your local currency, with any sales
+      tax, VAT or GST, before you pay. Link sends your receipts, and your card
+      statement shows <code>LINK.COM* MDBASE</code>.
+    </p>
+    <p>
+      Plus renews automatically at the end of each month or year. Cancel or
+      switch between monthly and yearly with <strong>Manage billing</strong> on
+      your account page. When you cancel, Plus continues until the end of the
+      period you’ve paid for.
+    </p>
+  </section>
+
+  <section class="content-section" aria-labelledby="ending">
+    <h2 id="ending">When Plus or the trial ends</h2>
+    <p>
+      Your account returns to Free’s limits. Nothing is deleted: your
+      collections and files stay where they are and keep syncing. If you’re over
+      a limit, you can’t upload new files or add collections until you’re back
+      under it.
+    </p>
+    <p>
+      If a renewal payment fails, Plus continues for a week while you update
+      your payment method.
+    </p>
+  </section>
+
+  <section class="content-section" aria-labelledby="refunds">
+    <h2 id="refunds">Refunds</h2>
+    <p>
+      If Plus isn’t right for you, email
+      <a href="mailto:support@mdbase.dev">support@mdbase.dev</a> within 14 days
+      of a payment and we’ll refund it. You can also ask
+      <a href="https://support.link.com/topics/sold-through-link">Link support</a>.
+      The <a href="/terms/#refunds">terms</a> have the details.
+    </p>
+  </section>
+
+  <section class="content-section" aria-labelledby="beta-accounts">
+    <h2 id="beta-accounts">Beta accounts</h2>
+    <p>
+      Accounts created during the beta keep their beta allowance. Connect is
+      still in beta, and Plus doesn’t add an availability guarantee. Keep
+      independent backups of important collections.
+    </p>
+  </section>
+</BaseLayout>
