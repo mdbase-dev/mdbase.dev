@@ -14,8 +14,10 @@ for (const file of htmlFiles) {
   for (const match of html.matchAll(/[A-Za-z)]<code|<\/code>[A-Za-z(]/g)) {
     failures.push(`${file}: inline code is joined to adjacent prose near byte ${match.index}`);
   }
-  for (const match of html.matchAll(/(?:href|src)="([^"]+)"/g)) {
-    const value = match[1];
+  // Attributes of tags only: highlighted code can show `href="…"` as text.
+  const links = [...html.matchAll(/<[a-zA-Z][^>]*>/g)]
+    .flatMap(([tag]) => [...tag.matchAll(/\s(?:href|src)="([^"]+)"/g)].map((match) => match[1]));
+  for (const value of links) {
     if (
       value.startsWith("http:")
       || value.startsWith("https:")

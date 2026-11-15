@@ -1,17 +1,22 @@
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 import { test } from "node:test";
-import { fileURLToPath } from "node:url";
 
 const root = new URL("../", import.meta.url);
 const read = (path) => readFileSync(new URL(path, root), "utf8");
 const videos = JSON.parse(read("src/data/doc-videos.json"));
 const placements = {
-  "reader-markdown": "src/pages/apps/reader/index.astro",
-  "extension-capture": "src/pages/apps/reader/extension/index.astro",
-  "reader-library": "src/pages/apps/reader/library/index.astro",
-  "writer-paper": "src/pages/apps/writer/index.astro",
-  "writer-book": "src/pages/apps/writer/chapters/index.astro"
+  "reader-markdown": "content/apps/reader/index.md",
+  "extension-capture": "content/apps/reader/extension.md",
+  "reader-library": "content/apps/reader/library.md",
+  "writer-paper": "content/apps/writer/index.md",
+  "writer-book": "content/apps/writer/chapters.md"
+};
+// A documentation address is served by a record in content/ or, for the
+// generated reference pages, by an Astro page.
+const pageSources = (href) => {
+  const path = href.replace(/^\/|\/$/g, "");
+  return [`content/${path}.md`, `content/${path}/index.md`, `src/pages/${path}/index.astro`];
 };
 
 test("The domain challenge is packaged into the Pages deployment", () => {
@@ -36,8 +41,12 @@ test("Every documentation navigation entry resolves to a site page", () => {
   assert.equal(links.filter((href) => href.startsWith("/apps/reader/")).length, 9);
   assert.equal(links.filter((href) => href.startsWith("/apps/writer/")).length, 6);
   for (const href of links) {
-    const page = new URL(`src/pages${href}index.astro`, root);
-    assert.ok(existsSync(page), `Missing navigation target: ${fileURLToPath(page)}`);
+    const sources = pageSources(href);
+    assert.equal(
+      sources.filter((path) => existsSync(new URL(path, root))).length,
+      1,
+      `Navigation target ${href} needs exactly one of: ${sources.join(", ")}`,
+    );
   }
   assert.match(sections, /meta: { label: "@mdbase-dev\/sdk"/);
 });
@@ -53,12 +62,13 @@ test("Five sample recordings have local playable files, posters and text equival
     assert.match(metadata.duration, /^\d+:\d{2}$/);
     assert.ok(metadata.width > 0 && metadata.height > 0);
     assert.ok(metadata.steps.length >= 4, `${name}: text description of the actions`);
-    assert.ok(read(placements[name]).includes(`<DocVideo name="${name}" />`));
+    assert.ok(read(placements[name]).includes(`](/videos/${name}.mp4)`), `${name}: placed in ${placements[name]}`);
   }
 });
 
-test("Video controls are opt-in and have accessible labels and descriptions", () => {
-  const component = read("src/components/DocVideo.astro");
+test("Video controls are opt-in and have accessible labels and descriptions", async () => {
+  const { videoFigure } = await import("../src/markdown/doc-records.mjs");
+  const component = videoFigure("reader-markdown");
   const attributes = component.match(/<video\s+([^>]+)>/)[1];
   assert.match(attributes, /\bcontrols\b/);
   assert.match(attributes, /\bplaysinline\b/);

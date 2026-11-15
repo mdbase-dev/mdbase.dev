@@ -1,0 +1,38 @@
+---
+// Every record in content/ is a documentation page. sdk/react.md is served at
+// /sdk/react/, and a folder's index.md at the folder's address.
+import { readFileSync } from "node:fs";
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import { Code } from "astro:components";
+import DocsLayout from "../components/DocsLayout.astro";
+
+export async function getStaticPaths() {
+  const docs = await getCollection("docs");
+  return docs.map((entry) => {
+    const recordPath = entry.filePath!.replace(/^content\//, "");
+    const route = recordPath.replace(/(^|\/)index\.md$/, "$1").replace(/\.md$/, "").replace(/\/$/, "");
+    return { params: { doc: route || undefined }, props: { entry, recordPath } };
+  });
+}
+
+interface Props {
+  entry: CollectionEntry<"docs">;
+  recordPath: string;
+}
+
+const { entry, recordPath } = Astro.props;
+const { Content, headings } = await render(entry);
+const source = readFileSync(entry.filePath!, "utf8");
+const { title, description, section } = entry.data;
+---
+
+<DocsLayout
+  section={section}
+  title={title}
+  description={description}
+  headings={headings.filter((heading) => heading.depth === 2).map((heading) => ({ href: `#${heading.slug}`, label: heading.text }))}
+  record={{ path: recordPath }}
+>
+  <Content />
+  <Code slot="source" code={source} lang="md" theme="css-variables" wrap />
+</DocsLayout>

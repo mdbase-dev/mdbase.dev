@@ -1,0 +1,7 @@
+spec_version: "0.3.0"
+name: "mdbase.dev documentation"
+description: "The SDK and app guides published on mdbase.dev, one record per page"
+settings:
+  types_folder: _types
+  record_extensions: [md]
+  validation: error

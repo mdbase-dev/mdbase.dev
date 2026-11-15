@@ -5,17 +5,25 @@ import { docsSections, type DocsSectionId } from "../data/docs-sections";
 interface Props {
   title: string;
   description: string;
-  active: string;
+  /** The navigation key of a page that is not a record; records are matched by address. */
+  active?: string;
   section?: DocsSectionId;
   headings?: Array<{ href: string; label: string }>;
+  /** Set when the page is a record in content/; the source slot holds its file. */
+  record?: { path: string };
 }
 
-const { title, description, active, section = "sdk", headings = [] } = Astro.props;
+const { title, description, active, section = "sdk", headings = [], record } = Astro.props;
 const { label, navLabel, headerCurrent, sourcePath, meta, groups: docGroups } = docsSections[section];
+const isCurrent = (doc: { href: string; key: string }) =>
+  active ? active === doc.key : Astro.url.pathname === doc.href;
+const editHref = record
+  ? `https://github.com/mdbase-dev/mdbase.dev/blob/main/content/${record.path}`
+  : `https://github.com/mdbase-dev/mdbase.dev/tree/main/${sourcePath}`;
 ---
 
 <BaseLayout title={`${title} · ${label}`} description={description} current={headerCurrent} wide>
-  <div class="docs-shell">
+  <div class="docs-shell" data-docs-shell>
     <aside class="docs-nav" data-pagefind-ignore="all">
       <details open data-docs-nav>
         <summary>{label}</summary>
@@ -26,7 +34,7 @@ const { label, navLabel, headerCurrent, sourcePath, meta, groups: docGroups } = 
                 <strong>{group.label}</strong>
                 {
                   group.docs.map((doc) => (
-                    <a href={doc.href} aria-current={active === doc.key ? "page" : undefined}>
+                    <a href={doc.href} aria-current={isCurrent(doc) ? "page" : undefined}>
                       {doc.label}
                     </a>
                   ))
@@ -43,20 +51,51 @@ const { label, navLabel, headerCurrent, sourcePath, meta, groups: docGroups } = 
     </aside>
     <article class="docs-article" data-pagefind-meta={`title:${title} · ${label}`}>
       <header class="docs-title">
-        <p>{label}</p>
-        <h1>{title}</h1>
-        <span>{description}</span>
+        {
+          record ? (
+            <div class="record-bar" data-pagefind-ignore="all">
+              <p class="record-bar__file">
+                <span>{label}</span>
+                <code>{record.path}</code>
+              </p>
+              <div class="record-bar__views" role="group" aria-label="Show this page as">
+                <button type="button" aria-pressed="true" data-record-view="page">Page</button>
+                <button type="button" aria-pressed="false" data-record-view="source">Markdown</button>
+              </div>
+            </div>
+          ) : (
+            <p>{label}</p>
+          )
+        }
+        <div data-record-page>
+          <h1>{title}</h1>
+          <span>{description}</span>
+        </div>
       </header>
-      <slot />
+      <div class="docs-body" data-record-page>
+        <slot />
+      </div>
+      {
+        record && (
+          <section class="record-source" aria-label={`Markdown source of ${title}`} data-record-source data-pagefind-ignore="all" hidden>
+            <p class="record-source__note">
+              This page is the file <code>content/{record.path}</code>, a record in the
+              site’s <a href="https://github.com/mdbase-dev/mdbase.dev/tree/main/content">documentation collection</a>.
+              Its frontmatter follows the <code>doc-page</code> type.
+            </p>
+            <slot name="source" />
+          </section>
+        )
+      }
       <footer class="docs-edit" data-pagefind-ignore="all">
-        <a href={`https://github.com/mdbase-dev/mdbase.dev/tree/main/${sourcePath}`}>
+        <a href={editHref}>
           Edit this page on GitHub
         </a>
       </footer>
     </article>
     {
       headings.length > 0 && (
-        <aside class="docs-toc" data-pagefind-ignore="all">
+        <aside class="docs-toc" data-pagefind-ignore="all" data-record-page>
           <strong>On this page</strong>
           <nav aria-label="On this page">
             {headings.map((heading) => <a href={heading.href}>{heading.label}</a>)}
@@ -72,6 +111,32 @@ const { label, navLabel, headerCurrent, sourcePath, meta, groups: docGroups } = 
       && window.matchMedia("(max-width: 68rem)").matches
     ) {
       docsNavigation.open = false;
+    }
+
+    // Page or Markdown: the same record, rendered or as its file. ?view=source
+    // opens the file, so a link can point at it.
+    const viewButtons = document.querySelectorAll("[data-record-view]");
+    if (viewButtons.length > 0) {
+      const show = (view, remember) => {
+        const source = view === "source";
+        document.querySelectorAll("[data-record-page]").forEach((part) => { part.hidden = source; });
+        document.querySelector("[data-record-source]").hidden = !source;
+        document.querySelector("[data-docs-shell]").classList.toggle("is-source", source);
+        viewButtons.forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.recordView === view));
+        });
+        if (remember) {
+          const url = new URL(window.location.href);
+          if (source) url.searchParams.set("view", "source");
+          else url.searchParams.delete("view");
+          url.hash = "";
+          history.replaceState(null, "", url);
+        }
+      };
+      viewButtons.forEach((button) => {
+        button.addEventListener("click", () => show(button.dataset.recordView, true));
+      });
+      if (new URLSearchParams(window.location.search).get("view") === "source") show("source", false);
     }
   </script>
 </BaseLayout>
