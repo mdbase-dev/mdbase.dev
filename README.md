@@ -103,7 +103,7 @@ resulting pull request triggers the ordinary protected `Site checks` workflow.
 ## Specification and contract updates
 
 The specification and contract-catalog pins follow their repositories' `main`
-branches. Every hour (and on a `pinned-source-updated` repository dispatch or a
+branches. Once a day (and on a `pinned-source-updated` repository dispatch or a
 manual run), `.github/workflows/update-pinned-sources.yml` compares both pins
 with the upstream heads. When either has moved forward, it opens one pull
 request on an `automation/sources-<spec>-<contracts>` branch that changes only

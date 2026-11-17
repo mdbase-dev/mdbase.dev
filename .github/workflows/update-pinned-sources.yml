@@ -6,7 +6,8 @@ name: Update pinned sources
 # merges it once those checks pass on its exact head.
 on:
   schedule:
-    - cron: "17 * * * *"
+    # 20:17 UTC: early morning in Melbourne.
+    - cron: "17 20 * * *"
   repository_dispatch:
     types: [pinned-source-updated]
   workflow_dispatch:
