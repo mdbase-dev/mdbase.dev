@@ -1,0 +1,118 @@
+name: Update pinned sources
+
+# Moves the specification and contract-catalog pins in site-sources.json to
+# the head of their main branches. The pull request it opens is built and
+# tested by Site checks like any other change, and merge-pinned-sources.yml
+# merges it once those checks pass on its exact head.
+on:
+  schedule:
+    - cron: "17 * * * *"
+  repository_dispatch:
+    types: [pinned-source-updated]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pinned-sources-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Open pinned source update
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out website
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Select upstream revisions
+        id: select
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          changed=false
+          for source in specification contracts; do
+            repository="$(jq -r ".$source.repository" site-sources.json)"
+            current="$(jq -r ".$source.ref" site-sources.json)"
+            head="$(git ls-remote "https://github.com/$repository.git" refs/heads/main | cut -f1)"
+            if [[ ! "$head" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "Could not read the main branch of $repository." >&2
+              exit 1
+            fi
+            if [ "$head" != "$current" ]; then
+              # A pin only moves forward along main.
+              status="$(gh api "repos/$repository/compare/$current...$head" --jq .status)"
+              if [ "$status" != "ahead" ]; then
+                echo "$repository main is $status relative to the pinned $current; not moving the pin." >&2
+                exit 1
+              fi
+              jq --arg source "$source" --arg head "$head" '.[$source].ref = $head' site-sources.json > "$RUNNER_TEMP/site-sources.json"
+              mv "$RUNNER_TEMP/site-sources.json" site-sources.json
+              changed=true
+            fi
+            echo "${source}_ref=$head" >> "$GITHUB_OUTPUT"
+          done
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+
+      - name: Create website automation token
+        if: steps.select.outputs.changed == 'true'
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.RELEASE_AUTOMATION_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_AUTOMATION_APP_PRIVATE_KEY }}
+          owner: mdbase-dev
+          repositories: mdbase.dev
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Open pull request
+        if: steps.select.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          SPEC_REF: ${{ steps.select.outputs.specification_ref }}
+          CONTRACTS_REF: ${{ steps.select.outputs.contracts_ref }}
+        run: |
+          spec="${SPEC_REF:0:12}"
+          contracts="${CONTRACTS_REF:0:12}"
+          branch="automation/sources-$spec-$contracts"
+          title="Update pinned sources to specification $spec and contracts $contracts"
+          existing="$(gh pr list --repo "$GITHUB_REPOSITORY" --state all --head "$branch" --json url,state --jq '.[0] // empty')"
+          if [ -n "$existing" ]; then
+            # Open, merged, or deliberately closed: either way this revision
+            # pair has been handled, and the next upstream commit opens anew.
+            echo "These revisions are already represented by $(jq -r .url <<<"$existing") ($(jq -r .state <<<"$existing"))."
+            exit 0
+          fi
+          if git ls-remote --exit-code --heads "https://github.com/$GITHUB_REPOSITORY.git" "$branch" >/dev/null 2>&1; then
+            echo "Remote branch $branch exists without a pull request; refusing to overwrite it." >&2
+            exit 1
+          fi
+          git switch -c "$branch"
+          git config user.name "mdbase release automation[bot]"
+          git config user.email "mdbase-release-automation[bot]@users.noreply.github.com"
+          git add site-sources.json
+          git commit -m "$title"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --set-upstream origin "$branch"
+          body="$(printf '%s\n' \
+            "Moves the published sources to the head of their main branches:" \
+            "" \
+            "- specification: [mdbase-dev/mdbase-spec@$spec](https://github.com/mdbase-dev/mdbase-spec/commit/$SPEC_REF)" \
+            "- contracts: [mdbase-dev/mdbase-contracts@$contracts](https://github.com/mdbase-dev/mdbase-contracts/commit/$CONTRACTS_REF)" \
+            "" \
+            "Site checks build and test the site at these revisions. The pull request merges itself when they pass.")"
+          url="$(gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$branch" --title "$title" --body "$body")"
+          echo "Opened $url"
+
+          # Runs are serialized and always take the newest heads, so any other
+          # open update is older and would only move the pins back.
+          gh pr list --repo "$GITHUB_REPOSITORY" --state open --json number,headRefName \
+            --jq ".[] | select(.headRefName | startswith(\"automation/sources-\")) | select(.headRefName != \"$branch\") | .number" |
+          while read -r number; do
+            gh pr close "$number" --repo "$GITHUB_REPOSITORY" --delete-branch --comment "Superseded by $url."
+          done

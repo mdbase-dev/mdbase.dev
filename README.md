@@ -100,6 +100,25 @@ The workflow uses a GitHub App configured as `RELEASE_AUTOMATION_CLIENT_ID` and
 only `contents: write` and `pull requests: write`. The App token ensures the
 resulting pull request triggers the ordinary protected `Site checks` workflow.
 
+## Specification and contract updates
+
+The specification and contract-catalog pins follow their repositories' `main`
+branches. Every hour (and on a `pinned-source-updated` repository dispatch or a
+manual run), `.github/workflows/update-pinned-sources.yml` compares both pins
+with the upstream heads. When either has moved forward, it opens one pull
+request on an `automation/sources-<spec>-<contracts>` branch that changes only
+those refs. `Site checks` builds and tests the site at the new revisions, and
+`.github/workflows/merge-pinned-sources.yml` merges the pull request when they
+pass on its exact head. The merge then deploys through the normal `main` path.
+A newer update closes an older open one. If the checks fail, the pull request
+stays open for a person to look at, and the next upstream commit opens a fresh
+one.
+
+The merge workflow acts only on a pull request opened by the release App,
+titled for the two revisions its branch names, and changing nothing in
+`site-sources.json` except those two refs. It uses the same App credentials
+as the Connect release update.
+
 ## Development deployment
 
 ```sh
