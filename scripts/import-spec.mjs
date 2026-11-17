@@ -13,6 +13,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const specDir = resolve(process.env.MDBASE_SPEC_DIR ?? join(root, "..", "mdbase-spec"));
 const source = resolve(process.env.MDBASE_SPEC_SITE_DIST ?? join(specDir, "site", "dist"));
 const destination = join(root, "dist", "spec");
+const SUPPORT_FILES = ["IMPLEMENTING.md", "REFERENCE-RUNNER.md", "QUICK-REFERENCE.md"];
 const siteOrigin = new URL(process.env.MDBASE_SITE_ORIGIN ?? "https://mdbase.dev").origin;
 
 required(join(root, "dist", "index.html"), "Build mdbase.dev before importing the specification");
@@ -29,7 +30,7 @@ writeFileSync(
   rewrite(readFileSync(join(source, "spec-v0.2.html"), "utf8"), true)
 );
 
-for (const support of ["IMPLEMENTING.md", "REFERENCE-RUNNER.md", "QUICK-REFERENCE.md"]) {
+for (const support of SUPPORT_FILES) {
   const path = join(specDir, "v0.2", support);
   if (existsSync(path)) copyFileSync(path, join(destination, "v0.2", support));
 }
@@ -64,7 +65,17 @@ function rewrite(html, archive) {
     )
     .replace(/<a href="\.\/person\.md">([^<]+)<\/a>/g, "<code>$1</code>")
     .replace(/<a href="\.\/project\.md">([^<]+)<\/a>/g, "<code>$1</code>")
-    .replace(/href="\.\/\d{2}-[^"#]+\.md#([^"]+)"/g, 'href="#$1"');
+    .replace(/href="\.\/\d{2}-[^"#]+\.md#([^"]+)"/g, 'href="#$1"')
+    // Any other repository-relative document (release records, release
+    // notes) is not published on this site, so link to it on GitHub. The
+    // archive's support guides are copied beside it below, so they stay.
+    .replace(
+      /href="\.\/([^"#]+\.md)(#[^"]*)?"/g,
+      (link, path, fragment = "") =>
+        archive && SUPPORT_FILES.includes(path)
+          ? link
+          : `href="https://github.com/mdbase-dev/mdbase-spec/blob/main/${path}${fragment}"`
+    );
   return renderSpecPage(readFileSync(shellPath, "utf8"), content, archive);
 }
 

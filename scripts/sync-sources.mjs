@@ -44,7 +44,7 @@ const runtimeSchemaSource = join(
   specDir,
   "standard-packs",
   "mdbase-runtime",
-  "0.2.0",
+  "0.2.1",
   "schemas",
 );
 const runtimeSchemaDestination = join(root, "public", "runtime", "schemas", "v0.2");

@@ -1,0 +1,92 @@
+name: Merge pinned source update
+
+# Merges only the automated pinned-source pull request, after Site checks pass
+# on its exact head. Every other pull request keeps its normal merge path.
+on:
+  workflow_run:
+    workflows: [Site checks]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pinned-sources-merge
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    name: Merge verified pinned source update
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      startsWith(github.event.workflow_run.head_branch, 'automation/sources-')
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Create website automation token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.RELEASE_AUTOMATION_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_AUTOMATION_APP_PRIVATE_KEY }}
+          owner: mdbase-dev
+          repositories: mdbase.dev
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Merge the exact checked head
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          fields=number,author,baseRefName,files,headRefOid,isCrossRepository,mergeStateStatus,state,title
+          pr="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$BRANCH" --json "$fields" --jq '.[0] // empty')"
+          if [ -z "$pr" ]; then
+            echo "No open pinned source update for $BRANCH."
+            exit 0
+          fi
+          if [ "$(jq -r .headRefOid <<<"$pr")" != "$HEAD_SHA" ]; then
+            echo "$BRANCH moved after these checks; its own Site checks run decides."
+            exit 0
+          fi
+          if [[ ! "$BRANCH" =~ ^automation/sources-([0-9a-f]{12})-([0-9a-f]{12})$ ]]; then
+            echo "Unexpected branch name $BRANCH." >&2
+            exit 1
+          fi
+          spec="${BASH_REMATCH[1]}"
+          contracts="${BASH_REMATCH[2]}"
+          jq -e --arg title "Update pinned sources to specification $spec and contracts $contracts" '
+            .author.login == "app/mdbase-dev-release-automation" and
+            .baseRefName == "main" and
+            .isCrossRepository == false and
+            .title == $title and
+            ([.files[].path] | sort) == ["site-sources.json"]
+          ' <<<"$pr" >/dev/null || {
+            echo "This pull request is not an automated pinned-source update." >&2
+            exit 1
+          }
+
+          # Only the specification and contracts pins may differ from the
+          # branch point, and they must be the revisions the branch names.
+          base="$(gh api "repos/$GITHUB_REPOSITORY/compare/main...$HEAD_SHA" --jq .merge_base_commit.sha)"
+          gh api "repos/$GITHUB_REPOSITORY/contents/site-sources.json?ref=$base" --jq .content | base64 -d > "$RUNNER_TEMP/base.json"
+          gh api "repos/$GITHUB_REPOSITORY/contents/site-sources.json?ref=$HEAD_SHA" --jq .content | base64 -d > "$RUNNER_TEMP/head.json"
+          jq -e -n --slurpfile base "$RUNNER_TEMP/base.json" --slurpfile head "$RUNNER_TEMP/head.json" \
+            --arg spec "$spec" --arg contracts "$contracts" '
+            ($base[0] | del(.specification.ref, .contracts.ref)) == ($head[0] | del(.specification.ref, .contracts.ref)) and
+            ($head[0].specification.ref | test("^[0-9a-f]{40}$") and startswith($spec)) and
+            ($head[0].contracts.ref | test("^[0-9a-f]{40}$") and startswith($contracts))
+          ' >/dev/null || {
+            echo "site-sources.json changes more than the named specification and contracts pins." >&2
+            exit 1
+          }
+
+          number="$(jq -r .number <<<"$pr")"
+          # main is strict, so a behind branch needs fresh checks on its new head.
+          if [ "$(jq -r .mergeStateStatus <<<"$pr")" = "BEHIND" ]; then
+            gh pr update-branch "$number" --repo "$GITHUB_REPOSITORY"
+            exit 0
+          fi
+          gh pr merge "$number" --repo "$GITHUB_REPOSITORY" --squash --match-head-commit "$HEAD_SHA" --delete-branch
