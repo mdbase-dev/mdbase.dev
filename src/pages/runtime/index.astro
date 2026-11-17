@@ -115,9 +115,16 @@ steps:
   <section class="content-section" aria-labelledby="standard-records">
     <h2 id="standard-records">Standard runtime records</h2>
     <p>
-      The <code>mdbase.runtime.standard@0.2.0</code> pack supplies ordinary
+      The <code>mdbase.runtime.standard@0.2.1</code> pack supplies ordinary
       mdbase types, contracts and JSON Schemas. Runtime state is made of
       records, so you can inspect it with the same tools as any other record.
+    </p>
+    <p>
+      A runtime record declares its type under the collection's configured
+      type key, like any other record: <code>type: runtime_workflow</code> by
+      default, or <code>mdbase_type: runtime_workflow</code> in a collection
+      where <code>type</code> holds data. Pack 0.2.1 (record contracts 1.1.0)
+      accepts either. Pack 0.2.0 pinned <code>type</code>, so use 0.2.1.
     </p>
     <table class="profile-table">
       <thead>
