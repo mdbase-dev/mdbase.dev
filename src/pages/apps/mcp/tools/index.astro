@@ -18,7 +18,7 @@ const groups = [
   }
 ];
 
-function behaviour(annotations: Record<string, boolean | undefined>): string {
+function behaviour(annotations: { readOnlyHint?: boolean; destructiveHint?: boolean; openWorldHint?: boolean }): string {
   if (annotations.readOnlyHint) return "Read-only";
   if (annotations.destructiveHint) return "Destructive";
   if (annotations.openWorldHint) return "Returns a browser link";
