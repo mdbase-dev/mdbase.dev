@@ -9,10 +9,16 @@ const scenes = [...homepage.matchAll(/data-scene="([^"]+)"/g)].map(match => matc
 
 // Exercise the real scene builders with a deterministic canvas/browser stub.
 // Real font metrics and screenshots are checked separately in Chromium.
-function harness(width, height, reducedMotion = true) {
+function harness(width, height, { theme = 'light', tokens = {} } = {}) {
+  const listeners = new Map();
+  const paints = { dots: new Set(), labels: new Set(), outlines: new Set() };
   const context = new Proxy({
     globalAlpha: 1,
     font: '14px sans-serif',
+    clearRect() { Object.values(paints).forEach(colors => colors.clear()); },
+    fillRect() { paints.dots.add(this.fillStyle); },
+    fillText() { paints.labels.add(this.fillStyle); },
+    stroke() { paints.outlines.add(this.strokeStyle); },
     measureText(text) {
       return { width: text.length * Number.parseFloat(this.font) * 0.5 };
     },
@@ -28,14 +34,25 @@ function harness(width, height, reducedMotion = true) {
     },
     querySelectorAll: () => chapters,
     documentElement: { style: { setProperty() {} }, addEventListener() {}, scrollHeight: height * 8 },
+    body: { append(element) { element.attached = true; } },
+    createElement: () => ({ style: {}, remove() { this.attached = false; } }),
     fonts: { ready: { then() {} } },
     addEventListener() {},
   };
   const sandbox = {
     document, innerWidth: width, innerHeight: height, devicePixelRatio: 1,
-    scrollY: 0, matchMedia: () => ({ matches: reducedMotion, addEventListener() {} }),
-    getComputedStyle: () => ({ colorScheme: 'light', getPropertyValue: () => '' }),
-    requestAnimationFrame: () => 1, cancelAnimationFrame() {}, addEventListener() {},
+    scrollY: 0, matchMedia: () => ({ matches: true, addEventListener() {} }),
+    getComputedStyle: element => ({
+      colorScheme: theme,
+      getPropertyValue: name => tokens[name] ? `light-dark(${tokens[name].join(', ')})` : '',
+      get color() {
+        assert.ok(element.attached);
+        const [, name, fallback] = /^var\((--[\w-]+), (.*)\)$/.exec(element.style.color);
+        return tokens[name]?.[theme === 'dark' ? 1 : 0] ?? fallback;
+      },
+    }),
+    requestAnimationFrame: () => 1, cancelAnimationFrame() {},
+    addEventListener: (name, callback) => listeners.set(name, callback),
     performance: { now: () => 0 },
   };
   sandbox.window = sandbox;
@@ -45,8 +62,33 @@ function harness(width, height, reducedMotion = true) {
       globalThis.fitLabel = fitNodeLabel;
       syncPalette();
       resize();`), sandbox);
+  sandbox.paints = paints;
+  sandbox.setTheme = value => {
+    theme = value;
+    listeners.get('mdbase:themechange')();
+  };
   return sandbox;
 }
+
+test('canvas paints resolved theme colors on startup and after toggling the theme', () => {
+  const app = harness(1440, 1000, { theme: 'dark', tokens: {
+    '--color-text': ['#222222', '#eeeeee'],
+    '--color-text-soft': ['#555555', '#cccccc'],
+    '--color-text-muted': ['#777777', '#aaaaaa'],
+  } });
+  assert.ok(app.paints.dots.has('#cccccc'));
+
+  app.select('collection');
+  app.setTheme('light');
+  assert.ok(app.paints.dots.has('#222222'));
+  assert.deepEqual([...app.paints.labels], ['#222222']);
+  assert.ok(app.paints.outlines.has('#777777'));
+
+  app.setTheme('dark');
+  assert.ok(app.paints.dots.has('#aaaaaa'));
+  assert.deepEqual([...app.paints.labels], ['#eeeeee']);
+  assert.ok(app.paints.outlines.has('#aaaaaa'));
+});
 
 for (const [width, height] of [[320, 640], [390, 844], [820, 1000], [821, 900], [1024, 768], [1440, 1000]]) {
   test(`all homepage scenes have bounded labels and particle targets at ${width}px`, () => {
