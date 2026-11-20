@@ -47,29 +47,29 @@
       };
 
       function syncPalette() {
-        const styles = getComputedStyle(document.documentElement);
+        const probe = document.createElement("span");
+        probe.hidden = true;
+        document.body.append(probe);
+        const styles = getComputedStyle(probe);
         const dark = styles.colorScheme === "dark";
-        palette.paper = styles.getPropertyValue("--color-surface").trim() || palette.paper;
-        palette.surface = styles.getPropertyValue("--color-surface").trim() || palette.surface;
-        palette.surfaceSubtle =
-          styles.getPropertyValue("--color-surface-subtle").trim() || palette.surfaceSubtle;
-        palette.ink = styles.getPropertyValue("--color-text").trim() || palette.ink;
-        palette.soft = styles.getPropertyValue("--color-text-soft").trim() || palette.soft;
-        palette.muted = styles.getPropertyValue("--color-text-muted").trim() || palette.muted;
-        palette.line = dark
-          ? styles.getPropertyValue("--color-text-faint").trim() || palette.muted
-          : styles.getPropertyValue("--color-text-muted").trim() || palette.muted;
-        palette.lineSoft = styles.getPropertyValue("--color-border").trim() || palette.lineSoft;
-        palette.accent = styles.getPropertyValue("--color-accent").trim() || palette.accent;
-        palette.particle = dark
-          ? styles.getPropertyValue("--color-text-muted").trim() || palette.muted
-          : styles.getPropertyValue("--color-text").trim() || palette.ink;
-        palette.particleIntro = dark
-          ? styles.getPropertyValue("--color-text-soft").trim() || palette.soft
-          : styles.getPropertyValue("--color-text").trim() || palette.ink;
-        palette.warning = styles.getPropertyValue("--color-warning-text").trim() || palette.warning;
-        palette.replica =
-          styles.getPropertyValue("--color-text-muted").trim() || palette.muted;
+        const resolveColor = (token, fallback) => {
+          probe.style.color = `var(${token}, ${fallback})`;
+          return styles.color;
+        };
+        palette.surface = resolveColor("--color-surface", palette.surface);
+        palette.paper = palette.surface;
+        palette.surfaceSubtle = resolveColor("--color-surface-subtle", palette.surfaceSubtle);
+        palette.ink = resolveColor("--color-text", palette.ink);
+        palette.soft = resolveColor("--color-text-soft", palette.soft);
+        palette.muted = resolveColor("--color-text-muted", palette.muted);
+        palette.line = dark ? resolveColor("--color-text-faint", palette.muted) : palette.muted;
+        palette.lineSoft = resolveColor("--color-border", palette.lineSoft);
+        palette.accent = resolveColor("--color-accent", palette.accent);
+        palette.particle = dark ? palette.muted : palette.ink;
+        palette.particleIntro = dark ? palette.soft : palette.ink;
+        palette.warning = resolveColor("--color-warning-text", palette.warning);
+        palette.replica = palette.muted;
+        probe.remove();
       }
 
       class Particle {
