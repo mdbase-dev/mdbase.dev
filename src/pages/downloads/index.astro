@@ -141,6 +141,8 @@ const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
       if (!system) return;
       document.querySelectorAll(`.download-option[data-platform="${system}"] .download-option__match`).forEach((note) => {
         note.hidden = false;
+        // The matching packages keep the filled button; the rest are secondary.
+        note.closest(".download-option")?.setAttribute("data-match", "");
       });
     })();
   </script>

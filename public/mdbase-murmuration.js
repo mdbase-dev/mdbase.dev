@@ -147,7 +147,7 @@
         let lines = [];
         let size = compact ? 14 : 17;
         for (; size >= (compact ? 11 : 12); size--) {
-          context.font = `${size}px "Atkinson Hyperlegible", sans-serif`;
+          context.font = `${size}px "IBM Plex Sans", sans-serif`;
           lines = [];
           let line = "";
           for (const word of label.split(" ")) {
@@ -166,7 +166,7 @@
         const maxLines = Math.max(1, Math.floor(availableHeight / lineHeight));
         const overflow = lines.length > maxLines;
         lines = lines.slice(0, maxLines);
-        context.font = `${size}px "Atkinson Hyperlegible", sans-serif`;
+        context.font = `${size}px "IBM Plex Sans", sans-serif`;
         lines = lines.map((line, index) => {
           if (context.measureText(line).width <= availableWidth
             && !(overflow && index === lines.length - 1)) return line;
@@ -922,7 +922,7 @@
         context.textBaseline = "top";
         context.fillStyle = palette.ink;
         context.globalAlpha *= 0.95;
-        context.font = `${size}px "Atkinson Hyperlegible", sans-serif`;
+        context.font = `${size}px "IBM Plex Sans", sans-serif`;
         lines.forEach((line, index) => {
           context.fillText(line, x + padding, y + padding + index * lineHeight);
         });
@@ -966,7 +966,7 @@
         context.save();
         context.fillStyle = palette.muted;
 
-        context.font = `${compact ? 14 : 17}px "Atkinson Hyperlegible", sans-serif`;
+        context.font = `${compact ? 14 : 17}px "IBM Plex Sans", sans-serif`;
         context.textAlign = "center";
         note.text.split("\n").forEach((line, index) =>
           context.fillText(line, note.x, note.y + index * (compact ? 18 : 22)));
