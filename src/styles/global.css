@@ -545,33 +545,60 @@ main[tabindex="-1"]:focus { outline: none; }
   .page-contents a:hover { color: var(--ink); }
 }
 
-/* Plans, side by side. The paid plan carries the accent. */
+/* Plans, side by side, with their limits on matching rows. The paid plan carries the accent. */
 .plan-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
-  margin-top: 1.5rem;
 }
 .plan {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 1.25rem 1.35rem 1.35rem;
+  padding: 1.4rem 1.5rem 1.5rem;
   background: var(--color-surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg, 10px);
+  box-shadow: var(--elevation-1, none);
 }
 .plan--plus { border-color: var(--color-accent); box-shadow: 0 0 0 1px var(--color-accent); }
-.plan h3 { margin: 0; font-size: 0.95rem; font-weight: 600; }
-.plan__price { margin-top: 0.5rem; color: var(--ink); font-size: 1.7rem; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
-.plan__price span { color: var(--ink-muted); font-size: 0.82rem; font-weight: 400; letter-spacing: 0; }
-.plan__terms { margin-top: 0.3rem; min-height: 1.4em; color: var(--ink-muted); font-size: 0.82rem; line-height: 1.4; }
-.plan ul { align-self: stretch; margin: 1.1rem 0 1.25rem; padding: 1rem 0 0; border-top: 1px solid var(--line); list-style: none; }
-.plan li { color: var(--ink-soft); font-size: 0.9rem; line-height: 1.45; }
-.plan li + li { margin-top: 0.55rem; }
-.plan li strong { color: var(--ink); }
-.plan li small { display: block; color: var(--ink-muted); font-size: 0.8rem; }
+.plan h2 { margin: 0; font-size: 1rem; font-weight: 600; }
+.plan__price { margin-top: 0.6rem; color: var(--ink); font-size: 2.1rem; font-weight: 600; line-height: 1.1; letter-spacing: -0.015em; }
+.plan__price span { color: var(--ink-muted); font-size: 0.9rem; font-weight: 400; letter-spacing: 0; }
+.plan__terms { margin-top: 0.45rem; min-height: 2.8em; color: var(--ink-muted); font-size: 0.84rem; line-height: 1.4; }
+.plan ul { align-self: stretch; margin: 1rem 0 1.4rem; padding: 0; list-style: none; }
+.plan li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: none;
+  padding-block: 0.7rem;
+  color: var(--ink-soft);
+  border-top: 1px solid var(--line);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+.plan li strong { flex: none; color: var(--ink); font-size: 0.95rem; }
 .plan .button { margin-top: auto; }
+.site-body > main > .pricing-intro { grid-template-columns: minmax(0, 0.62fr) minmax(0, 1fr); }
+.site-body > main > .detail-grid { max-width: none; }
+
+/* Short sections of detail, two to a row. */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3rem clamp(2rem, 5vw, 4.5rem);
+  padding-top: 3rem;
+  border-top: 1px solid var(--line);
+}
+.detail-grid > .content-section { margin: 0; }
+@media (max-width: 60rem) {
+  .site-body > main > .pricing-intro { grid-template-columns: minmax(0, 1fr); }
+  .plan-grid { max-width: 44rem; }
+  .detail-grid { grid-template-columns: minmax(0, 1fr); max-width: var(--reading); }
+}
 @media (max-width: 34rem) {
   .plan-grid { grid-template-columns: minmax(0, 1fr); }
+  .plan__terms { min-height: 0; }
 }

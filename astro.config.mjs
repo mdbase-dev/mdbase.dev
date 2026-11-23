@@ -11,6 +11,8 @@ export default defineConfig({
   // Compression drops the line break before an inline link, gluing it to the previous word.
   compressHTML: false,
   integrations: [sitemap()],
+  // Fetch a page when its link is hovered or touched, so it is ready by the click.
+  prefetch: { prefetchAll: true, defaultStrategy: "hover" },
   build: {
     format: "directory"
   },

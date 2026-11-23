@@ -6,51 +6,46 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   title="Pricing"
   description="mdbase Connect plans: Free, with a 30-day storage trial, and Plus for US$10 a month or US$96 a year."
   current="pricing"
-  contents
 >
-  <header class="page-intro">
-    <h1>Pricing</h1>
-    <p class="page-intro__lede">
-      Every Connect account starts on Free. Plus adds storage, collections and
-      people for US$10 a month or US$96 a year.
-    </p>
-  </header>
-
-  <section class="content-section" aria-labelledby="plans">
-    <h2 id="plans">Plans</h2>
+  <header class="page-intro split pricing-intro">
+    <div class="split__text">
+      <h1>Pricing</h1>
+      <p class="page-intro__lede">
+        Every Connect account starts on Free. Plus adds storage, collections and
+        people for US$10 a month or US$96 a year.
+      </p>
+      <p>
+        Notes don’t count towards storage. Only uploaded files do, such as PDFs,
+        images and other attachments.
+      </p>
+    </div>
     <div class="plan-grid">
-      <article class="plan">
-        <h3>Free</h3>
+      <article class="plan" aria-labelledby="plan-free">
+        <h2 id="plan-free">Free</h2>
         <p class="plan__price">US$0</p>
-        <p class="plan__terms">For as long as you like</p>
+        <p class="plan__terms">With 5 GB of storage for your first 30 days</p>
         <ul>
-          <li>
-            <strong>250 MB</strong> for uploaded files
-            <small>(5 GB for your first 30 days)</small>
-          </li>
-          <li><strong>1</strong> synced collection</li>
-          <li>Share each collection with <strong>1</strong> person</li>
+          <li><span>Storage for uploaded files</span> <strong>250 MB</strong></li>
+          <li><span>Synced collections</span> <strong>1</strong></li>
+          <li><span>People you can share each collection with</span> <strong>1</strong></li>
         </ul>
         <a class="button" href="https://connect.mdbase.dev/signup">Sign up</a>
       </article>
-      <article class="plan plan--plus">
-        <h3>Plus</h3>
+      <article class="plan plan--plus" aria-labelledby="plan-plus">
+        <h2 id="plan-plus">Plus</h2>
         <p class="plan__price">US$10 <span>a month</span></p>
-        <p class="plan__terms">or US$96 a year</p>
+        <p class="plan__terms">Or US$96 a year, which is US$8 a month</p>
         <ul>
-          <li><strong>100 GB</strong> for uploaded files</li>
-          <li><strong>10</strong> synced collections</li>
-          <li>Share each collection with <strong>5</strong> people</li>
+          <li><span>Storage for uploaded files</span> <strong>100 GB</strong></li>
+          <li><span>Synced collections</span> <strong>10</strong></li>
+          <li><span>People you can share each collection with</span> <strong>5</strong></li>
         </ul>
         <a class="button button--primary" href="https://connect.mdbase.dev/account">Upgrade an account</a>
       </article>
     </div>
-    <p>
-      Notes don’t count towards storage. Only uploaded files do, such as PDFs,
-      images and other attachments.
-    </p>
-  </section>
+  </header>
 
+  <div class="detail-grid">
   <section class="content-section" aria-labelledby="paying">
     <h2 id="paying">Paying for Plus</h2>
     <p>
@@ -101,4 +96,5 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       independent backups of important collections.
     </p>
   </section>
+  </div>
 </BaseLayout>

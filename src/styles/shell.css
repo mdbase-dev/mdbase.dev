@@ -106,6 +106,14 @@ body {
   background: var(--color-surface-subtle);
 }
 
+/* One page fades into the next instead of cutting, and the header holds still between them. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 160ms; }
+  ::view-transition-group(site-header) { animation-duration: 160ms; }
+  .site-header { view-transition-name: site-header; }
+}
+
 /* Shared focus ring for the header, footer and homepage. */
 :focus-visible {
   outline: var(--focus-ring);

@@ -71,7 +71,8 @@ export async function prepareDevelopmentBuild() {
     ),
     writeFile(
       resolve(projectRoot, "dist", "_headers"),
-      "/*\n  X-Robots-Tag: noindex, nofollow\n",
+      // Files under /_astro are named by their content, so they never need revalidating.
+      "/*\n  X-Robots-Tag: noindex, nofollow\n\n/_astro/*\n  Cache-Control: public, max-age=31536000, immutable\n",
     ),
   ]);
 }
