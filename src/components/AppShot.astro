@@ -3,17 +3,28 @@
 // light and dark (public/images/apps/<name>-light|dark.webp, 1600×1000 from a
 // 1120×700 window at 2×), and the frame shows the capture matching the site's
 // theme. The hidden capture is display: none, so the browser never loads it.
+// The Connect and desktop captures come from the apps' own review fixtures (a made-up
+// account), taken the same way with scripts/screenshots; see docs/app-documentation.md.
 interface Props {
-  name: "tasknotes" | "editor" | "reader" | "writer";
+  name:
+    | "tasknotes" | "editor" | "reader" | "writer"
+    | "connect-approve" | "connect-collections" | "connect-sharing"
+    | "desktop-home" | "desktop-collections";
   alt: string;
   eager?: boolean;
 }
 
+// The window bar shows a web app's address, or the desktop app's name.
 const hosts = {
   tasknotes: "app.tasknotes.dev",
   editor: "editor.mdbase.dev",
   reader: "reader.mdbase.dev",
-  writer: "writer.mdbase.dev"
+  writer: "writer.mdbase.dev",
+  "connect-approve": "connect.mdbase.dev",
+  "connect-collections": "connect.mdbase.dev",
+  "connect-sharing": "connect.mdbase.dev",
+  "desktop-home": "mdbase Connect",
+  "desktop-collections": "mdbase Connect"
 } as const;
 
 const { name, alt, eager = false } = Astro.props;
@@ -59,7 +70,7 @@ const loading = eager ? "eager" : "lazy";
     overflow: hidden;
     background: var(--color-surface, var(--color-canvas));
     border: 1px solid var(--color-border-strong, var(--color-border));
-    border-radius: 8px;
+    border-radius: var(--radius-lg, 10px);
     box-shadow: var(--app-shot-shadow);
   }
 

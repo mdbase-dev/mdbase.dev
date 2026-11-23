@@ -56,7 +56,12 @@
   };
 
   function readBase() {
-    const base = getComputedStyle(root).getPropertyValue('--color-canvas').trim();
+    // The token can be a light-dark() expression, which a canvas cannot parse, so an element resolves it.
+    const probe = document.createElement('span');
+    probe.style.cssText = 'display:none;color:var(--color-canvas)';
+    root.append(probe);
+    const base = getComputedStyle(probe).color;
+    probe.remove();
     colorContext.fillStyle = base;
     colorContext.fillRect(0, 0, 1, 1);
     baseRgb = [...colorContext.getImageData(0, 0, 1, 1).data].slice(0, 3).join(',');

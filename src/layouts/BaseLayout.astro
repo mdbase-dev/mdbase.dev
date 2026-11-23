@@ -19,11 +19,42 @@ interface Props {
   /** Leave the page out of site search, as for an archived copy of current content. */
   searchable?: boolean;
   wide?: boolean;
+  /** List the page's sections beside the text on wide screens, for long pages of prose. */
+  contents?: boolean;
 }
 
-const { title, description, current, noIndex = false, searchable = true, wide = false } = Astro.props;
+const { title, description, current, noIndex = false, searchable = true, wide = false, contents = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
+
+// The section list is built from the page's own h2s, so a page opts in with one
+// prop. Headings without an id are given one from their text.
+let body = "";
+const sections: { id: string; label: string }[] = [];
+if (contents) {
+  const seen = new Set<string>();
+  const text = (html: string) =>
+    html.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
+  body = (await Astro.slots.render("default")).replace(
+    /<h2\b([^>]*)>([\s\S]*?)<\/h2>/g,
+    (heading: string, attributes: string, inner: string) => {
+      const label = text(inner);
+      let id = attributes.match(/\bid="([^"]+)"/)?.[1];
+      if (id) {
+        seen.add(id);
+        sections.push({ id, label });
+        return heading;
+      }
+      const base = label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "section";
+      id = base;
+      for (let n = 2; seen.has(id); n += 1) id = `${base}-${n}`;
+      seen.add(id);
+      sections.push({ id, label });
+      return `<h2 id="${id}"${attributes}>${inner}</h2>`;
+    }
+  );
+}
+const showContents = sections.length > 2;
 ---
 
 <!doctype html>
@@ -52,11 +83,21 @@ const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
     {noIndex && <meta name="robots" content="noindex" />}
     <script is:inline src="/theme-bootstrap.js"></script>
   </head>
-  <body class:list={["site-body", { "site-body--wide": wide }]}>
+  <body class:list={["site-body", { "site-body--wide": wide, "site-body--contents": showContents }]}>
     <a class="skip-link" href="#main">Skip to content</a>
     <SiteHeader current={current} />
     <main id="main" tabindex="-1" data-pagefind-body={searchable && !noIndex ? "" : undefined}>
-      <slot />
+      {
+        showContents && (
+          <aside class="page-contents" data-pagefind-ignore="all">
+            <strong>On this page</strong>
+            <nav aria-label="On this page">
+              {sections.map((section) => <a href={`#${section.id}`}>{section.label}</a>)}
+            </nav>
+          </aside>
+        )
+      }
+      {contents ? <Fragment set:html={body} /> : <slot />}
     </main>
     <SiteFooter />
     <ThemeControlScript />

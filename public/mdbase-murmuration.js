@@ -39,6 +39,7 @@
         muted: "rgb(111 116 124)",
         line: "rgb(204 208 213)",
         lineSoft: "rgb(226 229 232)",
+        box: "rgb(165 170 177)",
         accent: "rgb(42 104 143)",
         particle: "rgb(25 27 31 / 0.88)",
         particleIntro: "rgb(25 27 31 / 0.88)",
@@ -64,6 +65,8 @@
         palette.muted = resolveColor("--color-text-muted", palette.muted);
         palette.line = dark ? resolveColor("--color-text-faint", palette.muted) : palette.muted;
         palette.lineSoft = resolveColor("--color-border", palette.lineSoft);
+        // Box outlines are quieter than text, like the apps' card borders.
+        palette.box = resolveColor("--color-text-faint", palette.muted);
         palette.accent = resolveColor("--color-accent", palette.accent);
         palette.particle = dark ? palette.muted : palette.ink;
         palette.particleIntro = dark ? palette.soft : palette.ink;
@@ -109,17 +112,26 @@
           };
         }
 
+        // The diagram takes the room to the right of the chapters' text column, which
+        // starts at the centred page's left edge, and may run past the page's right edge.
+        const x = textColumnRight() + 56;
         return {
-          x: width * 0.52,
+          x,
           y: height * 0.17,
-          w: width * 0.43,
+          w: Math.max(240, Math.min(width - x - 40, 760)),
           h: height * 0.68
         };
       }
 
+      function textColumnRight() {
+        const column = document.querySelector(".chapter__inner")?.getBoundingClientRect?.();
+        return column && column.width ? column.right : width * 0.48;
+      }
+
       function introBounds() {
         if (width <= 820) return diagramBounds();
-        return { x: width * 0.45, y: height * 0.08, w: width * 0.53, h: height * 0.84 };
+        const x = textColumnRight() + 16;
+        return { x, y: height * 0.08, w: Math.max(240, width - x - 24), h: height * 0.84 };
       }
 
       function rect(bounds, x, y, w, h) {
@@ -897,14 +909,16 @@
         context.fillStyle = palette.surface;
         context.strokeStyle = node.kind === "held" ? palette.warning
           : node.kind === "log" || node.kind === "accent" ? palette.accent
-          : node.kind === "boundary" ? palette.lineSoft : palette.muted;
+          : node.kind === "boundary" ? palette.lineSoft : palette.box;
         context.globalAlpha *= node.kind === "boundary" ? 0.5 : 0.94;
         context.lineWidth = 1;
         context.setLineDash(
           node.kind === "boundary" || node.kind === "replica" ? [3, 5] : []
         );
+        // The apps' card corners; older canvases fall back to square ones.
         context.beginPath();
-        context.rect(x, y, w, h);
+        if (context.roundRect) context.roundRect(x, y, w, h, node.kind === "boundary" ? 10 : 8);
+        else context.rect(x, y, w, h);
         context.fill();
         context.stroke();
         context.setLineDash([]);

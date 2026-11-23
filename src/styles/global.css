@@ -1,10 +1,11 @@
 :root {
   --canvas: var(--color-canvas);
   --surface: var(--color-surface-subtle);
-  --code: var(--color-surface-subtle);
+  --code: var(--color-surface);
   --code-ink: var(--color-text);
   --ink: var(--color-text);
-  --ink-soft: var(--color-text-soft);
+  /* Running text takes the apps' note colour; muted is for labels and metadata. */
+  --ink-soft: var(--color-editor-text);
   --ink-muted: var(--color-text-muted);
   --line: var(--color-border);
   --line-strong: var(--color-border-strong);
@@ -15,8 +16,7 @@
   --danger: var(--color-danger);
   --on-blue: var(--color-on-accent);
   --scrim: var(--color-scrim);
-  --page: 760px;
-  --reading: 660px;
+  --reading: 640px;
   /* The apps' corners: controls, content blocks, dialogs. */
   --radius: var(--radius-md);
 }
@@ -49,10 +49,14 @@ body {
   line-height: 1.5;
 }
 
+/* Main spans the page. Its children keep to the reading column unless they break out
+   to the full width: documentation, and sections that set text beside a screenshot. */
 .site-body > main {
-  width: min(calc(100% - 48px), var(--reading));
-  margin: 64px 0 0 var(--site-left);
+  width: min(calc(100% - 48px), var(--page-max));
+  margin: 56px 0 0 var(--site-left);
 }
+.site-body > main > * { max-width: var(--reading); }
+.site-body > main > :is(.docs-shell, .split, .catalogue-section) { max-width: none; }
 
 ::selection { color: var(--ink); background: var(--color-accent-soft); }
 
@@ -103,8 +107,8 @@ h3 {
   font-weight: 600;
 }
 
-/* About 75 characters a line in IBM Plex Sans. */
-p, li { max-width: min(var(--reading), 34em); }
+/* About 75 characters a line in IBM Plex Sans; text, code and tables share one right edge. */
+p, li { max-width: var(--reading); }
 code, pre, .mono { font-family: var(--mono); }
 code { font-size: 0.86em; }
 
@@ -296,6 +300,7 @@ main[tabindex="-1"]:focus { outline: none; }
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
+  max-width: var(--reading);
 }
 .callout strong { display: block; margin-bottom: 0.3rem; }
 .callout p, .docs-article blockquote p { color: var(--ink-soft); }
@@ -325,9 +330,8 @@ main[tabindex="-1"]:focus { outline: none; }
 
 .docs-shell {
   display: grid;
-  width: min(calc(100vw - var(--site-left) - 24px), var(--shell-width));
-  grid-template-columns: 180px minmax(0, 660px) minmax(112px, 1fr);
-  gap: 32px;
+  grid-template-columns: 190px minmax(0, var(--reading)) minmax(112px, 1fr);
+  gap: 40px;
 }
 .docs-nav, .docs-toc { position: sticky; top: 2rem; align-self: start; max-height: calc(100vh - 4rem); overflow: auto; }
 /* Room on the left for the rows' fill, which overhangs the text by its padding. */
@@ -432,7 +436,7 @@ main[tabindex="-1"]:focus { outline: none; }
 .catalogue-status::before { display: none !important; }
 
 @media (max-width: 68rem) {
-  .docs-shell { display: block; width: min(calc(100vw - var(--site-left) - 1rem), var(--reading)); }
+  .docs-shell { display: block; max-width: var(--reading); }
   .docs-nav { position: static; max-height: none; margin-left: 0; margin-bottom: 3rem; padding: 0.7rem 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
   .docs-nav nav a:hover { background: var(--color-selected); }
   .docs-nav details:not([open]) nav { display: none; }
@@ -442,7 +446,7 @@ main[tabindex="-1"]:focus { outline: none; }
 }
 
 @media (max-width: 42rem) {
-  .site-body > main { width: calc(100% - 2rem); }
+  .site-body > main { width: calc(100% - 32px); }
   .trust-table, .profile-table, .api-table, .docs-article table { display: block; overflow-x: auto; }
   .download-option { grid-template-columns: 1fr; }
   .download-option__actions { justify-content: flex-start; }
@@ -468,6 +472,8 @@ main[tabindex="-1"]:focus { outline: none; }
   padding-top: 1.5rem;
 }
 
+.page-intro .button-row { margin-top: 1.25rem; }
+
 .page-intro__lede {
   margin-top: 1rem;
   color: var(--ink-soft);
@@ -486,4 +492,86 @@ main[tabindex="-1"]:focus { outline: none; }
   color: var(--ink-muted);
   font-size: 0.82rem;
   content: "Show pages ▾";
+}
+
+/* Text beside a screenshot: the product pages' way of using the page's full width. */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 0.74fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4.5rem);
+}
+.split > .split__text > * + * { margin-top: 0.8rem; }
+.split > .split__text > h2 + * { margin-top: 0.8rem; }
+.split > .split__text > p { color: var(--ink-soft); }
+.split .app-shot { margin: 0; }
+.split > pre { margin: 0; }
+.page-intro.split { max-width: none; margin-bottom: 4.5rem; }
+.page-intro.split .split__text { max-width: var(--reading); }
+.content-section.split + .content-section,
+.content-section + .content-section.split { margin-top: 4.5rem; }
+
+@media (max-width: 60rem) {
+  .split { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; }
+  .split > .split__text { max-width: var(--reading); }
+  .split .app-shot { max-width: 44rem; }
+}
+
+/* Long pages of prose list their sections beside the text, as the docs do. */
+.page-contents { display: none; }
+@media (min-width: 68rem) {
+  .site-body--contents > main {
+    display: grid;
+    grid-template-columns: minmax(0, var(--reading)) 13rem;
+    justify-content: space-between;
+    align-content: start;
+    column-gap: 40px;
+  }
+  .site-body--contents > main > * { grid-column: 1; }
+  .site-body--contents > main > .page-contents {
+    display: block;
+    grid-column: 2;
+    grid-row: 1 / span 60;
+    position: sticky;
+    top: 2rem;
+    align-self: start;
+    margin-top: 2.1rem;
+    padding-left: 1rem;
+    border-left: 1px solid var(--line);
+  }
+  .page-contents > strong { color: var(--ink-muted); font: 500 0.72rem/1.4 var(--sans); }
+  .page-contents nav { display: grid; margin-top: 0.5rem; }
+  .page-contents a { padding-block: 0.22rem; color: var(--ink-muted); font-size: 0.8rem; line-height: 1.4; text-decoration: none; }
+  .page-contents a:hover { color: var(--ink); }
+}
+
+/* Plans, side by side. The paid plan carries the accent. */
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 1.5rem;
+}
+.plan {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1.25rem 1.35rem 1.35rem;
+  background: var(--color-surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg, 10px);
+}
+.plan--plus { border-color: var(--color-accent); box-shadow: 0 0 0 1px var(--color-accent); }
+.plan h3 { margin: 0; font-size: 0.95rem; font-weight: 600; }
+.plan__price { margin-top: 0.5rem; color: var(--ink); font-size: 1.7rem; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
+.plan__price span { color: var(--ink-muted); font-size: 0.82rem; font-weight: 400; letter-spacing: 0; }
+.plan__terms { margin-top: 0.3rem; min-height: 1.4em; color: var(--ink-muted); font-size: 0.82rem; line-height: 1.4; }
+.plan ul { align-self: stretch; margin: 1.1rem 0 1.25rem; padding: 1rem 0 0; border-top: 1px solid var(--line); list-style: none; }
+.plan li { color: var(--ink-soft); font-size: 0.9rem; line-height: 1.45; }
+.plan li + li { margin-top: 0.55rem; }
+.plan li strong { color: var(--ink); }
+.plan li small { display: block; color: var(--ink-muted); font-size: 0.8rem; }
+.plan .button { margin-top: auto; }
+@media (max-width: 34rem) {
+  .plan-grid { grid-template-columns: minmax(0, 1fr); }
 }

@@ -1,6 +1,7 @@
 ---
 import HomeLayout from "../layouts/HomeLayout.astro";
 import AppShot from "../components/AppShot.astro";
+import AppIcon from "../components/AppIcon.astro";
 ---
 
 <HomeLayout
@@ -14,10 +15,10 @@ import AppShot from "../components/AppShot.astro";
 <h1 class="home-title">Structured data in ordinary Markdown files</h1>
 <p>Keep notes, tasks and projects as Markdown files. mdbase syncs them between your devices and serves them to the apps you use, on any device, with the permissions you give each app.</p>
 <div class="chapter__actions home-actions"><a class="home-action home-action--primary" href="https://connect.mdbase.dev/signup">Create an account</a><a class="home-action" href="/downloads/">Download the desktop app</a></div>
-<p class="home-status">mdbase is in beta. Keep independent backups of important collections.</p>
 <figure class="app-shot home-film">
-<div class="app-shot__window"><video controls playsinline preload="none" poster="/videos/mdbase-in-two-minutes.jpg" width="1920" height="1080" aria-label="What mdbase does, a silent film"><source src="/videos/mdbase-in-two-minutes.mp4" type="video/mp4" /></video></div>
+<div class="app-shot__window home-film__frame" data-film><video controls playsinline preload="none" poster="/videos/mdbase-in-two-minutes.jpg" width="1920" height="1080" aria-label="What mdbase does, a silent film"><source src="/videos/mdbase-in-two-minutes.mp4" type="video/mp4" /></video></div>
 </figure>
+<p class="home-status">mdbase is in beta. Keep independent backups of important collections.</p>
 </div></section>
 
 <section id="files" class="chapter" data-scene="collection" aria-label="Files"><div class="chapter__inner">
@@ -41,10 +42,10 @@ the field visit.</code></pre>
 <h2>One collection, many apps</h2>
 <p>Apps built on mdbase work on these files directly. Several can open the same collection at once, so nothing is exported from one app to another.</p>
 <dl class="home-apps">
-<div><dt><a href="https://app.tasknotes.dev/">TaskNotes</a></dt><dd>Tasks, calendars and reminders, on the web, iOS and Android.</dd></div>
-<div><dt><a href="/apps/editor/">Editor</a></dt><dd>Any collection: records, frontmatter, links and types.</dd></div>
-<div><dt><a href="/apps/reader/">Reader</a></dt><dd>PDFs, EPUBs and web pages, with each highlight kept as a record.</dd></div>
-<div><dt><a href="/apps/writer/">Writer</a></dt><dd>Papers and books in Markdown, with citations from Reader.</dd></div>
+<div><dt><AppIcon name="TaskNotes" /><a href="https://app.tasknotes.dev/">TaskNotes</a></dt><dd>Tasks, calendars and reminders, on the web, iOS and Android.</dd></div>
+<div><dt><AppIcon name="Editor" /><a href="/apps/editor/">Editor</a></dt><dd>Any collection: records, frontmatter, links and types.</dd></div>
+<div><dt><AppIcon name="Reader" /><a href="/apps/reader/">Reader</a></dt><dd>PDFs, EPUBs and web pages, with each highlight kept as a record.</dd></div>
+<div><dt><AppIcon name="Writer" /><a href="/apps/writer/">Writer</a></dt><dd>Papers and books in Markdown, with citations from Reader.</dd></div>
 </dl>
 <p><a href="/apps/">All apps</a></p>
 </div></section>
@@ -54,6 +55,7 @@ the field visit.</code></pre>
 <p>With the desktop app, your computers keep a complete copy of the collection as ordinary files. Each copy works offline and catches up when it reconnects.</p>
 <p>When the same record is edited in two places, mdbase works out what each edit changed, field by field, and combines edits to different fields.</p>
 <p>Changes are encrypted and signed on the device that made them before they are sent.</p>
+<AppShot name="desktop-collections" alt="The mdbase Connect desktop app listing four folders on this computer with their paths. Three are synced and up to date; one is on this computer only." />
 </div></section>
 
 <section id="anywhere" class="chapter" data-scene="serve" aria-label="Apps on any device"><div class="chapter__inner">
@@ -67,12 +69,14 @@ the field visit.</code></pre>
 <h2>Apps ask first</h2>
 <p>An app asks for access to one collection and lists the operations it needs. You might let a project planner find, create and edit project records while leaving deletion blocked.</p>
 <p>You approve each app in your <a href="/connect/">Connect account</a>, and you can narrow or revoke its access at any time. Revoking it ends the app’s sessions.</p>
+<AppShot name="connect-approve" alt="Connect asking whether TaskNotes may use the Field research collection. It lists what the app can do, Read this collection and Create records, above Deny and Allow access buttons." />
 </div></section>
 
 <section id="sharing" class="chapter" data-scene="sharing" aria-label="Sharing"><div class="chapter__inner">
 <h2>Share a collection</h2>
 <p>Invite viewers, who can read, or editors, who can also change records. Each person uses their own apps, within the role you gave them.</p>
 <p>You can change a member’s role or remove them at any time. A removed member stops receiving changes and keeps the files they already had.</p>
+<AppShot name="connect-sharing" alt="The Access page for a shared collection in Connect, listing the owner, an editor and a viewer, each with a role menu and a Remove button." />
 </div></section>
 
 <section id="start" class="chapter" data-scene="intro" aria-label="Get started"><div class="chapter__inner">
@@ -87,4 +91,25 @@ the field visit.</code></pre>
 </div></section>
 </main>
 <button class="motion-control" type="button" data-motion-control>Pause motion</button>
+<script is:inline>
+  // The film opens as a still with one Play button; the browser's own controls appear once it is playing.
+  // Without scripts the video keeps its controls.
+  (() => {
+    const frame = document.querySelector("[data-film]");
+    const video = frame?.querySelector("video");
+    if (!frame || !video) return;
+    const play = document.createElement("button");
+    play.type = "button";
+    play.className = "home-film__play";
+    play.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><span>Play the two-minute film</span>';
+    video.controls = false;
+    frame.append(play);
+    play.addEventListener("click", () => {
+      video.controls = true;
+      play.remove();
+      video.play();
+      video.focus();
+    });
+  })();
+</script>
 </HomeLayout>

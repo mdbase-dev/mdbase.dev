@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import AppShot from "../../components/AppShot.astro";
 import release from "../../data/connect-release.json";
 
 const { version, tag, releaseUrl: releasePage } = release;
@@ -18,13 +19,20 @@ const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
   description="Download the mdbase Connect desktop app or the standalone command-line tools for macOS, Windows, and Linux."
   current="downloads"
 >
-  <header class="page-intro">
-    <h1>Download</h1>
-    <p class="page-intro__lede">
-      Install the mdbase Connect desktop app to keep synced collections as
-      folders on your computer and let approved apps reach Private collections
-      through it.
-    </p>
+  <header class="page-intro split">
+    <div class="split__text">
+      <h1>Download</h1>
+      <p class="page-intro__lede">
+        Install the mdbase Connect desktop app to keep synced collections as
+        folders on your computer and let approved apps reach Private collections
+        through it.
+      </p>
+    </div>
+    <AppShot
+      name="desktop-collections"
+      alt="The Collections screen of the mdbase Connect desktop app. Four folders on this computer are listed with their paths; three are synced and up to date, and one is on this computer only."
+      eager
+    />
   </header>
 
   <section class="content-section" aria-labelledby="about-heading">

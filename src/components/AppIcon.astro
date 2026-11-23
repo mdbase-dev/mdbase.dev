@@ -1,0 +1,58 @@
+---
+// An app's tile, as Connect shows it: Editor, Reader and Writer carry the mark in
+// their own colour (the @mdbase-dev/ui app marks); other apps show their initial.
+interface Props {
+  name: string;
+}
+
+const { name } = Astro.props;
+const key = name.toLowerCase().replace(/^mdbase\s+(for\s+)?/, "");
+const marked = key === "editor" || key === "reader" || key === "writer";
+const bars = [
+  { x: 22, y: 22, width: 20 },
+  { x: 50, y: 22, width: 20 },
+  { x: 78, y: 22, width: 20 },
+  { x: 22, y: 44, width: 12 },
+  { x: 42, y: 44, width: 56, line: true },
+  { x: 22, y: 66, width: 28 },
+  { x: 58, y: 66, width: 40 },
+  { x: 22, y: 88, width: 20 },
+  { x: 50, y: 88, width: 20 },
+  { x: 78, y: 88, width: 20 }
+];
+---
+
+<span class:list={["app-icon", marked && `app-icon--${key}`]} aria-hidden="true">
+  {
+    marked ? (
+      <svg viewBox="18 18 84 84" focusable="false">
+        {bars.map((bar) => (
+          <rect class={bar.line ? "app-icon__line" : "app-icon__bar"} x={bar.x} y={bar.y} width={bar.width} height="10" />
+        ))}
+      </svg>
+    ) : (
+      <span>{key.charAt(0).toUpperCase()}</span>
+    )
+  }
+</span>
+
+<style is:global>
+  .app-icon {
+    display: inline-grid;
+    flex: none;
+    width: 2.1rem;
+    height: 2.1rem;
+    place-items: center;
+    color: var(--color-text-soft);
+    background: var(--color-surface-subtle);
+    border-radius: var(--radius-md, 8px);
+    font: 600 0.95rem/1 var(--sans);
+  }
+
+  .app-icon svg { width: 58%; height: 58%; }
+  .app-icon__bar { fill: var(--app); }
+  .app-icon__line { fill: var(--color-text); }
+  .app-icon--editor { --app: var(--app-editor, #005c88); }
+  .app-icon--reader { --app: var(--app-reader, #a4467f); }
+  .app-icon--writer { --app: var(--app-writer, #d55e00); }
+</style>

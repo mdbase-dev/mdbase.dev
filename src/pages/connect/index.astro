@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import AppShot from "../../components/AppShot.astro";
 ---
 
 <BaseLayout
@@ -7,23 +8,49 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   description="mdbase Connect lets apps use your Markdown collections as their database. You approve each app, and your records stay as files you own, synced across your devices."
   current="connect"
 >
-  <header class="page-intro">
-    <h1>mdbase Connect</h1>
-    <p class="page-intro__lede">
-      Connect lets apps use your Markdown collections as their database. An app
-      doesn’t keep your data in its own storage. It asks for access to one of
-      your collections, then finds, creates and edits records there, and
-      every change is saved as a Markdown file you own.
-    </p>
+  <header class="page-intro split">
+    <div class="split__text">
+      <h1>mdbase Connect</h1>
+      <p class="page-intro__lede">
+        Connect lets apps use your Markdown collections as their database. An app
+        doesn’t keep your data in its own storage. It asks for access to one of
+        your collections, then finds, creates and edits records there, and
+        every change is saved as a Markdown file you own.
+      </p>
+      <div class="button-row">
+        <a class="button button--primary" href="https://connect.mdbase.dev/signup">Create an account</a>
+        <a class="button" href="/downloads/">Download the desktop app</a>
+      </div>
+    </div>
+    <AppShot
+      name="desktop-home"
+      alt="The mdbase Connect desktop app's home screen, listing the apps TaskNotes, Editor and Reader with the collection each one uses, and four collections with their sync status."
+      eager
+    />
   </header>
 
-  <section class="content-section" aria-labelledby="how-it-works">
-    <h2 id="how-it-works">How it works</h2>
-    <p>
-      Say you keep your tasks in a collection. Each task is a Markdown file,
-      like <code>tasks/renew-passport.md</code>:
-    </p>
-    <pre><code>---
+  <section class="content-section split" aria-labelledby="how-it-works">
+    <div class="split__text">
+      <h2 id="how-it-works">How it works</h2>
+      <p>
+        Say you keep your tasks in a collection. Each task is a Markdown file,
+        like <code>tasks/renew-passport.md</code>.
+      </p>
+      <p>
+        Connect <a href="/apps/">TaskNotes</a> to that collection and it queries
+        the records of type <code>task</code> to build its lists. Mark this one
+        done and TaskNotes changes <code>status</code> in the file. Edit the due
+        date in a text editor and TaskNotes shows the new date. Any other app you
+        connect to the same collection sees the same records, so nothing has to
+        be exported from one app to another.
+      </p>
+      <p>
+        Connect is the account that makes this work. It handles sign-in, the
+        permissions you grant, syncing between your devices, and sharing with
+        other people.
+      </p>
+    </div>
+    <pre aria-label="The task as a file: tasks/renew-passport.md"><code>---
 type: task
 title: Renew passport
 status: open
@@ -31,38 +58,32 @@ due: 2026-12-01
 ---
 
 Book a photo appointment first.</code></pre>
-    <p>
-      Connect <a href="/apps/">TaskNotes</a> to that collection and it queries
-      the records of type <code>task</code> to build its lists. Mark this one
-      done and TaskNotes changes <code>status</code> in the file. Edit the due
-      date in a text editor and TaskNotes shows the new date. Any other app you
-      connect to the same collection sees the same records, so nothing has to
-      be exported from one app to another.
-    </p>
-    <p>
-      Connect is the account that makes this work. It handles sign-in, the
-      permissions you grant, syncing between your devices, and sharing with
-      other people.
-    </p>
   </section>
 
-  <section class="content-section" aria-labelledby="apps">
-    <h2 id="apps">Apps ask first</h2>
-    <p>
-      When you connect an app, you sign in to Connect, choose one collection,
-      and see the operations the app asks for before you approve it. You might
-      let a project planner find, create and edit project records while leaving
-      deletion blocked.
-    </p>
-    <p>
-      The permission is recorded with the collection, and every copy checks it:
-      your devices and, for Cloud copy, mdbase’s copy. You can narrow or revoke
-      a permission at any time. Removing an app never removes the collection,
-      and your other apps keep using it.
-    </p>
+  <section class="content-section split" aria-labelledby="apps">
+    <div class="split__text">
+      <h2 id="apps">Apps ask first</h2>
+      <p>
+        When you connect an app, you sign in to Connect, choose one collection,
+        and see the operations the app asks for before you approve it. You might
+        let a project planner find, create and edit project records while leaving
+        deletion blocked.
+      </p>
+      <p>
+        The permission is recorded with the collection, and every copy checks it:
+        your devices and, for Cloud copy, mdbase’s copy. You can narrow or revoke
+        a permission at any time. Removing an app never removes the collection,
+        and your other apps keep using it.
+      </p>
+    </div>
+    <AppShot
+      name="connect-approve"
+      alt="Connect asking whether TaskNotes may use the Field research collection. It lists what the app can do, Read this collection and Create records, above Deny and Allow access buttons."
+    />
   </section>
 
-  <section class="content-section" aria-labelledby="sync-options">
+  <section class="content-section split" aria-labelledby="sync-options">
+    <div class="split__text">
     <h2 id="sync-options">Cloud copy or Private</h2>
     <p>
       Connect keeps each collection in sync across your devices. Every device
@@ -92,6 +113,11 @@ Book a photo appointment first.</code></pre>
       The <a href="/security/">security page</a> lists exactly what mdbase
       stores and can read in each case.
     </p>
+    </div>
+    <AppShot
+      name="connect-collections"
+      alt="The Collections page of a Connect account. Seven collections are listed; two are Cloud copy, and the others sync through a named computer that shows as Connected or Offline."
+    />
   </section>
 
   <section class="content-section" aria-labelledby="devices">
@@ -110,7 +136,8 @@ Book a photo appointment first.</code></pre>
     </p>
   </section>
 
-  <section class="content-section" aria-labelledby="share-a-collection">
+  <section class="content-section split" aria-labelledby="share-a-collection">
+    <div class="split__text">
     <h2 id="share-a-collection">Share a collection</h2>
     <p>
       Owners can invite people as viewers, who can read, or editors, who can
@@ -135,6 +162,11 @@ Book a photo appointment first.</code></pre>
       field, and edits that change the same field are held for review. There is
       no live co-editing of a note.
     </p>
+    </div>
+    <AppShot
+      name="connect-sharing"
+      alt="The Access page for a shared collection in Connect. Under People and sharing, the owner Maya Chen is listed with Sam Okafor as an editor and Elena Rossi as a viewer, each with a role menu and a Remove button."
+    />
   </section>
 
   <section class="content-section" aria-labelledby="get-started">

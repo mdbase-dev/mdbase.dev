@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import AppShot from "../../components/AppShot.astro";
+import AppIcon from "../../components/AppIcon.astro";
 import "../../styles/apps.css";
 
 type CatalogueEntry = {
@@ -126,21 +127,39 @@ const applications: CatalogueEntry[] = [
   <section class="catalogue-section" aria-label="Current applications and tools">
     <div class="app-list">
       {
-        applications.map((app) => (
-          <article class:list={["app-entry", { "app-entry--shot": app.shot }]}>
-            {app.shot && <AppShot name={app.shot.name} alt={app.shot.alt} />}
-            <h2>{app.name}</h2>
-            <div class="app-entry__description">
+        applications.filter((app) => app.shot).map((app) => (
+          <article class="app-entry app-entry--shot split">
+            <div class="split__text">
+              <h2><AppIcon name={app.name} />{app.name}</h2>
               <p>{app.description}</p>
               <div class="app-entry__links">
-                {app.links.map((link) => <a href={link.href}>{link.label}</a>)}
+                {app.links.map((link, index) => <a class={index === 0 ? "button" : undefined} href={link.href}>{link.label}</a>)}
               </div>
+              <dl class="app-meta">
+                <div><dt>Status</dt><dd>{app.status}</dd></div>
+                <div><dt>Runs on</dt><dd>{app.runsOn}</dd></div>
+                <div><dt>Collections</dt><dd>{app.collections}</dd></div>
+              </dl>
             </div>
+            {app.shot && <AppShot name={app.shot.name} alt={app.shot.alt} />}
+          </article>
+        ))
+      }
+    </div>
+    <div class="app-grid">
+      {
+        applications.filter((app) => !app.shot).map((app) => (
+          <article class="app-entry app-entry--card">
+            <h2><AppIcon name={app.name} />{app.name}</h2>
+            <p>{app.description}</p>
             <dl class="app-meta">
               <div><dt>Status</dt><dd>{app.status}</dd></div>
               <div><dt>Runs on</dt><dd>{app.runsOn}</dd></div>
               <div><dt>Collections</dt><dd>{app.collections}</dd></div>
             </dl>
+            <div class="app-entry__links">
+              {app.links.map((link) => <a href={link.href}>{link.label}</a>)}
+            </div>
           </article>
         ))
       }

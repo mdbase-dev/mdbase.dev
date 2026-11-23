@@ -1,6 +1,6 @@
 /* The imported normative content uses the SDK shell, not the upstream site theme. */
 .spec-docs {
-  grid-template-columns: 180px minmax(0, 660px);
+  grid-template-columns: 190px minmax(0, var(--reading));
 }
 
 .spec-docs .sidebar-group + .sidebar-group { margin-top: 1rem; }

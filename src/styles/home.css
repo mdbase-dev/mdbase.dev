@@ -68,7 +68,7 @@
 
 .chapter__inner {
   opacity: .18;
-  width: min(620px,43vw);
+  width: min(520px,43vw);
   transition: opacity .4s,transform .5s;
   transform: translateY(18px);
 }
@@ -204,20 +204,8 @@
   --grain-opacity: .11;
 }
 
-:root {
-  --color-canvas: oklch(97% .009 245);
-  --color-surface: oklch(97% .009 245);
-}
-
-:root[data-theme=dark] {
-  --color-canvas: oklch(20.5% .018 245);
-  --color-surface: oklch(20.5% .018 245);
-}
-
 @media (prefers-color-scheme:dark) {
   :root:not([data-theme]) {
-    --color-canvas: oklch(20.5% .018 245);
-    --color-surface: oklch(20.5% .018 245);
     --grain-opacity: .11;
   }
 }
@@ -457,4 +445,39 @@
 @media (max-width: 35rem) {
   .home-apps > div,
   .home-facts > div { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
+}
+
+/* The film's opening still, with the apps' primary button to start it. */
+.home-film__frame { position: relative; }
+.home-film__play {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  display: inline-flex;
+  padding: 0.5rem 0.9rem 0.5rem 0.7rem;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border: 0;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--elevation-low);
+  font: 500 0.88rem/1 var(--sans);
+  cursor: pointer;
+}
+.home-film__play:hover { background: var(--color-accent-strong); }
+.home-film__play svg { width: 14px; height: 14px; fill: currentColor; }
+
+/* App tiles beside the app names. */
+.home-apps dt { display: flex; align-items: center; gap: 0.6rem; }
+.home-apps .app-icon { width: 1.7rem; height: 1.7rem; border-radius: var(--radius-sm); }
+.home-apps > div { align-items: center; grid-template-columns: 9.5rem minmax(0, 1fr); }
+
+/* A screenshot under a chapter's text sits a little apart from it. */
+.home-body .chapter p + .app-shot { margin-top: 32px; }
+
+/* The opening chapter starts under the header so the film is in view without scrolling. */
+@media (width>820px) {
+  .chapter:first-child { align-items: flex-start; padding-top: 132px; }
+  .home-body .chapter .home-film { margin-top: 30px; }
 }
