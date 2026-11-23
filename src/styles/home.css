@@ -458,20 +458,6 @@
 .home-body .home-action--film { display: inline-flex; align-items: center; gap: 0.4rem; }
 .home-action--film svg { width: 12px; height: 12px; fill: currentColor; }
 
-/* The opening chapter shows the product beside its text: the desktop app, large,
-   in the room the other chapters give their diagrams. */
-@media (width > 820px) {
-  #intro .chapter__inner { position: relative; }
-  .home-hero-shot {
-    position: absolute;
-    top: 50%;
-    left: calc(100% + 56px);
-    width: min(700px, calc(100vw - var(--site-left) - 100% - 56px - 32px));
-    transform: translateY(-50%);
-  }
-  .home-body .chapter .home-hero-shot .app-shot { width: 100%; margin: 0; }
-}
-
 /* On a phone each chapter is a card that slides up over its diagram. The diagram
    shows whole in the gap above the card, and the card covers it cleanly, with no
    see-through edge. */
@@ -493,7 +479,6 @@
     box-shadow: 0 -12px 32px -20px var(--color-shadow, rgb(0 0 0 / 0.25));
     backdrop-filter: none;
   }
-  .home-hero-shot { margin-top: 4px; }
   /* The control sits with the diagram, under the header, and the cards pass over it. */
   .motion-control { top: 78px; right: 12px; bottom: auto; z-index: 1; }
 }
