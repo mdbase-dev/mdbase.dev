@@ -17,14 +17,14 @@ interface Props {
   description: string;
   current?: "home" | "apps" | "downloads" | "connect" | "pricing" | "sdk" | "runtime" | "spec";
   noIndex?: boolean;
-  /** Leave the page out of site search, as for an archived copy of current content. */
-  searchable?: boolean;
+  /** Whether the page gets a Markdown copy and a place in llms.txt; off for an archived copy of current content. */
+  markdownCopy?: boolean;
   wide?: boolean;
   /** List the page's sections beside the text on wide screens, for long pages of prose. */
   contents?: boolean;
 }
 
-const { title, description, current, noIndex = false, searchable = true, wide = false, contents = false } = Astro.props;
+const { title, description, current, noIndex = false, markdownCopy = true, wide = false, contents = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const fullTitle = title === "mdbase" ? title : `${title} | mdbase`;
 
@@ -66,7 +66,7 @@ const showContents = sections.length > 2;
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {searchable && !noIndex && <link rel="alternate" type="text/markdown" href="index.md" />}
+    {markdownCopy && !noIndex && <link rel="alternate" type="text/markdown" href="index.md" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="manifest" href="/site.webmanifest" />
     <FontPreloads />
@@ -88,10 +88,10 @@ const showContents = sections.length > 2;
   <body class:list={["site-body", { "site-body--wide": wide, "site-body--contents": showContents }]}>
     <a class="skip-link" href="#main">Skip to content</a>
     <SiteHeader current={current} />
-    <main id="main" tabindex="-1" data-pagefind-body={searchable && !noIndex ? "" : undefined}>
+    <main id="main" tabindex="-1" data-markdown-body={markdownCopy && !noIndex ? "" : undefined}>
       {
         showContents && (
-          <aside class="page-contents" data-pagefind-ignore="all">
+          <aside class="page-contents" data-markdown-ignore>
             <strong>On this page</strong>
             <nav aria-label="On this page">
               {sections.map((section) => <a href={`#${section.id}`}>{section.label}</a>)}

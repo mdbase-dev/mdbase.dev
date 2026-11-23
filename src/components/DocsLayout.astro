@@ -24,7 +24,7 @@ const editHref = record
 
 <BaseLayout title={`${title} · ${label}`} description={description} current={headerCurrent} wide>
   <div class="docs-shell" data-docs-shell>
-    <aside class="docs-nav" data-pagefind-ignore="all">
+    <aside class="docs-nav" data-markdown-ignore>
       <details open data-docs-nav>
         <summary>{label}</summary>
         <nav aria-label={navLabel}>
@@ -49,11 +49,11 @@ const editHref = record
         <strong>{meta.value}</strong>
       </div>
     </aside>
-    <article class="docs-article" data-pagefind-meta={`title:${title} · ${label}`}>
+    <article class="docs-article">
       <header class="docs-title">
         {
           record ? (
-            <div class="record-bar" data-pagefind-ignore="all">
+            <div class="record-bar" data-markdown-ignore>
               <p class="record-bar__file">
                 <span>{label}</span>
                 <code>{record.path}</code>
@@ -77,7 +77,7 @@ const editHref = record
       </div>
       {
         record && (
-          <section class="record-source" aria-label={`Markdown source of ${title}`} data-record-source data-pagefind-ignore="all" hidden>
+          <section class="record-source" aria-label={`Markdown source of ${title}`} data-record-source data-markdown-ignore hidden>
             <p class="record-source__note">
               This page is the file <code>content/{record.path}</code>, a record in the
               site’s <a href="https://github.com/mdbase-dev/mdbase.dev/tree/main/content">documentation collection</a>.
@@ -87,7 +87,7 @@ const editHref = record
           </section>
         )
       }
-      <footer class="docs-edit" data-pagefind-ignore="all">
+      <footer class="docs-edit" data-markdown-ignore>
         <a href={editHref}>
           Edit this page on GitHub
         </a>
@@ -95,7 +95,7 @@ const editHref = record
     </article>
     {
       headings.length > 0 && (
-        <aside class="docs-toc" data-pagefind-ignore="all" data-record-page>
+        <aside class="docs-toc" data-markdown-ignore data-record-page>
           <strong>On this page</strong>
           <nav aria-label="On this page">
             {headings.map((heading) => <a href={heading.href}>{heading.label}</a>)}

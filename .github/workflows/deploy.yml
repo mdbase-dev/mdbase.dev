@@ -119,7 +119,7 @@ jobs:
         env:
           MDBASE_SPEC_DIR: .sources/mdbase-spec
 
-      - name: Build search index and Markdown copies
+      - name: Build Markdown copies
         run: pnpm index:site
 
       - name: Check local links
