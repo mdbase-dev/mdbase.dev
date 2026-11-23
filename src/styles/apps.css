@@ -1,24 +1,29 @@
-.apps-intro { margin-bottom: 3.75rem; }
-.apps-intro p { margin-top: 0.8rem; color: var(--ink-soft); }
 .catalogue-section__header { display: block; margin-bottom: 1.5rem; }
 .catalogue-section__header p { margin-top: 0.5rem; color: var(--ink-soft); }
 .app-list { margin: 0; }
-.app-entry { max-width: var(--reading); margin-bottom: 2.5rem; }
-.app-entry h2 { margin-bottom: 0.25rem; font-size: 1.05rem; font-weight: 600; }
-.app-entry__description p { color: var(--ink-soft); }
-.app-entry__links { display: flex; margin-top: 0.35rem; flex-wrap: wrap; gap: 0.25rem 1rem; }
-.app-meta { display: grid; margin-top: 0.6rem; }
-.app-meta > div { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 0.75rem; }
-.app-meta dt { color: var(--ink-muted); font: 400 0.68rem/1.55 var(--sans); }
-.app-meta dd { color: var(--ink-soft); font-size: 0.82rem; }
-.catalogue-label { color: var(--ink-muted); font: 400 0.68rem/1.4 var(--sans); }
-.build-section { display: block; }
-.build-section__body p { margin-top: 0.5rem; color: var(--ink-soft); }
-.build-section__body .button-row { margin-top: 0.8rem; }
+.app-entry h2 { display: flex; align-items: center; gap: 0.7rem; font-size: 1.3rem; font-weight: 600; }
+.app-entry p { color: var(--ink-soft); }
+.app-entry__links { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem 1.1rem; }
+.catalogue-label { color: var(--ink-muted); font: 400 0.76rem/1.4 var(--sans); }
 
-/* Apps with a screenshot lead with it, at the full page width; text keeps the reading measure. */
-.app-entry--shot { max-width: none; margin-bottom: 4.5rem; }
-.app-entry--shot > :not(.app-shot) { max-width: var(--reading); }
-.app-entry--shot .app-shot { margin-bottom: 1.4rem; }
-.app-list > .app-entry:first-child { margin-top: 0.5rem; }
-.app-entry--shot h2 { margin-bottom: 0.35rem; font-size: 1.3rem; font-weight: 600; }
+/* Apps with a screenshot: text beside it, one app per row. */
+.app-entry--shot { margin-bottom: 5rem; }
+.app-entry--shot .app-entry__links { margin-top: 1.1rem; }
+
+/* The rest are cards, as Connect lists a person's apps. */
+.app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(18.5rem, 1fr)); gap: 1rem; }
+.app-entry--card {
+  display: flex;
+  padding: 1.25rem 1.35rem 1.2rem;
+  flex-direction: column;
+  gap: 0.7rem;
+  background: var(--color-surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+.app-entry--card h2 { font-size: 1.05rem; }
+.app-entry--card p { font-size: 0.94rem; }
+.app-entry--card .app-entry__links { margin-top: auto; padding-top: 0.2rem; font-size: 0.94rem; }
+
+/* The page closes on building an app, laid out as the apps above are. */
+.app-entry--build { margin: 5rem 0 0; }

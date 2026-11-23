@@ -1,0 +1,110 @@
+---
+// One full-window viewer for the page: a screenshot at full size. Anything with
+// data-view-image (a screenshot window) opens it. Without scripts a screenshot
+// stays as it is.
+---
+
+<dialog class="media-viewer" aria-label="Viewer" data-media-viewer>
+  <div class="media-viewer__bar">
+    <span class="media-viewer__title" data-media-title></span>
+    <button type="button" class="media-viewer__close" data-media-close>Close</button>
+  </div>
+  <div class="media-viewer__stage" data-media-stage></div>
+</dialog>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>("[data-media-viewer]");
+  const stage = dialog?.querySelector<HTMLElement>("[data-media-stage]");
+  const title = dialog?.querySelector<HTMLElement>("[data-media-title]");
+
+  if (dialog && stage && title) {
+    const show = (label: string, media: HTMLElement) => {
+      title.textContent = label;
+      stage.replaceChildren(media);
+      dialog.showModal();
+    };
+
+    document.addEventListener("click", (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const shot = target?.closest<HTMLElement>("[data-view-image]");
+      if (shot) {
+        // The capture on show is the one matching the theme; the other is display: none.
+        const current = [...shot.querySelectorAll("img")].find((image) => image.offsetParent !== null);
+        if (!current) return;
+        const image = new Image();
+        image.src = current.currentSrc || current.src;
+        image.alt = current.alt;
+        image.width = current.naturalWidth || 1600;
+        image.height = current.naturalHeight || 1000;
+        show(shot.dataset.viewImage ?? "", image);
+      }
+    });
+
+    // Enter and Space open a screenshot from the keyboard, as its Enlarge button does.
+    document.addEventListener("keydown", (event) => {
+      const shot = event.target instanceof HTMLElement && event.target.matches("[data-view-image]") ? event.target : null;
+      if (shot && (event.key === "Enter" || event.key === " ")) {
+        event.preventDefault();
+        shot.click();
+      }
+    });
+
+    dialog.querySelector("[data-media-close]")?.addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog || event.target === stage) dialog.close();
+    });
+    dialog.addEventListener("close", () => stage.replaceChildren());
+  }
+</script>
+
+<style is:global>
+  .media-viewer {
+    width: min(calc(100% - 32px), 1280px);
+    max-width: none;
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    padding: 0;
+    overflow: hidden;
+    color: var(--color-text);
+    background: var(--color-surface-overlay);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg, 10px);
+    box-shadow: var(--elevation-high);
+  }
+  .media-viewer[open] { display: flex; flex-direction: column; }
+  .media-viewer::backdrop { background: var(--color-scrim, rgb(0 0 0 / 0.5)); backdrop-filter: blur(3px); }
+
+  .media-viewer__bar {
+    display: flex;
+    flex: none;
+    padding: 0.6rem 0.7rem 0.6rem 1rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .media-viewer__title {
+    overflow: hidden;
+    color: var(--color-text-soft);
+    font-size: 0.82rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .media-viewer__close {
+    flex: none;
+    padding: 0.25rem 0.6rem;
+    color: var(--color-text-soft);
+    background: transparent;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm, 6px);
+    font: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .media-viewer__close:hover { color: var(--color-text); background: var(--color-selected); }
+  .media-viewer__close:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+
+  /* A screenshot is never shown smaller than it can be read; on a phone it scrolls sideways. */
+  .media-viewer__stage { min-height: 0; overflow: auto; overscroll-behavior: contain; }
+  .media-viewer__stage img { display: block; width: 100%; min-width: 860px; height: auto; }
+</style>

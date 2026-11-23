@@ -39,7 +39,7 @@
       const dark = currentTheme() === "dark";
       document
         .querySelector('meta[name="theme-color"]')
-        ?.setAttribute("content", dark ? "#121212" : "#ffffff");
+        ?.setAttribute("content", dark ? "#11151a" : "#f6fafd");
       updateControls();
       dispatchEvent(new CustomEvent("mdbase:themechange"));
     };

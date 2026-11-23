@@ -1,8 +1,21 @@
 :root {
-  --sans: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
-  --mono: "Azeret Mono", "SFMono-Regular", "Cascadia Code", monospace;
-  --site-left: clamp(24px, 8vw, 120px);
-  --shell-width: 760px;
+  /* The apps' families (@mdbase-dev/ui tokens.css), restated for pages that load this file alone. */
+  --sans: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --mono: "Azeret Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* One centred page: the header, main and footer share its left edge and width. */
+  --page-max: 1120px;
+  --site-left: max(24px, calc((100vw - var(--page-max)) / 2));
+  --shell-width: var(--page-max);
+
+  /* The site's canvas: a faint cool tint under white surfaces, in the apps' own hue.
+     Fills and borders are restated a step darker so they still read on the tint. */
+  --color-canvas: light-dark(oklch(98.2% 0.006 245), oklch(19.5% 0.012 250));
+  --color-surface: light-dark(oklch(100% 0 0), oklch(22.5% 0.012 250));
+  --color-surface-overlay: light-dark(oklch(100% 0 0), oklch(24% 0.012 250));
+  --color-surface-subtle: light-dark(oklch(95.8% 0.008 245), oklch(24.5% 0.012 250));
+  --color-selected: light-dark(oklch(94% 0.01 245), oklch(27.5% 0.014 250));
+  --color-border: light-dark(oklch(92.5% 0.008 245), oklch(27% 0.01 250));
+  --color-border-strong: light-dark(oklch(87.5% 0.01 245), oklch(33% 0.012 250));
 }
 
 *,
@@ -34,10 +47,6 @@ body {
   line-height: 1.5;
 }
 
-.site-body--wide {
-  --shell-width: 1080px;
-}
-
 .site-header {
   position: relative;
   z-index: 20;
@@ -56,17 +65,21 @@ body {
   background: var(--color-canvas);
 }
 
+/* One row: wordmark, section links, then the tools at the right edge. The identity
+   wrapper drops out of the layout so its two children can sit either side of the links. */
 .site-header__inner {
+  display: flex;
   width: 100%;
+  align-items: center;
+  gap: 0 28px;
 }
 
 .site-header__identity {
-  display: flex;
-  margin-bottom: 12px;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
+  display: contents;
+}
+
+.site-header__tools {
+  order: 3;
 }
 
 .site-header__tools {
@@ -75,24 +88,36 @@ body {
   gap: 4px 14px;
 }
 
-/* The one boxed control in the header, on every page. */
+/* The header's one button, on every page: the apps' secondary button. */
 .site-header__signup {
-  padding: 0.2rem 0.7rem;
+  padding: 0.25rem 0.75rem;
   color: var(--color-text);
   white-space: nowrap;
-  border: 1px solid var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 500;
   text-decoration: none;
 }
 
 .site-header__signup:hover {
-  color: var(--color-canvas);
-  background: var(--color-text);
+  color: var(--color-text);
+  background: var(--color-surface-subtle);
+}
+
+/* One page fades into the next instead of cutting, and the header holds still between them. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 160ms; }
+  ::view-transition-group(site-header) { animation-duration: 160ms; }
+  .site-header { view-transition-name: site-header; }
 }
 
 /* Shared focus ring for the header, footer and homepage. */
 :focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 3px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 /* Azeret Mono joins "fi" and "fl"; code must show every character as typed. */
@@ -108,52 +133,60 @@ samp {
   align-items: center;
   gap: 9px;
   color: var(--color-text);
-  font-weight: 400;
+  /* The apps' wordmark: the mono face, medium, set tight. */
+  font-family: var(--mono);
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
   text-decoration: none;
 }
 
+/* Section links are rows like the apps' lists: a soft fill on hover, a held fill on the current one. */
 .site-nav {
   display: flex;
-  min-height: 46px;
+  order: 2;
+  flex: 1;
+  margin: 0;
   padding: 0;
-  align-items: stretch;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 6px 22px;
-  border-top: 1px solid var(--color-text);
-  border-bottom: 1px solid var(--color-text);
+  gap: 2px;
 }
 
 .site-nav a {
-  position: relative;
   display: flex;
+  min-height: 34px;
+  padding: 0 10px;
   align-items: center;
-}
-
-.site-nav a,
-.theme-toggle,
-.site-nav__toggle {
-  padding: 0;
-  color: var(--color-text);
-  background: transparent;
-  border: 0;
-  font: inherit;
-  text-underline-offset: 0.2em;
-}
-
-/* The current section is not underlined, since it is not a way out, and
-   carries a short bar on the header's lower rule. */
-.site-nav a[aria-current="page"] {
+  color: var(--color-text-soft);
+  border-radius: var(--radius-sm);
+  font-size: 0.94rem;
   text-decoration: none;
 }
 
-.site-nav a[aria-current="page"]::after {
-  position: absolute;
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  height: 3px;
-  background: currentColor;
-  content: "";
+.site-nav a:hover {
+  color: var(--color-text);
+  background: var(--color-surface-subtle);
+}
+
+.site-nav a[aria-current="page"] {
+  color: var(--color-text);
+  background: var(--color-selected);
+  font-weight: 500;
+}
+
+.theme-toggle,
+.site-nav__toggle {
+  padding: 0;
+  color: var(--color-text-soft);
+  background: transparent;
+  border: 0;
+  font: inherit;
+}
+
+.theme-toggle:hover,
+.site-nav__toggle:hover {
+  color: var(--color-text);
 }
 
 /* Icon controls keep a 44px-high target around their small glyphs. */
@@ -173,7 +206,8 @@ samp {
 .site-nav__toggle {
   min-height: 44px;
   align-items: center;
-  text-decoration: underline;
+  font-size: 0.94rem;
+  font-weight: 500;
   cursor: pointer;
 }
 
@@ -196,11 +230,11 @@ samp {
   position: relative;
   z-index: 3;
   width: min(calc(100% - 48px), var(--shell-width));
-  margin: 40px 0 0 var(--site-left);
-  padding: 12px 0 48px;
+  margin: 56px 0 0 var(--site-left);
+  padding: 28px 0 48px;
   color: var(--color-text);
   background: var(--color-canvas);
-  border-top: 1px solid var(--color-text);
+  border-top: 1px solid var(--color-border);
 }
 
 .site-footer__inner {
@@ -211,7 +245,7 @@ samp {
 }
 
 .site-footer strong {
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .site-footer p {
@@ -236,12 +270,12 @@ samp {
 }
 
 .site-footer a {
-  color: var(--color-text);
+  color: var(--color-text-soft);
   text-decoration: none;
 }
 
 .site-footer a:hover {
-  color: var(--color-text-soft);
+  color: var(--color-text);
 }
 
 @media (max-width: 820px) {
@@ -259,8 +293,22 @@ samp {
     padding-top: 16px;
   }
 
+  /* Two rows: wordmark and tools, then the section links. */
+  .site-header__inner {
+    display: block;
+  }
+
+  .site-header__identity {
+    display: flex;
+    margin-bottom: 8px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+  }
+
   .site-nav {
-    gap: 6px 14px;
+    margin: 0 -10px;
   }
 }
 
@@ -281,7 +329,7 @@ samp {
   [data-nav-collapsible]:not([data-nav-open]) .site-header__identity {
     margin-bottom: 0;
     padding-bottom: 6px;
-    border-bottom: 1px solid var(--color-text);
+    border-bottom: 1px solid var(--color-border);
   }
 
   [data-nav-collapsible] .site-nav {
@@ -295,8 +343,8 @@ samp {
     min-height: 44px;
   }
 
-  [data-nav-collapsible] .site-nav a[aria-current="page"]::after {
-    bottom: 9px;
+  [data-nav-collapsible] .site-nav a {
+    align-self: stretch;
   }
 }
 
@@ -324,18 +372,9 @@ samp {
   overflow: visible;
 }
 
+/* The accent bar follows the apps' accent in both themes. */
 .brand-mark__accent {
-  fill: #005c88;
-}
-
-:root[data-theme="dark"] .brand-mark__accent {
-  fill: #63b1e2;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .brand-mark__accent {
-    fill: #63b1e2;
-  }
+  fill: var(--color-accent, #005c88);
 }
 
 /* Lift is in mark units: 5 at 24px matches the 3px lift on the apps' 42px mark. */

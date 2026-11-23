@@ -1,9 +1,14 @@
 ---
-import "@fontsource/atkinson-hyperlegible/400.css";
+import "@fontsource/ibm-plex-sans/400.css";
+import "@fontsource/ibm-plex-sans/400-italic.css";
+import "@fontsource/ibm-plex-sans/500.css";
+import "@fontsource/ibm-plex-sans/600.css";
 import "@fontsource/azeret-mono/400.css";
 import "@fontsource/azeret-mono/500.css";
 import "../styles/shell.css";
 import "../styles/home.css";
+import FontPreloads from "../components/FontPreloads.astro";
+import MediaViewer from "../components/MediaViewer.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import ThemeControlScript from "../components/ThemeControlScript.astro";
@@ -28,8 +33,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <link rel="alternate" type="text/markdown" href="/index.md" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="manifest" href="/site.webmanifest" />
+    <FontPreloads />
     <link rel="stylesheet" href="/mdbase-theme.css" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#f6fafd" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -47,6 +53,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <SiteHeader current="home" />
     <slot />
     <SiteFooter />
+    <MediaViewer />
     <ThemeControlScript />
     <script is:inline src="/mdbase-atmosphere.js"></script>
     <script is:inline src="/mdbase-murmuration.js"></script>

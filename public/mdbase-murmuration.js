@@ -39,6 +39,7 @@
         muted: "rgb(111 116 124)",
         line: "rgb(204 208 213)",
         lineSoft: "rgb(226 229 232)",
+        box: "rgb(165 170 177)",
         accent: "rgb(42 104 143)",
         particle: "rgb(25 27 31 / 0.88)",
         particleIntro: "rgb(25 27 31 / 0.88)",
@@ -64,6 +65,8 @@
         palette.muted = resolveColor("--color-text-muted", palette.muted);
         palette.line = dark ? resolveColor("--color-text-faint", palette.muted) : palette.muted;
         palette.lineSoft = resolveColor("--color-border", palette.lineSoft);
+        // Box outlines are quieter than text, like the apps' card borders.
+        palette.box = resolveColor("--color-text-faint", palette.muted);
         palette.accent = resolveColor("--color-accent", palette.accent);
         palette.particle = dark ? palette.muted : palette.ink;
         palette.particleIntro = dark ? palette.soft : palette.ink;
@@ -100,7 +103,8 @@
       function diagramBounds() {
         if (width <= 820) {
           const headerBottom = document.querySelector(".site-header")?.getBoundingClientRect().bottom || 76;
-          const top = Math.max(headerBottom + 12, height * 0.10);
+          // The motion control has its own row between the header and the diagram.
+          const top = Math.max(headerBottom + 46, height * 0.10);
           return {
             x: width * 0.07,
             y: top,
@@ -109,17 +113,26 @@
           };
         }
 
+        // The diagram takes the room to the right of the chapters' text column, which
+        // starts at the centred page's left edge, and may run past the page's right edge.
+        const x = textColumnRight() + 56;
         return {
-          x: width * 0.52,
+          x,
           y: height * 0.17,
-          w: width * 0.43,
+          w: Math.max(240, Math.min(width - x - 40, 760)),
           h: height * 0.68
         };
       }
 
+      function textColumnRight() {
+        const column = document.querySelector(".chapter__inner")?.getBoundingClientRect?.();
+        return column && column.width ? column.right : width * 0.48;
+      }
+
       function introBounds() {
         if (width <= 820) return diagramBounds();
-        return { x: width * 0.45, y: height * 0.08, w: width * 0.53, h: height * 0.84 };
+        const x = textColumnRight() + 16;
+        return { x, y: height * 0.08, w: Math.max(240, width - x - 24), h: height * 0.84 };
       }
 
       function rect(bounds, x, y, w, h) {
@@ -147,7 +160,7 @@
         let lines = [];
         let size = compact ? 14 : 17;
         for (; size >= (compact ? 11 : 12); size--) {
-          context.font = `${size}px "Atkinson Hyperlegible", sans-serif`;
+          context.font = `${size}px "IBM Plex Sans", sans-serif`;
           lines = [];
           let line = "";
           for (const word of label.split(" ")) {
@@ -166,7 +179,7 @@
         const maxLines = Math.max(1, Math.floor(availableHeight / lineHeight));
         const overflow = lines.length > maxLines;
         lines = lines.slice(0, maxLines);
-        context.font = `${size}px "Atkinson Hyperlegible", sans-serif`;
+        context.font = `${size}px "IBM Plex Sans", sans-serif`;
         lines = lines.map((line, index) => {
           if (context.measureText(line).width <= availableWidth
             && !(overflow && index === lines.length - 1)) return line;
@@ -897,14 +910,16 @@
         context.fillStyle = palette.surface;
         context.strokeStyle = node.kind === "held" ? palette.warning
           : node.kind === "log" || node.kind === "accent" ? palette.accent
-          : node.kind === "boundary" ? palette.lineSoft : palette.muted;
+          : node.kind === "boundary" ? palette.lineSoft : palette.box;
         context.globalAlpha *= node.kind === "boundary" ? 0.5 : 0.94;
         context.lineWidth = 1;
         context.setLineDash(
           node.kind === "boundary" || node.kind === "replica" ? [3, 5] : []
         );
+        // The apps' card corners; older canvases fall back to square ones.
         context.beginPath();
-        context.rect(x, y, w, h);
+        if (context.roundRect) context.roundRect(x, y, w, h, node.kind === "boundary" ? 10 : 8);
+        else context.rect(x, y, w, h);
         context.fill();
         context.stroke();
         context.setLineDash([]);
@@ -922,7 +937,7 @@
         context.textBaseline = "top";
         context.fillStyle = palette.ink;
         context.globalAlpha *= 0.95;
-        context.font = `${size}px "Atkinson Hyperlegible", sans-serif`;
+        context.font = `${size}px "IBM Plex Sans", sans-serif`;
         lines.forEach((line, index) => {
           context.fillText(line, x + padding, y + padding + index * lineHeight);
         });
@@ -966,7 +981,7 @@
         context.save();
         context.fillStyle = palette.muted;
 
-        context.font = `${compact ? 14 : 17}px "Atkinson Hyperlegible", sans-serif`;
+        context.font = `${compact ? 14 : 17}px "IBM Plex Sans", sans-serif`;
         context.textAlign = "center";
         note.text.split("\n").forEach((line, index) =>
           context.fillText(line, note.x, note.y + index * (compact ? 18 : 22)));

@@ -36,7 +36,7 @@ address, so `apps/reader/index.md` is `/apps/reader/`.
 `section` is the documentation set the page belongs to, which picks its
 sidebar.
 
-The body is ordinary Markdown with three additions the site understands:
+The body is ordinary Markdown with four additions the site understands:
 
 - A heading can keep a fixed anchor: `## Saved views {#views}`.
 - A code block can name its file: ` ```ts title="src/mdbase.ts" `. With
@@ -45,3 +45,6 @@ The body is ordinary Markdown with three additions the site understands:
   JSON file.
 - An image whose address is a recording in `/videos/` is shown as that
   recording, with its captions and text description.
+- A heading marked `{.cards}` shows the list under it as cards, two to a row.
+  Each item is a bold title, a sentence or two, and a link, each in its own
+  paragraph.

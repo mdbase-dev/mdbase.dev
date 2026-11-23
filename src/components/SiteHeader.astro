@@ -1,6 +1,5 @@
 ---
 import BrandMark from "./BrandMark.astro";
-import SiteSearch from "./SiteSearch.astro";
 
 interface Props {
   current?: "home" | "apps" | "downloads" | "connect" | "pricing" | "sdk" | "runtime" | "spec";
@@ -18,12 +17,11 @@ const links = [
 ] as const;
 ---
 
-<header class="site-header" data-pagefind-ignore="all" data-site-header>
+<header class="site-header" data-markdown-ignore data-site-header>
   <div class="site-header__inner">
     <div class="site-header__identity">
       <a class="wordmark" href="/" aria-label="mdbase home"><BrandMark /><span>mdbase</span></a>
       <div class="site-header__tools">
-        <SiteSearch />
         <button class="theme-toggle" type="button" aria-label="Use dark mode" title="Use dark mode" hidden>
           <svg class="theme-toggle__icon" viewBox="0 0 16 16" aria-hidden="true">
             <circle cx="8" cy="8" r="5.5"></circle>

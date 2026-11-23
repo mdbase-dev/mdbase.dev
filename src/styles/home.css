@@ -22,7 +22,8 @@
   z-index: 100;
   color: var(--color-canvas);
   background: var(--color-text);
-  padding: .4rem;
+  border-radius: var(--radius-sm);
+  padding: .4rem .7rem;
   position: fixed;
   top: .5rem;
   left: .5rem;
@@ -67,7 +68,7 @@
 
 .chapter__inner {
   opacity: .18;
-  width: min(620px,43vw);
+  width: min(520px,43vw);
   transition: opacity .4s,transform .5s;
   transform: translateY(18px);
 }
@@ -89,14 +90,17 @@
   margin: 0 0 20px;
 }
 
-.home-body a {
-  color: var(--color-text);
+/* Links in the chapters only; the header and footer keep their own styles from shell.css. */
+.home-body main a {
+  color: var(--color-accent);
+  text-decoration-color: color-mix(in oklch, currentColor 35%, transparent);
   text-underline-offset: .2em;
   text-decoration-thickness: 1px;
 }
 
-.home-body a:hover {
-  color: var(--color-text-soft);
+.home-body main a:hover {
+  color: var(--color-accent-strong);
+  text-decoration-color: currentColor;
 }
 
 .home-body .home-title {
@@ -114,14 +118,11 @@
 }
 
 .home-body .home-action--primary {
-  border: 1px solid var(--color-text);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
   padding: .55rem 1rem;
+  font-weight: 500;
   text-decoration: none;
-}
-
-.home-body .home-action--primary:hover {
-  color: var(--color-canvas);
-  background: var(--color-text);
 }
 
 .chapter__lead,.chapter__body {
@@ -131,10 +132,11 @@
 .file-tree,.record-example {
   width: min(500px,100%);
   color: var(--color-text);
-  background: var(--color-canvas);
-  border: 1px solid var(--color-text);
+  background: light-dark(oklch(100% 0 0), var(--color-surface-overlay));
+  border: 1px solid var(--color-border-strong);
+  box-shadow: var(--elevation-raised);
   font: 400 .76rem/1.5 var(--mono);
-  border-radius: 0;
+  border-radius: var(--radius-md);
   margin: 28px 0;
   padding: 18px;
   overflow-x: auto;
@@ -155,13 +157,16 @@
 }
 
 .home-body .button,.home-body .text-link {
-  color: var(--color-text);
+  min-height: 0;
+  padding: 0;
+  color: var(--color-accent);
   font: inherit;
   text-underline-offset: .2em;
   background: 0 0;
   border: 0;
   font-weight: 400;
   text-decoration: underline;
+  text-decoration-color: color-mix(in oklch, currentColor 35%, transparent);
 }
 
 @media (width>=821px) {
@@ -199,20 +204,8 @@
   --grain-opacity: .11;
 }
 
-:root {
-  --color-canvas: oklch(97% .009 245);
-  --color-surface: oklch(97% .009 245);
-}
-
-:root[data-theme=dark] {
-  --color-canvas: oklch(20.5% .018 245);
-  --color-surface: oklch(20.5% .018 245);
-}
-
 @media (prefers-color-scheme:dark) {
   :root:not([data-theme]) {
-    --color-canvas: oklch(20.5% .018 245);
-    --color-surface: oklch(20.5% .018 245);
     --grain-opacity: .11;
   }
 }
@@ -265,6 +258,10 @@
 }
 
 .home-body strong {
+  font-weight: 600;
+}
+
+.home-body .home-title {
   font-weight: 600;
 }
 
@@ -322,6 +319,7 @@
 .home-body .home-title {
   font-size: clamp(2.1rem,4.4vw,3.5rem);
   line-height: 1.06;
+  letter-spacing: -.025em;
   max-width: 15ch;
   margin-bottom: 24px;
 }
@@ -331,26 +329,16 @@
   max-width: 34ch;
 }
 
-/* Filled primary actions. The header's boxed sign-up is styled in shell.css. */
+/* The apps' filled primary action. The header's sign-up button is styled in shell.css. */
 .home-body .home-action--primary {
-  background: var(--color-text);
-  color: var(--color-canvas);
-  border-color: var(--color-text);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 .home-body .home-action--primary:hover {
-  background: var(--color-text-soft);
-  border-color: var(--color-text-soft);
-  color: var(--color-canvas);
-}
-
-.home-body a.site-header__signup {
-  text-decoration: none;
-}
-
-.home-body a.site-header__signup:hover {
-  color: var(--color-canvas);
-  background: var(--color-text);
+  background: var(--color-accent-strong);
+  border-color: var(--color-accent-strong);
+  color: var(--color-on-accent);
 }
 
 /* Frontmatter colours match the diagram cards. */
@@ -372,13 +360,12 @@
   z-index: 3;
   right: 12px;
   bottom: 12px;
-  padding: 4px 10px;
-  border: 0;
+  padding: 5px 10px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--color-canvas) 90%, transparent);
   color: var(--color-text-muted);
-  font: 12px/1.3 var(--sans);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  font: 500 12px/1.3 var(--sans);
   cursor: pointer;
 }
 
@@ -427,8 +414,6 @@
 /* The app screenshot keeps to the reading column. */
 .home-body .chapter .app-shot { width: min(560px, 100%); margin: 28px 0 0; }
 
-/* The explainer film uses the screenshot's window frame (AppShot styles), without the address bar. */
-.home-film video { display: block; width: 100%; height: auto; background: #fff; }
 
 /* The task's file sits just under its screenshot. */
 .home-body .record-example.home-record {
@@ -458,4 +443,71 @@
 @media (max-width: 35rem) {
   .home-apps > div,
   .home-facts > div { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
+}
+
+
+/* App tiles beside the app names. */
+.home-apps dt { display: flex; align-items: center; gap: 0.6rem; }
+.home-apps .app-icon { width: 1.7rem; height: 1.7rem; border-radius: var(--radius-sm); }
+.home-apps > div { align-items: center; grid-template-columns: 9.5rem minmax(0, 1fr); }
+
+/* A screenshot under a chapter's text sits a little apart from it. */
+.home-body .chapter p + .app-shot { margin-top: 32px; }
+
+/* The explainer film uses the screenshot's window frame (AppShot styles), without the
+   address bar. It stays in the text column, so the murmuration beside it is clear.
+   The backgrounds are the film's own canvas in each cut. */
+.home-film video { display: block; width: 100%; height: auto; background: light-dark(#fff, oklch(18.7% 0.002 286)); }
+
+/* The film's opening still, with the apps' primary button to start it. */
+.home-film__frame { position: relative; }
+.home-film__play {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  display: inline-flex;
+  padding: 0.5rem 0.9rem 0.5rem 0.7rem;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border: 0;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--elevation-low);
+  font: 500 0.88rem/1 var(--sans);
+  cursor: pointer;
+}
+.home-film__play:hover { background: var(--color-accent-strong); }
+.home-film__play:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.home-film__play svg { width: 14px; height: 14px; fill: currentColor; }
+
+/* The opening chapter starts under the header so the film is in view without scrolling. */
+@media (width > 820px) {
+  .chapter:first-child { align-items: flex-start; padding-top: 132px; }
+  .home-body .chapter .home-film { margin-top: 30px; }
+}
+
+/* On a phone each chapter is a card that slides up over its diagram. The diagram
+   shows whole in the gap above the card, and the card covers it cleanly, with no
+   see-through edge. */
+@media (width <= 820px) {
+  .chapter, .chapter:first-child, .chapter:last-child {
+    min-height: 100vh;
+    padding: 50vh 8px 8vh;
+    pointer-events: none;
+  }
+  .chapter__inner {
+    width: 100%;
+    padding: 22px 16px 26px;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    background: var(--color-canvas);
+    border: 1px solid var(--color-border-strong);
+    border-radius: 14px;
+    box-shadow: 0 -12px 32px -20px var(--color-shadow, rgb(0 0 0 / 0.25));
+    backdrop-filter: none;
+  }
+  /* The control sits with the diagram, under the header, and the cards pass over it. */
+  .motion-control { top: 78px; right: 12px; bottom: auto; z-index: 1; }
 }

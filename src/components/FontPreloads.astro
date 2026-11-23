@@ -1,0 +1,16 @@
+---
+// The four font files every page's first screen uses. Preloading starts them with the
+// page instead of after its stylesheet, so text paints in its own font rather than
+// in a fallback that is swapped a frame later. The URLs are the same hashed files the
+// @fontsource stylesheets point to.
+import plex400 from "@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2?url";
+import plex500 from "@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-500-normal.woff2?url";
+import plex600 from "@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2?url";
+import azeret500 from "@fontsource/azeret-mono/files/azeret-mono-latin-500-normal.woff2?url";
+---
+
+{
+  [plex400, plex500, plex600, azeret500].map((href) => (
+    <link rel="preload" as="font" type="font/woff2" href={href} crossorigin />
+  ))
+}

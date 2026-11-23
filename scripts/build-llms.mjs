@@ -1,9 +1,10 @@
 // Writes Markdown copies of the built pages for language models and other
-// text tools: an index.md beside each searchable page, /llms.txt listing them,
+// text tools: an index.md beside each page, /llms.txt listing them,
 // and /llms-full.txt with every page in one file.
 //
-// A page is included when its <main> carries data-pagefind-body, the same rule
-// the site search uses, so noIndex pages and the archived specification stay out.
+// A page is included when its <main> carries data-markdown-body, so noIndex pages
+// and the archived specification stay out. Elements marked data-markdown-ignore
+// (headers, footers, sidebars) are left out of the copy.
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -28,7 +29,7 @@ const sections = [
 
 export function pageToMarkdown(html, turndown = createTurndown()) {
   const main = html.match(/<main\b([^>]*)>([\s\S]*?)<\/main>/);
-  if (!main || !/\bdata-pagefind-body\b/.test(main[1])) return null;
+  if (!main || !/\bdata-markdown-body\b/.test(main[1])) return null;
   const title = decode(html.match(/<title>([\s\S]*?)<\/title>/)?.[1] ?? "").replace(/ \| mdbase$/, "");
   const description = decode(html.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? "");
   const body = turndown.turndown(main[2]).replace(/\n{3,}/g, "\n\n").trim();
@@ -44,7 +45,7 @@ export function createTurndown() {
   });
   turndown.remove(["script", "style", "canvas", "svg", "button", "video", "noscript"]);
   turndown.addRule("ignored", {
-    filter: (node) => node.getAttribute?.("data-pagefind-ignore") != null || node.getAttribute?.("aria-hidden") === "true",
+    filter: (node) => node.getAttribute?.("data-markdown-ignore") != null || node.getAttribute?.("aria-hidden") === "true",
     replacement: () => ""
   });
   // The docs title block repeats the title and description given above the body,
@@ -84,6 +85,8 @@ export function createTurndown() {
   turndown.addRule("images", {
     filter: "img",
     replacement: (_content, node) => {
+      // A screenshot's dark capture repeats its light one.
+      if (node.getAttribute("data-markdown-ignore") != null) return "";
       const alt = node.getAttribute("alt");
       return alt ? `\n\n*Image: ${alt}*\n\n` : "";
     }
@@ -104,7 +107,7 @@ function decode(text) {
 function walk(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name);
-    if (entry.isDirectory()) return entry.name === "pagefind" ? [] : walk(path);
+    if (entry.isDirectory()) return walk(path);
     return entry.name === "index.html" ? [path] : [];
   });
 }

@@ -13,9 +13,9 @@ const { archive } = Astro.props;
 const title = archive ? "Specification v0.2 archive" : "Specification v0.3";
 ---
 
-<BaseLayout title={title} description="The full mdbase specification for typed Markdown collections." current="spec" searchable={!archive} wide>
+<BaseLayout title={title} description="The full mdbase specification for typed Markdown collections." current="spec" markdownCopy={!archive} wide>
   <div class="docs-shell spec-docs">
-    <aside class="docs-nav" data-pagefind-ignore="all">
+    <aside class="docs-nav" data-markdown-ignore>
       <details open data-spec-nav>
         <summary>{title} sections</summary>
         <nav aria-label="Specification sections"><!-- spec-navigation:start --><!-- spec-navigation:end --></nav>

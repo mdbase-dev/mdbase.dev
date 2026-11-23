@@ -1,7 +1,8 @@
 // Markdown pipeline for the documentation records in content/.
 //
 // The records stay ordinary Markdown. These plugins give three conventions
-// their meaning on the site (content/_types/doc-page.md describes them):
+// their meaning on the site (content/_types/doc-page.md describes them, and a
+// fourth, card lists, that needs only a stylesheet rule):
 //   - a code block's `title="…"` becomes its caption;
 //   - `file="examples/…"` shows that file from this repository, so a listing
 //     cannot drift from the example app CI builds, and `pick="key"` keeps one

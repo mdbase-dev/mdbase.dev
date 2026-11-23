@@ -51,3 +51,22 @@ and opt-in accessible video controls. Site CI and the production build run it to
 Production is the repository's GitHub Pages workflow (`.github/workflows/deploy.yml`), triggered
 by a merge to `main`. Cloudflare Pages is only the separate development deployment. Verify
 `/apps/`, both documentation roots, all five video files and their posters after deployment.
+
+## Screenshots
+
+`AppShot.astro` frames the screenshots in `public/images/apps`. Each has a light and a dark
+capture, 1600×1000 WebP, taken from a 1120×700 window at 2×.
+
+The Connect and desktop app screenshots use made-up accounts from the apps' own review
+fixtures, with no real account or collection content. Retake them from an mdbase-connect
+checkout with `scripts/screenshots/capture-connect.mjs` (the web screens, against
+`pnpm portal:review`) and `scripts/screenshots/capture-desktop.mjs` (the desktop app's
+renderer in a browser). Each script's header gives the steps. Retake them when those screens
+change.
+
+On a phone each screenshot shows only the part of the window named for it in
+`AppShot.astro` (`crops`), and opening it shows the whole capture; set a crop when you add
+a screenshot.
+
+The social share image, `public/og-card.jpg`, is drawn from the homepage's sky by
+`scripts/screenshots/capture-og-card.mjs`. Redraw it when the typefaces or the mark change.

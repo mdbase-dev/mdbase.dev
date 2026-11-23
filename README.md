@@ -36,8 +36,7 @@ pnpm index:site
 pnpm check:links
 ```
 
-`pnpm index:site` builds the Pagefind index for the header's search dialog,
-then writes a Markdown copy of each page (`index.md` beside its `index.html`),
+`pnpm index:site` writes a Markdown copy of each page (`index.md` beside its `index.html`),
 `/llms.txt` and `/llms-full.txt` (`scripts/build-llms.mjs`). It runs after the
 specification import so the specification is included. Each page's `<main>` is
 used; headers, footers and documentation sidebars are excluded, as are pages
@@ -127,8 +126,7 @@ pnpm deploy:dev
 ```
 
 The command builds the current working tree for
-`https://mdbase-dev.pages.dev`, imports the specification, builds the search
-index and Markdown copies, checks local links, and deploys the `main` branch of
+`https://mdbase-dev.pages.dev`, imports the specification, builds the Markdown copies, checks local links, and deploys the `main` branch of
 the standalone `mdbase-dev` Cloudflare Pages project. It verifies the live homepage, specification, canonical URLs, and
 indexing controls after deployment. The production GitHub Pages deployment and
 `mdbase.dev` domain are unchanged.

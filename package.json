@@ -13,7 +13,7 @@
     "sync:mcp-tools": "node scripts/sync-mcp-tools.mjs",
     "sync:contracts": "node scripts/sync-contracts.mjs",
     "import:spec": "node scripts/import-spec.mjs",
-    "index:site": "pagefind --site dist && node scripts/build-llms.mjs",
+    "index:site": "node scripts/build-llms.mjs",
     "check:links": "node scripts/check-links.mjs",
     "build:sdk-api": "node scripts/build-sdk-api.mjs",
     "check:sdk-api": "node scripts/build-sdk-api.mjs --check",
@@ -29,14 +29,13 @@
   "dependencies": {
     "@astrojs/markdown-satteri": "0.3.4",
     "@astrojs/sitemap": "^3.7.3",
-    "@fontsource/atkinson-hyperlegible": "^5.3.0",
     "@fontsource/azeret-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
     "astro": "^7.1.3",
     "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
-    "pagefind": "1.5.2",
     "turndown": "7.2.4",
     "typescript": "^6.0.3"
   }
