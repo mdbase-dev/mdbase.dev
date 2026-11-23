@@ -454,9 +454,38 @@
 /* A screenshot under a chapter's text sits a little apart from it. */
 .home-body .chapter p + .app-shot { margin-top: 32px; }
 
-/* The film opens in the viewer from a link beside the other actions. */
-.home-body .home-action--film { display: inline-flex; align-items: center; gap: 0.4rem; }
-.home-action--film svg { width: 12px; height: 12px; fill: currentColor; }
+/* The explainer film uses the screenshot's window frame (AppShot styles), without the
+   address bar. It stays in the text column, so the murmuration beside it is clear.
+   The backgrounds are the film's own canvas in each cut. */
+.home-film video { display: block; width: 100%; height: auto; background: light-dark(#fff, oklch(18.7% 0.002 286)); }
+
+/* The film's opening still, with the apps' primary button to start it. */
+.home-film__frame { position: relative; }
+.home-film__play {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  display: inline-flex;
+  padding: 0.5rem 0.9rem 0.5rem 0.7rem;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border: 0;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--elevation-low);
+  font: 500 0.88rem/1 var(--sans);
+  cursor: pointer;
+}
+.home-film__play:hover { background: var(--color-accent-strong); }
+.home-film__play:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.home-film__play svg { width: 14px; height: 14px; fill: currentColor; }
+
+/* The opening chapter starts under the header so the film is in view without scrolling. */
+@media (width > 820px) {
+  .chapter:first-child { align-items: flex-start; padding-top: 132px; }
+  .home-body .chapter .home-film { margin-top: 30px; }
+}
 
 /* On a phone each chapter is a card that slides up over its diagram. The diagram
    shows whole in the gap above the card, and the card covers it cleanly, with no
