@@ -602,3 +602,35 @@ main[tabindex="-1"]:focus { outline: none; }
   .plan-grid { grid-template-columns: minmax(0, 1fr); }
   .plan__terms { min-height: 0; }
 }
+
+/* A docs heading marked {.cards} shows the list under it as cards, two to a row:
+   each item's first line is its title and its last line its link. */
+.docs-article h2.cards + ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 1.1rem;
+  padding: 0;
+  list-style: none;
+}
+.docs-article h2.cards + ul > li {
+  display: flex;
+  max-width: none;
+  margin: 0;
+  padding: 1rem 1.1rem 1.05rem;
+  flex-direction: column;
+  background: var(--color-surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg, 10px);
+}
+.docs-article h2.cards + ul > li > p { max-width: none; margin: 0; font-size: 0.88rem; line-height: 1.5; }
+.docs-article h2.cards + ul > li > p:first-child { margin-bottom: 0.35rem; color: var(--ink); font-size: 0.95rem; }
+.docs-article h2.cards + ul > li > p:last-child { margin-top: auto; padding-top: 0.75rem; }
+@media (max-width: 34rem) {
+  .docs-article h2.cards + ul { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* The download for this computer, in the page intro. */
+.download-primary .button-row { margin-top: 1.25rem; }
+.button-row[hidden] { display: none; }
+.download-primary__meta { margin-top: 0.7rem; color: var(--ink-muted); font-size: 0.84rem; }

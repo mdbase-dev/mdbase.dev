@@ -85,6 +85,8 @@ export function createTurndown() {
   turndown.addRule("images", {
     filter: "img",
     replacement: (_content, node) => {
+      // A screenshot's dark capture repeats its light one.
+      if (node.getAttribute("data-markdown-ignore") != null) return "";
       const alt = node.getAttribute("alt");
       return alt ? `\n\n*Image: ${alt}*\n\n` : "";
     }

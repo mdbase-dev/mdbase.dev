@@ -8,6 +8,7 @@ import "@fontsource/azeret-mono/500.css";
 import "../styles/shell.css";
 import "../styles/global.css";
 import FontPreloads from "../components/FontPreloads.astro";
+import MediaViewer from "../components/MediaViewer.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import ThemeControlScript from "../components/ThemeControlScript.astro";
@@ -71,7 +72,7 @@ const showContents = sections.length > 2;
     <link rel="manifest" href="/site.webmanifest" />
     <FontPreloads />
     <link rel="stylesheet" href="/mdbase-theme.css" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#f6fafd" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
@@ -102,6 +103,7 @@ const showContents = sections.length > 2;
       {contents ? <Fragment set:html={body} /> : <slot />}
     </main>
     <SiteFooter />
+    <MediaViewer />
     <ThemeControlScript />
     <p class="sr-only" id="copy-status" role="status" aria-live="polite"></p>
     <script is:inline>

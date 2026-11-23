@@ -414,8 +414,6 @@
 /* The app screenshot keeps to the reading column. */
 .home-body .chapter .app-shot { width: min(560px, 100%); margin: 28px 0 0; }
 
-/* The explainer film uses the screenshot's window frame (AppShot styles), without the address bar. */
-.home-film video { display: block; width: 100%; height: auto; background: #fff; }
 
 /* The task's file sits just under its screenshot. */
 .home-body .record-example.home-record {
@@ -447,26 +445,6 @@
   .home-facts > div { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
 }
 
-/* The film's opening still, with the apps' primary button to start it. */
-.home-film__frame { position: relative; }
-.home-film__play {
-  position: absolute;
-  bottom: 14px;
-  left: 14px;
-  display: inline-flex;
-  padding: 0.5rem 0.9rem 0.5rem 0.7rem;
-  align-items: center;
-  gap: 0.45rem;
-  color: var(--color-on-accent);
-  background: var(--color-accent);
-  border: 0;
-  border-radius: var(--radius-sm);
-  box-shadow: var(--elevation-low);
-  font: 500 0.88rem/1 var(--sans);
-  cursor: pointer;
-}
-.home-film__play:hover { background: var(--color-accent-strong); }
-.home-film__play svg { width: 14px; height: 14px; fill: currentColor; }
 
 /* App tiles beside the app names. */
 .home-apps dt { display: flex; align-items: center; gap: 0.6rem; }
@@ -476,8 +454,46 @@
 /* A screenshot under a chapter's text sits a little apart from it. */
 .home-body .chapter p + .app-shot { margin-top: 32px; }
 
-/* The opening chapter starts under the header so the film is in view without scrolling. */
-@media (width>820px) {
-  .chapter:first-child { align-items: flex-start; padding-top: 132px; }
-  .home-body .chapter .home-film { margin-top: 30px; }
+/* The film opens in the viewer from a link beside the other actions. */
+.home-body .home-action--film { display: inline-flex; align-items: center; gap: 0.4rem; }
+.home-action--film svg { width: 12px; height: 12px; fill: currentColor; }
+
+/* The opening chapter shows the product beside its text: the desktop app, large,
+   in the room the other chapters give their diagrams. */
+@media (width > 820px) {
+  #intro .chapter__inner { position: relative; }
+  .home-hero-shot {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 56px);
+    width: min(700px, calc(100vw - var(--site-left) - 100% - 56px - 32px));
+    transform: translateY(-50%);
+  }
+  .home-body .chapter .home-hero-shot .app-shot { width: 100%; margin: 0; }
+}
+
+/* On a phone each chapter is a card that slides up over its diagram. The diagram
+   shows whole in the gap above the card, and the card covers it cleanly, with no
+   see-through edge. */
+@media (width <= 820px) {
+  .chapter, .chapter:first-child, .chapter:last-child {
+    min-height: 100vh;
+    padding: 50vh 8px 8vh;
+    pointer-events: none;
+  }
+  .chapter__inner {
+    width: 100%;
+    padding: 22px 16px 26px;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    background: var(--color-canvas);
+    border: 1px solid var(--color-border-strong);
+    border-radius: 14px;
+    box-shadow: 0 -12px 32px -20px var(--color-shadow, rgb(0 0 0 / 0.25));
+    backdrop-filter: none;
+  }
+  .home-hero-shot { margin-top: 4px; }
+  /* The control sits with the diagram, under the header, and the cards pass over it. */
+  .motion-control { top: 78px; right: 12px; bottom: auto; z-index: 1; }
 }

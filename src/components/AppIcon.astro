@@ -3,9 +3,11 @@
 // their own colour (the @mdbase-dev/ui app marks); other apps show their initial.
 interface Props {
   name: string;
+  /** A sign in place of the initial, for a row that is not an app. */
+  glyph?: "plus";
 }
 
-const { name } = Astro.props;
+const { name, glyph } = Astro.props;
 const key = name.toLowerCase().replace(/^mdbase\s+(for\s+)?/, "");
 const marked = key === "editor" || key === "reader" || key === "writer";
 const bars = [
@@ -30,6 +32,8 @@ const bars = [
           <rect class={bar.line ? "app-icon__line" : "app-icon__bar"} x={bar.x} y={bar.y} width={bar.width} height="10" />
         ))}
       </svg>
+    ) : glyph === "plus" ? (
+      <svg class="app-icon__glyph" viewBox="0 0 16 16" focusable="false"><path d="M8 3.5v9M3.5 8h9" /></svg>
     ) : (
       <span>{key.charAt(0).toUpperCase()}</span>
     )
@@ -50,6 +54,7 @@ const bars = [
   }
 
   .app-icon svg { width: 58%; height: 58%; }
+  .app-icon .app-icon__glyph { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
   .app-icon__bar { fill: var(--app); }
   .app-icon__line { fill: var(--color-text); }
   .app-icon--editor { --app: var(--app-editor, #005c88); }

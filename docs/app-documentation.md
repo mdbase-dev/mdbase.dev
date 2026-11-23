@@ -63,3 +63,10 @@ checkout with `scripts/screenshots/capture-connect.mjs` (the web screens, agains
 `pnpm portal:review`) and `scripts/screenshots/capture-desktop.mjs` (the desktop app's
 renderer in a browser). Each script's header gives the steps. Retake them when those screens
 change.
+
+On a phone each screenshot shows only the part of the window named for it in
+`AppShot.astro` (`crops`), and opening it shows the whole capture; set a crop when you add
+a screenshot.
+
+The social share image, `public/og-card.jpg`, is drawn from the homepage's sky by
+`scripts/screenshots/capture-og-card.mjs`. Redraw it when the typefaces or the mark change.

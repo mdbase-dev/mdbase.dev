@@ -27,6 +27,29 @@ const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
         folders on your computer and let approved apps reach Private collections
         through it.
       </p>
+      {
+        // The packages for the visitor's own system, shown by the script below.
+        // The full list further down has every one of them, so the Markdown copy skips these.
+        ["macOS", "Windows", "Linux"].map((platform) => (
+          <div class="download-primary" data-primary-platform={platform} data-markdown-ignore hidden>
+            <div class="button-row">
+              {desktopDownloads
+                .filter((download) => download.platform === platform)
+                .map((download, index) => (
+                  <a class:list={["button", { "button--primary": index === 0 }]} href={`${releaseBase}/${download.file}`}>
+                    {download.label}
+                  </a>
+                ))}
+            </div>
+            <p class="download-primary__meta">
+              Version {version} for {platform}. <a href="#desktop-heading">All downloads</a>
+            </p>
+          </div>
+        ))
+      }
+      <div class="button-row" data-primary-fallback>
+        <a class="button" href="#desktop-heading">See all downloads</a>
+      </div>
     </div>
     <AppShot
       name="desktop-collections"
@@ -147,6 +170,11 @@ const releaseSize = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
       const platform = (navigator.userAgentData?.platform || navigator.platform || agent).toLowerCase();
       const system = /mac/.test(platform) ? "macOS" : /win/.test(platform) ? "Windows" : /linux|x11/.test(platform) ? "Linux" : null;
       if (!system) return;
+      const primary = document.querySelector(`[data-primary-platform="${system}"]`);
+      if (primary) {
+        primary.hidden = false;
+        document.querySelector("[data-primary-fallback]")?.setAttribute("hidden", "");
+      }
       document.querySelectorAll(`.download-option[data-platform="${system}"] .download-option__match`).forEach((note) => {
         note.hidden = false;
         // The matching packages keep the filled button; the rest are secondary.

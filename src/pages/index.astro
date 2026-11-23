@@ -14,11 +14,9 @@ import AppIcon from "../components/AppIcon.astro";
 <section id="intro" class="chapter is-active" data-scene="intro" aria-label="Introduction"><div class="chapter__inner">
 <h1 class="home-title">Structured data in ordinary Markdown files</h1>
 <p>Keep notes, tasks and projects as Markdown files. mdbase syncs them between your devices and serves them to the apps you use, on any device, with the permissions you give each app.</p>
-<div class="chapter__actions home-actions"><a class="home-action home-action--primary" href="https://connect.mdbase.dev/signup">Create an account</a><a class="home-action" href="/downloads/">Download the desktop app</a></div>
-<figure class="app-shot home-film">
-<div class="app-shot__window home-film__frame" data-film><video controls playsinline preload="none" poster="/videos/mdbase-in-two-minutes.jpg" width="1920" height="1080" aria-label="What mdbase does, a silent film"><source src="/videos/mdbase-in-two-minutes.mp4" type="video/mp4" /></video></div>
-</figure>
+<div class="chapter__actions home-actions"><a class="home-action home-action--primary" href="https://connect.mdbase.dev/signup">Create an account</a><a class="home-action" href="/downloads/">Download the desktop app</a><a class="home-action home-action--film" href="/videos/mdbase-in-two-minutes.mp4" data-view-video="What mdbase does, a two-minute silent film" data-poster="/videos/mdbase-in-two-minutes.jpg"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3.2v9.6L13 8z" /></svg>Watch the two-minute film</a></div>
 <p class="home-status">mdbase is in beta. Keep independent backups of important collections.</p>
+<div class="home-hero-shot"><AppShot name="desktop-home" alt="The mdbase Connect desktop app's home screen. It lists the apps TaskNotes, Editor and Reader with the collection each one uses, and the collections on this computer with their sync status." eager /></div>
 </div></section>
 
 <section id="files" class="chapter" data-scene="collection" aria-label="Files"><div class="chapter__inner">
@@ -46,6 +44,7 @@ the field visit.</code></pre>
 <div><dt><AppIcon name="Editor" /><a href="/apps/editor/">Editor</a></dt><dd>Any collection: records, frontmatter, links and types.</dd></div>
 <div><dt><AppIcon name="Reader" /><a href="/apps/reader/">Reader</a></dt><dd>PDFs, EPUBs and web pages, with each highlight kept as a record.</dd></div>
 <div><dt><AppIcon name="Writer" /><a href="/apps/writer/">Writer</a></dt><dd>Papers and books in Markdown, with citations from Reader.</dd></div>
+<div><dt><AppIcon name="Build your own" glyph="plus" /><a href="/sdk/">Build your own</a></dt><dd>Your own app on the same collections, with the TypeScript SDK.</dd></div>
 </dl>
 <p><a href="/apps/">All apps</a></p>
 </div></section>
@@ -91,25 +90,4 @@ the field visit.</code></pre>
 </div></section>
 </main>
 <button class="motion-control" type="button" data-motion-control>Pause motion</button>
-<script is:inline>
-  // The film opens as a still with one Play button; the browser's own controls appear once it is playing.
-  // Without scripts the video keeps its controls.
-  (() => {
-    const frame = document.querySelector("[data-film]");
-    const video = frame?.querySelector("video");
-    if (!frame || !video) return;
-    const play = document.createElement("button");
-    play.type = "button";
-    play.className = "home-film__play";
-    play.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><span>Play the two-minute film</span>';
-    video.controls = false;
-    frame.append(play);
-    play.addEventListener("click", () => {
-      video.controls = true;
-      play.remove();
-      video.play();
-      video.focus();
-    });
-  })();
-</script>
 </HomeLayout>

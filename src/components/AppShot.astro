@@ -27,32 +27,55 @@ const hosts = {
   "desktop-collections": "mdbase Connect"
 } as const;
 
+// On a phone a whole window is too small to read, so each capture names the part
+// worth showing there: its left and top edges, width and height, as fractions of
+// the capture. Opening the screenshot shows all of it.
+const crops = {
+  tasknotes: [0.2, 0.02, 0.62, 0.62],
+  editor: [0.25, 0, 0.62, 0.62],
+  reader: [0.2, 0.08, 0.6, 0.6],
+  writer: [0, 0, 0.62, 0.62],
+  "connect-approve": [0.19, 0.09, 0.62, 0.89],
+  "connect-collections": [0.21, 0.02, 0.62, 0.62],
+  "connect-sharing": [0.19, 0.52, 0.79, 0.36],
+  "desktop-home": [0.22, 0.03, 0.4, 0.5],
+  "desktop-collections": [0.22, 0.03, 0.6, 0.5]
+} as const;
+
 const { name, alt, eager = false } = Astro.props;
 const hasCaption = Astro.slots.has("caption");
 const loading = eager ? "eager" : "lazy";
+const [cropX, cropY, cropW, cropH] = crops[name];
+const crop = `--crop-x: ${cropX}; --crop-y: ${cropY}; --crop-w: ${cropW}; --crop-ratio: ${((1.6 * cropW) / cropH).toFixed(3)};`;
 ---
 
 <figure class="app-shot">
-  <div class="app-shot__window">
-    <div class="app-shot__bar" aria-hidden="true"><span>{hosts[name]}</span></div>
-    <img
-      class="app-shot__image app-shot__image--light"
-      src={`/images/apps/${name}-light.webp`}
-      alt={alt}
-      width="1600"
-      height="1000"
-      loading={loading}
-      decoding="async"
-    />
-    <img
-      class="app-shot__image app-shot__image--dark"
-      src={`/images/apps/${name}-dark.webp`}
-      alt={alt}
-      width="1600"
-      height="1000"
-      loading={loading}
-      decoding="async"
-    />
+  <div class="app-shot__window" data-view-image={hosts[name]} tabindex="0" role="button" aria-label={`Enlarge the screenshot: ${alt}`}>
+    <div class="app-shot__bar" aria-hidden="true">
+      <span>{hosts[name]}</span>
+      <svg class="app-shot__enlarge" viewBox="0 0 16 16"><path d="M9.5 2.5h4v4M6.5 13.5h-4v-4M13.5 2.5l-4.5 4.5M2.5 13.5 7 9" /></svg>
+    </div>
+    <div class="app-shot__crop" style={crop}>
+      <img
+        class="app-shot__image app-shot__image--light"
+        src={`/images/apps/${name}-light.webp`}
+        alt={alt}
+        width="1600"
+        height="1000"
+        loading={loading}
+        decoding="async"
+      />
+      <img
+        class="app-shot__image app-shot__image--dark"
+        src={`/images/apps/${name}-dark.webp`}
+        alt={alt}
+        width="1600"
+        height="1000"
+        loading={loading}
+        decoding="async"
+        data-markdown-ignore
+      />
+    </div>
   </div>
   {hasCaption && <figcaption><slot name="caption" /></figcaption>}
 </figure>
@@ -74,7 +97,11 @@ const loading = eager ? "eager" : "lazy";
     box-shadow: var(--app-shot-shadow);
   }
 
+  .app-shot__window[data-view-image] { cursor: zoom-in; }
+  .app-shot__window[data-view-image]:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+
   .app-shot__bar {
+    position: relative;
     display: flex;
     height: 28px;
     align-items: center;
@@ -86,10 +113,39 @@ const loading = eager ? "eager" : "lazy";
     letter-spacing: 0.01em;
   }
 
+  /* The corner mark says the screenshot opens; it brightens with the window. */
+  .app-shot__enlarge {
+    position: absolute;
+    top: 7px;
+    right: 9px;
+    width: 13px;
+    height: 13px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.55;
+  }
+  .app-shot__window:is(:hover, :focus-visible) .app-shot__enlarge { color: var(--color-text); opacity: 1; }
+
   .app-shot__image {
     display: block;
     width: 100%;
     height: auto;
+  }
+
+  /* On a phone, the named part of the capture fills the frame. */
+  @media (max-width: 40rem) {
+    .app-shot__crop { position: relative; overflow: hidden; aspect-ratio: var(--crop-ratio); }
+    .app-shot__crop .app-shot__image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: calc(100% / var(--crop-w));
+      max-width: none;
+      transform: translate(calc(var(--crop-x) * -100%), calc(var(--crop-y) * -100%));
+    }
   }
 
   .app-shot__image--dark { display: none; }

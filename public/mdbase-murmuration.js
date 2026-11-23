@@ -103,7 +103,8 @@
       function diagramBounds() {
         if (width <= 820) {
           const headerBottom = document.querySelector(".site-header")?.getBoundingClientRect().bottom || 76;
-          const top = Math.max(headerBottom + 12, height * 0.10);
+          // The motion control has its own row between the header and the diagram.
+          const top = Math.max(headerBottom + 46, height * 0.10);
           return {
             x: width * 0.07,
             y: top,

@@ -6,31 +6,31 @@ section: sdk
 
 An mdbase collection is a folder of Markdown files with typed frontmatter, synced across a person’s devices. An app built with the SDK reads and writes the records in a collection its user chooses.
 
-## Where to start {#start}
+## Where to start {#start .cards}
 
-**Build an app**
+- **Build an app**
 
-Build Worklog, a small app that signs a user in and keeps its entries in their collection, from an empty folder to a deployed site. It uses React, and its last section shows the same app without React.
+  Build Worklog, a small app that signs a user in and keeps its entries in their collection, from an empty folder to a deployed site. It uses React, and its last section shows the same app without React.
 
-[Follow the tutorial](/sdk/connect-quickstart/)
+  [Follow the tutorial](/sdk/connect-quickstart/)
 
-**Try the SDK in memory**
+- **Try the SDK in memory**
 
-Run a short script against an in-memory collection. It needs no account or service, and shows reads, writes and live queries.
+  Run a short script against an in-memory collection. It needs no account or service, and shows reads, writes and live queries.
 
-[Run the script](/sdk/quickstart/)
+  [Run the script](/sdk/quickstart/)
 
-**Develop on localhost**
+- **Develop on localhost**
 
-Run your app from a development server against real accounts and collections.
+  Run your app from a development server against real accounts and collections.
 
-[Set up local development](/sdk/local-development/)
+  [Set up local development](/sdk/local-development/)
 
-**The format**
+- **The format**
 
-Build tools that read and write mdbase collections as files, with no SDK.
+  Build tools that read and write mdbase collections as files, with no SDK.
 
-[Read the specification](/spec/)
+  [Read the specification](/spec/)
 
 ## Why build on mdbase {#why}
 
