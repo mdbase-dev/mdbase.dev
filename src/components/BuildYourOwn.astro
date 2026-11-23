@@ -1,0 +1,289 @@
+---
+// The picture beside "Build your own" on the apps page: twelve records that
+// rearrange themselves as a list, a board, a calendar, a timeline and a graph.
+// A record's status changes now and then and follows it into every view, which
+// is the point: an app is one way of looking at the same records.
+//
+// The first view is drawn here, so the picture is whole without scripts. With
+// them the views take turns; the tabs choose one and a record can be clicked to
+// move its status on. Reduced motion keeps the tabs and drops the movement.
+import { BAR_HEIGHT, BOARD, CALENDAR, EDGES, INITIAL_STATUS, STAGE, TIMELINE, VIEWS, layout } from "../scripts/record-views";
+
+const first = "board";
+const labels = { list: "List", board: "Board", calendar: "Calendar", timeline: "Timeline", graph: "Graph" };
+const tiles = layout(first, INITIAL_STATUS);
+const cells = Array.from({ length: CALENDAR.columns * CALENDAR.rows }, (_, day) => ({
+  day,
+  x: CALENDAR.left + (day % CALENDAR.columns) * CALENDAR.stepX,
+  y: CALENDAR.top + Math.floor(day / CALENDAR.columns) * CALENDAR.stepY
+}));
+---
+
+<figure class="app-shot byo" data-markdown-ignore>
+  <div class="app-shot__window" data-record-views data-view={first}>
+    <div class="app-shot__bar" aria-hidden="true"><span>your-app.example</span></div>
+    <div class="byo__toolbar">
+      <div class="byo__tabs" role="group" aria-label="Arrange the records as" inert>
+        {VIEWS.map((view) => <button type="button" data-view={view} aria-pressed={view === first ? "true" : "false"}>{labels[view]}</button>)}
+      </div>
+      <span class="byo__count" aria-hidden="true">12 records</span>
+    </div>
+    <svg class="byo__stage" viewBox={`0 0 ${STAGE.width} ${STAGE.height}`} role="img" aria-label="The same twelve records arranged in turn as a list, a board, a calendar, a timeline and a graph.">
+      <g class="byo-decor byo-decor--board">
+        {BOARD.columns.map((x, status) => (
+          <g data-status={status}>
+            <rect class="byo-column" x={x - 8} y="12" width={BOARD.width + 16} height={STAGE.height - 24} rx="10" />
+            <circle class="byo-dot" cx={x + 7} cy="30" r="4.5" />
+            <rect class="byo-bar byo-bar--b" x={x + 20} y="27" width={[34, 40, 30][status]} height={BAR_HEIGHT} rx="3" />
+          </g>
+        ))}
+      </g>
+      <g class="byo-decor byo-decor--calendar">
+        {cells.map((cell) => (
+          <g>
+            <rect class:list={["byo-cell", cell.day === CALENDAR.today && "byo-cell--today"]} x={cell.x} y={cell.y} width={CALENDAR.width} height={CALENDAR.height} rx="6" />
+            <rect class="byo-bar byo-bar--b" x={cell.x + 7} y={cell.y + 8} width="10" height="5" rx="2.5" />
+          </g>
+        ))}
+      </g>
+      <g class="byo-decor byo-decor--timeline">
+        {Array.from({ length: TIMELINE.lines }, (_, line) => <line class="byo-rule" x1={28 + line * TIMELINE.step} y1="8" x2={28 + line * TIMELINE.step} y2={STAGE.height - 8} />)}
+        <line class="byo-today" x1={TIMELINE.today} y1="8" x2={TIMELINE.today} y2={STAGE.height - 8} />
+        <circle class="byo-today-mark" cx={TIMELINE.today} cy="8" r="3" />
+      </g>
+      <g class="byo-decor byo-decor--graph">
+        {EDGES.map(() => <line class="byo-edge" />)}
+      </g>
+      {tiles.map((tile, index) => (
+        <g class="byo-tile" data-status={INITIAL_STATUS[index]}>
+          <rect class="byo-card" x={tile.x} y={tile.y} width={tile.w} height={tile.h} rx={tile.r} />
+          <rect class="byo-bar byo-bar--a" x={tile.ax} y={tile.ay} width={tile.aw} height={BAR_HEIGHT} rx="3" opacity={tile.ao} />
+          <rect class="byo-bar byo-bar--b" x={tile.bx} y={tile.by} width={tile.bw} height={BAR_HEIGHT} rx="3" opacity={tile.bo} />
+          <circle class="byo-dot" cx={tile.dx} cy={tile.dy} r={tile.dr} />
+        </g>
+      ))}
+      <circle class="byo-pulse" r="0" />
+    </svg>
+  </div>
+</figure>
+
+<script>
+  import { COUNT, EDGES, INITIAL_STATUS, TILE_KEYS, VIEWS, layout } from "../scripts/record-views";
+  import type { Status, Tile, View } from "../scripts/record-views";
+
+  const HOLD = 3.6;          // seconds a view stays before the next takes its turn
+  const CHANGE_AT = 1.5;     // when, within a hold, one record's status moves on
+  const STEP = [3, 5, 7, 0, 9, 2, 8, 1, 10, 6, 11, 4];   // the order records change in
+  const STIFFNESS = 130;
+  const DAMPING = 17;
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-record-views]")) {
+    const svg = root.querySelector<SVGSVGElement>("svg");
+    const tabs = root.querySelector<HTMLElement>(".byo__tabs");
+    const groups = [...root.querySelectorAll<SVGGElement>(".byo-tile")];
+    const edges = [...root.querySelectorAll<SVGLineElement>(".byo-edge")];
+    const pulse = root.querySelector<SVGCircleElement>(".byo-pulse");
+    if (!svg || !tabs || !pulse || groups.length !== COUNT) continue;
+
+    const still = matchMedia("(prefers-reduced-motion: reduce)");
+    const status: Status[] = [...INITIAL_STATUS];
+    let view = (root.dataset.view as View) ?? "board";
+    const parts = groups.map((group) => ({
+      group,
+      card: group.querySelector<SVGRectElement>(".byo-card")!,
+      a: group.querySelector<SVGRectElement>(".byo-bar--a")!,
+      b: group.querySelector<SVGRectElement>(".byo-bar--b")!,
+      dot: group.querySelector<SVGCircleElement>(".byo-dot")!
+    }));
+    const now = layout(view, status);
+    const speed: Tile[] = now.map(() => Object.fromEntries(TILE_KEYS.map((key) => [key, 0])) as Tile);
+    const goal: Tile[] = now.map((tile) => ({ ...tile }));
+    const due = new Array<number>(COUNT).fill(0);        // when each record takes its new place
+    const waiting: (Tile | null)[] = new Array(COUNT).fill(null);
+
+    let clock = 0;            // seconds of animation, counted only while on screen
+    let held = 0;             // seconds in the current view
+    let changed = false;      // whether this hold has had its status change
+    let stepIndex = 0;
+    let handsOffUntil = 0;    // the views stop taking turns for a while after a click
+    let drift = 0;            // 0 to 1: how far the graph's slow float is on
+    let pulseOn = -1, pulseAt = 0;
+    let frame = 0, last = 0, visible = false;
+
+    const draw = () => {
+      for (let i = 0; i < COUNT; i++) {
+        const tile = now[i], part = parts[i];
+        const ox = drift * 4 * Math.sin(clock * 0.7 + i * 1.7);
+        const oy = drift * 4 * Math.cos(clock * 0.6 + i * 2.3);
+        part.card.setAttribute("x", (tile.x + ox).toFixed(2));
+        part.card.setAttribute("y", (tile.y + oy).toFixed(2));
+        part.card.setAttribute("width", Math.max(0, tile.w).toFixed(2));
+        part.card.setAttribute("height", Math.max(0, tile.h).toFixed(2));
+        part.card.setAttribute("rx", Math.max(0, tile.r).toFixed(2));
+        part.a.setAttribute("x", (tile.ax + ox).toFixed(2));
+        part.a.setAttribute("y", (tile.ay + oy).toFixed(2));
+        part.a.setAttribute("width", Math.max(0, tile.aw).toFixed(2));
+        part.a.setAttribute("opacity", Math.min(1, Math.max(0, tile.ao)).toFixed(3));
+        part.b.setAttribute("x", (tile.bx + ox).toFixed(2));
+        part.b.setAttribute("y", (tile.by + oy).toFixed(2));
+        part.b.setAttribute("width", Math.max(0, tile.bw).toFixed(2));
+        part.b.setAttribute("opacity", Math.min(1, Math.max(0, tile.bo)).toFixed(3));
+        part.dot.setAttribute("cx", (tile.dx + ox).toFixed(2));
+        part.dot.setAttribute("cy", (tile.dy + oy).toFixed(2));
+        part.dot.setAttribute("r", Math.max(0, tile.dr).toFixed(2));
+      }
+      edges.forEach((edge, index) => {
+        const [from, to] = EDGES[index].map((i) => parts[i].dot);
+        edge.setAttribute("x1", from.getAttribute("cx")!);
+        edge.setAttribute("y1", from.getAttribute("cy")!);
+        edge.setAttribute("x2", to.getAttribute("cx")!);
+        edge.setAttribute("y2", to.getAttribute("cy")!);
+      });
+      if (pulseOn >= 0) {
+        const age = (clock - pulseAt) / 0.7;
+        if (age >= 1) { pulseOn = -1; pulse.setAttribute("r", "0"); }
+        else {
+          const dot = parts[pulseOn].dot;
+          pulse.setAttribute("cx", dot.getAttribute("cx")!);
+          pulse.setAttribute("cy", dot.getAttribute("cy")!);
+          pulse.setAttribute("r", (4 + 18 * (1 - (1 - age) ** 3)).toFixed(2));
+          pulse.setAttribute("opacity", (0.55 * (1 - age)).toFixed(3));
+        }
+      }
+    };
+
+    /** Send every record to its place in the current view, one a moment after another. */
+    const arrange = (stagger: number) => {
+      const next = layout(view, status);
+      for (let i = 0; i < COUNT; i++) {
+        if (still.matches) { goal[i] = next[i]; now[i] = { ...next[i] }; waiting[i] = null; }
+        else { waiting[i] = next[i]; due[i] = clock + i * stagger; }
+      }
+      if (still.matches) draw();
+    };
+
+    const show = (next: View) => {
+      view = next;
+      root.dataset.view = next;
+      for (const tab of tabs.querySelectorAll("button")) tab.setAttribute("aria-pressed", String(tab.dataset.view === next));
+      held = 0;
+      changed = false;
+      arrange(0.028);
+    };
+
+    const advance = (i: number) => {
+      status[i] = ((status[i] + 1) % 3) as Status;
+      groups[i].dataset.status = String(status[i]);
+      pulseOn = i;
+      pulseAt = clock;
+      arrange(0.012);
+    };
+
+    const tick = (time: number) => {
+      const dt = Math.min((time - last) / 1000, 1 / 20);
+      last = time;
+      clock += dt;
+      held += dt;
+      const taking = clock >= handsOffUntil;
+      if (taking && !changed && held > CHANGE_AT) { changed = true; advance(STEP[stepIndex++ % STEP.length]); }
+      if (taking && held > HOLD) show(VIEWS[(VIEWS.indexOf(view) + 1) % VIEWS.length]);
+      drift += ((view === "graph" ? 1 : 0) - drift) * Math.min(1, dt * 2.5);
+
+      // Two half steps keep the springs steady at low frame rates.
+      for (let pass = 0; pass < 2; pass++) {
+        const h = dt / 2;
+        for (let i = 0; i < COUNT; i++) {
+          if (waiting[i] && clock >= due[i]) { goal[i] = waiting[i]!; waiting[i] = null; }
+          for (const key of TILE_KEYS) {
+            speed[i][key] += ((goal[i][key] - now[i][key]) * STIFFNESS - speed[i][key] * DAMPING) * h;
+            now[i][key] += speed[i][key] * h;
+          }
+        }
+      }
+      draw();
+      frame = requestAnimationFrame(tick);
+    };
+
+    const run = () => {
+      cancelAnimationFrame(frame);
+      if (!visible || still.matches) return;
+      last = performance.now();
+      frame = requestAnimationFrame(tick);
+    };
+
+    tabs.inert = false;
+    tabs.addEventListener("click", (event) => {
+      const tab = event.target instanceof Element ? event.target.closest<HTMLButtonElement>("button[data-view]") : null;
+      if (!tab) return;
+      handsOffUntil = clock + 12;
+      show(tab.dataset.view as View);
+    });
+    groups.forEach((group, i) => group.addEventListener("click", () => {
+      handsOffUntil = clock + 12;
+      advance(i);
+    }));
+
+    new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; run(); }, { threshold: 0.2 }).observe(svg);
+    still.addEventListener("change", () => { arrange(0); run(); });
+    draw();
+  }
+</script>
+
+<style is:global>
+  .byo__toolbar {
+    display: flex;
+    padding: 0.45rem 0.6rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .byo__tabs { display: flex; flex-wrap: wrap; gap: 0.15rem; }
+  .byo__tabs button {
+    padding: 0.28rem 0.6rem;
+    color: var(--color-text-muted);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-sm, 6px);
+    font: 500 0.76rem/1 var(--sans);
+    cursor: pointer;
+  }
+  .byo__tabs button:hover { color: var(--color-text); }
+  .byo__tabs button[aria-pressed="true"] { color: var(--color-text); background: var(--color-selected); }
+  .byo__tabs button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+  .byo__count { flex: none; color: var(--color-text-muted); font: 400 0.68rem/1 var(--mono, monospace); }
+
+  .byo__stage { display: block; width: 100%; height: auto; }
+  .byo-tile { cursor: pointer; }
+  .byo-card { fill: var(--color-surface-subtle); stroke: var(--color-border-strong); stroke-width: 1; }
+  .byo-tile:hover .byo-card { stroke: var(--color-text-faint); }
+  .byo-bar--a { fill: var(--color-text-soft); transition: fill 0.3s; }
+  .byo-bar--b { fill: var(--color-text-faint); }
+  .byo-dot { stroke-width: 1.5; transition: fill 0.3s, stroke 0.3s; }
+  [data-status="0"] > .byo-dot { fill: var(--color-surface); stroke: var(--color-text-faint); }
+  [data-status="1"] > .byo-dot { fill: var(--color-accent-soft); stroke: var(--color-accent); }
+  [data-status="2"] > .byo-dot { fill: var(--color-success); stroke: var(--color-success); }
+  [data-status="2"] > .byo-bar--a { fill: var(--color-text-faint); }
+  .byo-pulse { fill: none; stroke: var(--color-accent); stroke-width: 1.5; pointer-events: none; }
+
+  /* What each view draws behind the records fades in with it. */
+  .byo-decor { opacity: 0; transition: opacity 0.45s; pointer-events: none; }
+  [data-view="board"] .byo-decor--board,
+  [data-view="calendar"] .byo-decor--calendar,
+  [data-view="timeline"] .byo-decor--timeline,
+  [data-view="graph"] .byo-decor--graph { opacity: 1; }
+  .byo-column { fill: var(--color-surface-subtle); opacity: 0.45; }
+  .byo-cell { fill: none; stroke: var(--color-border); }
+  .byo-cell--today { stroke: var(--color-accent); }
+  .byo-rule { stroke: var(--color-border); }
+  .byo-today { stroke: var(--color-accent); stroke-dasharray: 3 4; }
+  .byo-today-mark { fill: var(--color-accent); }
+  .byo-edge { stroke: var(--color-border-strong); stroke-width: 1.2; }
+  [data-view="board"] .byo-card,
+  [data-view="calendar"] .byo-card { fill: var(--color-surface); }
+
+  @media (max-width: 40rem) {
+    .byo__count { display: none; }
+    .byo__tabs button { padding: 0.28rem 0.45rem; font-size: 0.72rem; }
+  }
+</style>

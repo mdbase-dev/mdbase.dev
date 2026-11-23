@@ -181,8 +181,7 @@ main[tabindex="-1"]:focus { outline: none; }
 .page-hero__aside .button-row { margin-top: 1.25rem; }
 
 .content-section,
-.catalogue-section,
-.build-section {
+.catalogue-section {
   width: auto;
   margin: 0;
   padding: 0;
@@ -190,8 +189,7 @@ main[tabindex="-1"]:focus { outline: none; }
 }
 .content-section + .content-section,
 .content-section + .catalogue-section,
-.catalogue-section + .catalogue-section,
-.build-section { margin-top: 3.75rem; }
+.catalogue-section + .catalogue-section { margin-top: 3.75rem; }
 .content-section > p { margin-top: 0.8rem; color: var(--ink-soft); }
 
 .steps { margin-top: 1.5rem; counter-reset: steps; }

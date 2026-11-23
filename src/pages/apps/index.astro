@@ -2,14 +2,12 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import AppShot from "../../components/AppShot.astro";
 import AppIcon from "../../components/AppIcon.astro";
+import BuildYourOwn from "../../components/BuildYourOwn.astro";
 import "../../styles/apps.css";
 
 type CatalogueEntry = {
   name: string;
   description: string;
-  status: "Public beta" | "Development build";
-  runsOn: string;
-  collections: string;
   links: Array<{ label: string; href: string }>;
   shot?: { name: "tasknotes" | "editor" | "reader" | "writer"; alt: string };
 };
@@ -17,10 +15,7 @@ type CatalogueEntry = {
 const applications: CatalogueEntry[] = [
   {
     name: "TaskNotes",
-    description: "Task manager with lists, boards, calendars, recurrence, reminders, attachments, and time tracking.",
-    status: "Public beta",
-    runsOn: "Web, iOS, Android",
-    collections: "Cloud copy, or Private through one of your devices",
+    description: "Task manager for the web, iOS and Android, with lists, boards, calendars, recurrence, reminders, attachments, and time tracking.",
     links: [
       { label: "Open TaskNotes", href: "https://app.tasknotes.dev/" },
       { label: "Source", href: "https://github.com/callumalpass/tasknotes-app" }
@@ -33,9 +28,6 @@ const applications: CatalogueEntry[] = [
   {
     name: "mdbase Editor",
     description: "General collection editor for Markdown records, frontmatter, links, backlinks, and type definitions, with collection sharing and read-only access for viewers.",
-    status: "Public beta",
-    runsOn: "Web",
-    collections: "Cloud copy, or Private through one of your devices",
     links: [
       { label: "Open Editor", href: "https://editor.mdbase.dev/" },
       { label: "Documentation", href: "/apps/editor/" },
@@ -49,9 +41,6 @@ const applications: CatalogueEntry[] = [
   {
     name: "mdbase Reader",
     description: "Read, highlight and organise PDFs, EPUBs and saved web pages, with Markdown notes and citation metadata.",
-    status: "Development build",
-    runsOn: "Web; optional Chrome extension",
-    collections: "Cloud copy, or Private through one of your devices",
     links: [
       { label: "Open Reader", href: "https://reader.mdbase.dev/" },
       { label: "Documentation", href: "/apps/reader/" },
@@ -65,9 +54,6 @@ const applications: CatalogueEntry[] = [
   {
     name: "mdbase writer",
     description: "Write Markdown papers, theses and books with a typeset preview, citations from Reader, and PDF or Word export.",
-    status: "Development build",
-    runsOn: "Web",
-    collections: "Cloud copy, or Private through one of your devices",
     links: [
       { label: "Open writer", href: "https://writer.mdbase.dev/" },
       { label: "Documentation", href: "/apps/writer/" }
@@ -80,9 +66,6 @@ const applications: CatalogueEntry[] = [
   {
     name: "mdbase Journal",
     description: "A quiet page for writing and revisiting a journal, with each entry saved as a Markdown note in your collection.",
-    status: "Development build",
-    runsOn: "Web",
-    collections: "Cloud copy, or Private through one of your devices",
     links: [
       { label: "Open Journal", href: "https://journal.mdbase.dev/" },
       { label: "Source", href: "https://github.com/mdbase-dev/mdbase-journal" }
@@ -91,17 +74,11 @@ const applications: CatalogueEntry[] = [
   {
     name: "mdbase for Obsidian",
     description: "Obsidian plugin for collection setup, type editing, migration, and validation.",
-    status: "Development build",
-    runsOn: "Obsidian desktop and mobile",
-    collections: "Your Obsidian vault",
     links: [{ label: "Source", href: "https://github.com/callumalpass/mdbase-obsidian" }]
   },
   {
     name: "mdbase MCP",
     description: "Remote MCP endpoint for reading and changing approved collections from compatible AI clients.",
-    status: "Public beta",
-    runsOn: "OAuth-capable MCP clients",
-    collections: "Cloud copy, or Private through one of your devices",
     links: [
       { label: "Set up", href: "/apps/mcp/" },
       { label: "Tool reference", href: "/apps/mcp/tools/" }
@@ -135,11 +112,6 @@ const applications: CatalogueEntry[] = [
               <div class="app-entry__links">
                 {app.links.map((link, index) => <a class={index === 0 ? "button" : undefined} href={link.href}>{link.label}</a>)}
               </div>
-              <dl class="app-meta">
-                <div><dt>Status</dt><dd>{app.status}</dd></div>
-                <div><dt>Runs on</dt><dd>{app.runsOn}</dd></div>
-                <div><dt>Collections</dt><dd>{app.collections}</dd></div>
-              </dl>
             </div>
             {app.shot && <AppShot name={app.shot.name} alt={app.shot.alt} />}
           </article>
@@ -152,11 +124,6 @@ const applications: CatalogueEntry[] = [
           <article class="app-entry app-entry--card">
             <h2><AppIcon name={app.name} />{app.name}</h2>
             <p>{app.description}</p>
-            <dl class="app-meta">
-              <div><dt>Status</dt><dd>{app.status}</dd></div>
-              <div><dt>Runs on</dt><dd>{app.runsOn}</dd></div>
-              <div><dt>Collections</dt><dd>{app.collections}</dd></div>
-            </dl>
             <div class="app-entry__links">
               {app.links.map((link) => <a href={link.href}>{link.label}</a>)}
             </div>
@@ -164,19 +131,21 @@ const applications: CatalogueEntry[] = [
         ))
       }
     </div>
-  </section>
-
-  <section class="build-section" aria-label="For application developers">
-    <div class="build-section__body">
-      <p>
-        Any app can work with an mdbase collection. The SDK asks for access,
-        reads and changes records, and follows changes. An app’s manifest
-        declares the contracts and operations it needs.
-      </p>
-      <div class="button-row">
-        <a href="/sdk/connect-quickstart/">Build an app</a>
-        <a href="/sdk/">SDK overview</a>
+    <article class="app-entry app-entry--shot app-entry--build split">
+      <div class="split__text">
+        <h2><AppIcon name="Build your own" glyph="plus" />Build your own</h2>
+        <p>
+          Any app can work with an mdbase collection. The TypeScript SDK asks
+          for access, reads and changes records, and follows changes as they
+          happen, so the same records can be a list, a board, a calendar or
+          whatever your app needs them to be.
+        </p>
+        <div class="app-entry__links">
+          <a class="button" href="/sdk/connect-quickstart/">Build an app</a>
+          <a href="/sdk/">SDK overview</a>
+        </div>
       </div>
-    </div>
+      <BuildYourOwn />
+    </article>
   </section>
 </BaseLayout>
