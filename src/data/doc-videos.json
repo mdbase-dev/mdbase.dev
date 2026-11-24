@@ -143,5 +143,18 @@
       "Change the status to counted and run the query.",
       "Read the returned path to the west bank note."
     ]
+  },
+  "worklog-save": {
+    "title": "Save a browser-only work log entry",
+    "duration": "0:06",
+    "width": 1120,
+    "height": 700,
+    "description": "Worklog keeps an entry in the same browser across a page reload.",
+    "steps": [
+      "Fill in the date, summary and minutes.",
+      "Add the entry.",
+      "Reload Worklog at the same address.",
+      "Find the dated summary in the list again."
+    ]
   }
 }

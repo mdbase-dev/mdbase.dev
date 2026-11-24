@@ -3,6 +3,9 @@ export const escapeHtml = (value) =>
 
 // The window bar shows a web app's address, or the desktop app's name.
 export const hosts = {
+  "worklog-reload": "localhost:5173",
+  "worklog-form": "localhost:5173",
+  "worklog-setup": "Terminal",
   "query-read": "mdbase CLI",
   "query-status": "mdbase CLI",
   "query-folder": "mdbase CLI",
@@ -38,6 +41,9 @@ export const hosts = {
 // worth showing there: its left and top edges, width and height, as fractions of
 // the capture. Opening the screenshot shows all of it.
 const crops = {
+  "worklog-reload": [0.2, 0.01, 0.61, 0.43],
+  "worklog-form": [0.2, 0.01, 0.61, 0.43],
+  "worklog-setup": [0, 0, 0.83, 0.48],
   "query-read": [0, 0, 0.68, 0.48],
   "query-status": [0, 0, 0.66, 0.32],
   "query-folder": [0, 0, 0.65, 0.42],

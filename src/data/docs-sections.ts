@@ -26,7 +26,8 @@ export const docsSections: Record<DocsSectionId, DocsSection> = {
       { href: "/guides/zotero-annotations/", label: "Zotero annotations", key: "zotero-annotations" },
       { href: "/guides/obsidian-mcp-servers/", label: "Local or hosted MCP", key: "obsidian-mcp-servers" },
       { href: "/guides/markdown-thesis/", label: "Thesis citations", key: "markdown-thesis" },
-      { href: "/guides/query-frontmatter/", label: "Query frontmatter", key: "query-frontmatter" }
+      { href: "/guides/query-frontmatter/", label: "Query frontmatter", key: "query-frontmatter" },
+      { href: "/guides/local-first-web-app/", label: "Local-first web app", key: "local-first-web-app" }
     ] }]
   },
   sdk: {

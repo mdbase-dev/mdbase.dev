@@ -164,3 +164,5 @@ You can draw each phase yourself, or mount the shared screens into an element wi
 - [Pending writes and sync status](/sdk/offline-sync/): show what is saved and what is waiting.
 - [Contracts and adapters](/sdk/contracts/): work with records other apps also use.
 - [Testing](/sdk/testing/): run the same code against an in-memory collection.
+
+[Build a personal web app without a backend](/guides/local-first-web-app/) runs the finished Worklog example and follows a saved entry into its Markdown representation.

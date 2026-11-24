@@ -53,3 +53,9 @@ section: guides
   Filter a folder of Markdown notes by status and read a matching file.
 
   [Run a frontmatter query](/guides/query-frontmatter/)
+
+- **Build a personal web app without a backend**
+
+  Run a work log, save a browser record and check where its data lives.
+
+  [Build a browser work log](/guides/local-first-web-app/)
