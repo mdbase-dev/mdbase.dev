@@ -65,5 +65,96 @@
       "The chapters are reordered in Outline; their order and chapter numbering change in the preview.",
       "Add chapter creates Afterlives and embeds it after the existing chapters. Writing in the new record produces another typeset chapter."
     ]
+  },
+  "mcp-read": {
+    "title": "Approve read access in Connect",
+    "duration": "0:06",
+    "width": 1120,
+    "height": 700,
+    "description": "Review what the connector can do in the Field research collection.",
+    "steps": [
+      "The review screen identifies the mdbase connector and Field research.",
+      "Create and edit permissions are cleared. Read access stays required.",
+      "The file scope covers the visible folders in this collection.",
+      "Allow access confirms the selection. Connect shows the approved collection."
+    ]
+  },
+  "readwise": {
+    "title": "Confirm the Readwise import",
+    "duration": "0:08",
+    "width": 1120,
+    "height": 700,
+    "description": "Check the record counts before importing into Marsh library.",
+    "steps": [
+      "Reader shows a preview of the sample library.",
+      "Check destination counts new and previously imported records.",
+      "The import button names Marsh library. Selecting it confirms the job.",
+      "Reader verifies the created records and offers to open the imported collection."
+    ]
+  },
+  "editor-note": {
+    "title": "Inspect the complete Markdown source",
+    "duration": "0:08",
+    "width": 1120,
+    "height": 700,
+    "description": "Open the properties of a survey note and check its saved status field.",
+    "steps": [
+      "Editor shows East bank survey after the count is added.",
+      "Note properties opens the properties panel.",
+      "Property options opens the menu with Edit as source.",
+      "The source contains the status property, heading, field instruction and count."
+    ]
+  },
+  "zotero": {
+    "title": "Confirm the Zotero import",
+    "duration": "0:07",
+    "width": 1120,
+    "height": 700,
+    "description": "Check the record counts before importing into Marsh library.",
+    "steps": [
+      "Reader shows a preview of the sample library.",
+      "Check destination counts new and previously imported records.",
+      "The import button names Marsh library. Selecting it confirms the job.",
+      "Reader verifies the created records and offers to open the imported collection."
+    ]
+  },
+  "thesis-cite": {
+    "title": "Cite a source in a thesis",
+    "duration": "0:08",
+    "width": 1120,
+    "height": 700,
+    "description": "Writer inserts a Reader citekey into an original thesis passage and formats it in the preview.",
+    "steps": [
+      "Find Darwin’s coral reef study in Sources.",
+      "Insert its citekey after the claim.",
+      "Check the formatted citation in the thesis preview.",
+      "Open the export formats and select the Pandoc bundle."
+    ]
+  },
+  "query-notes": {
+    "title": "Query two survey notes by status",
+    "duration": "0:05",
+    "width": 1120,
+    "height": 700,
+    "description": "The CLI prints a different relative path for each status in the sample folder.",
+    "steps": [
+      "Run a query for awaiting-count.",
+      "Read the returned path to the east bank note.",
+      "Change the status to counted and run the query.",
+      "Read the returned path to the west bank note."
+    ]
+  },
+  "worklog-save": {
+    "title": "Save a browser-only work log entry",
+    "duration": "0:06",
+    "width": 1120,
+    "height": 700,
+    "description": "Worklog keeps an entry in the same browser across a page reload.",
+    "steps": [
+      "Fill in the date, summary and minutes.",
+      "Add the entry.",
+      "Reload Worklog at the same address.",
+      "Find the dated summary in the list again."
+    ]
   }
 }

@@ -1,14 +1,8 @@
 // Markdown pipeline for the documentation records in content/.
 //
-// The records stay ordinary Markdown. These plugins give three conventions
-// their meaning on the site (content/_types/doc-page.md describes them, and a
-// fourth, card lists, that needs only a stylesheet rule):
-//   - a code block's `title="…"` becomes its caption;
-//   - `file="examples/…"` shows that file from this repository, so a listing
-//     cannot drift from the example app CI builds, and `pick="key"` keeps one
-//     key of a JSON file;
-//   - an image of a recording in /videos/ becomes the recording, with its
-//     captions and text description.
+// content/_types/doc-page.md documents the authoring conventions. Here we
+// caption code, include example files and render media with their controls.
+import { escapeHtml, shotWindow } from "./app-shot.mjs";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -40,9 +34,6 @@ export function includedText(attributes) {
   return JSON.stringify({ [attributes.pick]: value }, null, 2);
 }
 
-const escape = (value) =>
-  String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-
 export function videoFigure(name) {
   const video = videos[name];
   if (!video) throw new Error(`Unknown recording /videos/${name}.mp4`);
@@ -51,13 +42,13 @@ export function videoFigure(name) {
   const descriptionId = `video-${name}-description`;
   return [
     `<figure class="doc-video">`,
-    `<figcaption id="${titleId}"><strong>${escape(video.title)}</strong><span>${escape(video.duration)}</span></figcaption>`,
+    `<figcaption id="${titleId}"><strong>${escapeHtml(video.title)}</strong><span>${escapeHtml(video.duration)}</span></figcaption>`,
     `<video controls playsinline preload="none" poster="/videos/${name}.jpg" width="${video.width}" height="${video.height}" aria-labelledby="${titleId}" aria-describedby="${descriptionId}">`,
     `<source src="${src}" type="video/mp4" />`,
     `<p><a href="${src}">Download the recording</a> to watch it in a video player.</p>`,
     `</video>`,
-    `<p id="${descriptionId}">${escape(video.description)} Silent recording with on-screen captions and sample data.</p>`,
-    `<details><summary>Text description of the recording</summary><ol>${video.steps.map((step) => `<li>${escape(step)}</li>`).join("")}</ol></details>`,
+    `<p id="${descriptionId}">${escapeHtml(video.description)} Silent recording with on-screen captions and sample data.</p>`,
+    `<details><summary>Text description of the recording</summary><ol>${video.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join("")}</ol></details>`,
     `<p class="doc-video-download"><a href="${src}" download>Download MP4</a></p>`,
     `</figure>`,
   ].join("");
@@ -80,6 +71,11 @@ export const recordings = {
   paragraph(node, ctx) {
     const [only] = node.children;
     if (node.children.length !== 1 || only.type !== "image") return;
+    const shot = only.url.match(/^\/images\/apps\/([\w-]+)-light\.webp$/);
+    if (shot) {
+      ctx.replaceNode(node, { type: "html", value: `<figure class="app-shot">${shotWindow(shot[1], only.alt)}</figure>` });
+      return;
+    }
     const match = only.url.match(/^\/videos\/([\w-]+)\.mp4$/);
     if (!match) return;
     ctx.replaceNode(node, { type: "html", value: videoFigure(match[1]) });

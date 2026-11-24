@@ -632,3 +632,13 @@ main[tabindex="-1"]:focus { outline: none; }
 .download-primary .button-row { margin-top: 1.25rem; }
 .button-row[hidden] { display: none; }
 .download-primary__meta { margin-top: 0.7rem; color: var(--ink-muted); font-size: 0.84rem; }
+
+.docs-body .app-shot { margin-block: 1.5rem 2rem; }
+.guide-route { display: block; width: 100%; height: auto; color: var(--ink); margin-block: 1.5rem; }
+.guide-route rect { fill: var(--surface); stroke: var(--line); }
+.guide-route text { fill: currentColor; text-anchor: middle; font: 16px var(--sans, sans-serif); }
+.guide-route path { fill: none; stroke: currentColor; }
+@media (prefers-reduced-motion: no-preference) {
+  .guide-route .request { stroke-dasharray: 4 5; animation: guide-request 2s linear 2; }
+  @keyframes guide-request { to { stroke-dashoffset: -36; } }
+}

@@ -25,6 +25,8 @@ The experimental exporter includes all of **My Library**, not a selected collect
 
 Reader checks every payload file against its checksum before collection writes. Selecting a folder needs a supporting browser such as Chrome. Export bundles contain private notes and attachment content; keep them private.
 
+See the [Zotero annotations guide](/guides/zotero-annotations/) for a complete example with a PDF highlight.
+
 ## From Readwise Reader {#readwise}
 
 Readwise imports bring Reader documents and files, plus highlights from classic Readwise sources such as Kindle, Apple Books and Instapaper. Classic sources import as metadata and highlights, without the book text.
@@ -46,3 +48,5 @@ Imported files are stored under `files/reader/imports`. When the import finishes
 Choose **Stop safely** to pause an active import. Everything already written is kept, and **Resume import** continues the confirmed job. The job stays bound to its destination; switching collections cannot redirect it.
 
 After reloading, reselect the same export folder or reconnect Readwise, choose the same collection and scan again. Check the destination before resuming. Records already imported are kept; review the completion warnings for missing or unavailable content.
+
+For a worked example with a book, a highlight and the resulting file, see [Export Readwise highlights to Markdown](/guides/readwise-markdown/).

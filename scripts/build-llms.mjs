@@ -19,6 +19,7 @@ const origin = (process.env.MDBASE_SITE_ORIGIN ?? "https://mdbase.dev").replace(
 const sections = [
   { title: "Product", match: (path) => ["/", "/connect/", "/downloads/", "/beta/"].includes(path) },
   { title: "Applications", match: (path) => path.startsWith("/apps/") },
+  { title: "Guides", match: (path) => path.startsWith("/guides/") },
   { title: "SDK", match: (path) => path.startsWith("/sdk/") },
   {
     title: "Specification, runtime and contracts",

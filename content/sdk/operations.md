@@ -157,3 +157,5 @@ for await (const f of db.files.list()) {
 - Uploads go in 1 MiB chunks. To resume an interrupted upload, call `upload()` again with the same `transferId`. Pass `fileId` to replace an existing file.
 - `download()` reads up to 64 MiB into memory. For anything larger, use `downloadStream()`, which also takes a byte `range`.
 - `move()` and `delete()` take `ifRevision`, like records.
+
+[Query YAML frontmatter from the command line](/guides/query-frontmatter/) shows the same status filter against two files on disk.

@@ -12,7 +12,7 @@ The finished app is about 150 lines. mdbase supplies sign-in, the collection pic
 
 > **What you need**
 >
-> Node 20 or later. You need no account to start: the app first runs in a collection kept in your browser. Signing in to an mdbase account comes at step 7. Developing on `http://localhost` needs an `@mdbase-dev/sdk` release after `0.1.0-beta.168`.
+> Node.js 24 or later and npm. You need no account to start: the app first runs in a collection kept in your browser. Signing in to an mdbase account comes at step 7.
 
 ## 1. Create the project {#project}
 
@@ -25,7 +25,7 @@ npm install --save-exact @mdbase-dev/sdk @mdbase-dev/ui @mdbase-dev/i18n \
 npm install --save-dev --save-exact @mdbase-dev/connect-dev
 ```
 
-`@mdbase-dev/sdk` is the client. `@mdbase-dev/ui` has the sign-in and collection screens; `@mdbase-dev/i18n` and the two Lingui packages are its peer dependencies. `@mdbase-dev/connect-dev` checks the manifest at build time. The packages are in beta, so the versions are pinned exactly.
+`@mdbase-dev/sdk` is the client. `@mdbase-dev/ui` has the sign-in and collection screens; `@mdbase-dev/i18n` and the two Lingui packages are its peer dependencies. `@mdbase-dev/connect-dev` checks the manifest at build time.
 
 Delete the template’s `src/App.tsx`, `src/App.css` and `src/index.css`; the steps below replace them. Then fix the development port, because the manifest names the exact origin the app is served from:
 
@@ -124,7 +124,7 @@ WORKLOG_ORIGIN=https://worklog.example.com npm run build
 # Upload dist/ to the static host that serves https://worklog.example.com
 ```
 
-The build is a folder of static files. Host it anywhere that serves HTTPS at the origin you built for. There is no server component, no API key and no secret: the app holds nothing until a user signs in and approves it.
+The build is a folder of static files. Host it anywhere that serves HTTPS at the origin you built for. There is no server component, no API key and no secret: entries stay in this browser until the user connects a collection.
 
 - The manifest’s `homepage` origin and the site’s origin must match exactly, including `www` and any port.
 - The deployed app is a separate application from your localhost build. Users approve it on its own, and its storage is its own.
@@ -164,3 +164,5 @@ You can draw each phase yourself, or mount the shared screens into an element wi
 - [Pending writes and sync status](/sdk/offline-sync/): show what is saved and what is waiting.
 - [Contracts and adapters](/sdk/contracts/): work with records other apps also use.
 - [Testing](/sdk/testing/): run the same code against an in-memory collection.
+
+[Build a personal web app without a backend](/guides/local-first-web-app/) runs the finished Worklog example and follows a saved entry into its Markdown representation.

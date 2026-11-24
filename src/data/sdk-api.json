@@ -1,6 +1,6 @@
 {
   "package": "@mdbase-dev/sdk",
-  "version": "0.1.0-beta.168",
+  "version": "0.2.2",
   "entries": [
     {
       "specifier": "@mdbase-dev/sdk",
@@ -10,7 +10,7 @@
           "name": "createMdbase",
           "kind": "function",
           "description": "Create the app's mdbase entry. Construction does no IO; `start()` begins.",
-          "signature": "function createMdbase(declaration: MdbaseApplicationDeclaration, options?: MdbaseConnectOptions): Mdbase;"
+          "signature": "function createMdbase(declaration: MdbaseApplicationDeclaration, options?: MdbaseOptions): Mdbase;"
         },
         {
           "name": "Mdbase",
@@ -44,10 +44,9 @@
               "description": "Call from the user gesture: choose a Cloud copy or Private collection,\nor create a collection in Connect. No current collection is preselected."
             },
             {
-              "name": "addPrivateCollection",
-              "signature": "addPrivateCollection(options?: MdbaseApplicationRequestOptions): Promise<MdbaseSnapshot>",
-              "description": "",
-              "deprecated": "Use `addCollection`. This is the same unified chooser, with the same options and no preselected collection."
+              "name": "cancelAuthorization",
+              "signature": "cancelAuthorization(options?: MdbaseApplicationRequestOptions): Promise<MdbaseSnapshot>",
+              "description": "Stop waiting for Connect (phase `authorizing`): signed out again, back to\nwork before connecting (the `unsynced` option), or the collection list when\nsigned in. A reload no longer resumes the wait; the next sign-in continues\nthe same request. Resolves unchanged in any other phase."
             },
             {
               "name": "refreshCollectionList",
@@ -87,12 +86,17 @@
             {
               "name": "deleteCollection",
               "signature": "deleteCollection(collectionId: string, options: MdbaseCollectionDeleteOptions): Promise<MdbaseSnapshot>",
-              "description": ""
+              "description": "Owner only, from an explicit confirmation: delete a collection for\neveryone, on every device and app. `confirmName` is the name the person\ntyped; it must equal the collection's current name. A refusal rejects\nwith a `collection_delete_*` code for `describeError` and changes nothing\nlocally. On success the collection leaves `collections`."
             },
             {
               "name": "requestAccess",
               "signature": "requestAccess(request: MdbaseAccessRequest, options: MdbaseAccessRequestOptions): Promise<MdbaseAccessResult>",
-              "description": ""
+              "description": "Call from the user gesture the first time the app needs an optional file\naction (for example adding an image). Resolves `granted` at once when it\nis already allowed; otherwise opens Connect for the open collection with\nyour one-line reason. No reload: the connection and app state stay. An\naction the manifest does not declare rejects with `access_undeclared`.\nFile writes the person has not allowed reject with `access_required`."
+            },
+            {
+              "name": "unlock",
+              "signature": "unlock(collectionId: string, secret: MdbaseUnlockSecret, options?: MdbaseApplicationRequestOptions): Promise<MdbaseSnapshot>",
+              "description": "Unlock the open Private collection (`phase.kind === \"needs_unlock\"` with\n`mode: \"password\"`) with the encryption password or the recovery key.\nResolves once the attempt settled: opened, or still `needs_unlock` with\n`phase.problem` set. Pass the typed value straight through; keep no copy."
             },
             {
               "name": "assess",
@@ -101,7 +105,7 @@
             },
             {
               "name": "setup",
-              "signature": "readonly setup: { plan(options?: MdbaseSetupPlanOptions): Promise<MdbaseSetupPlan>; apply(plan: MdbaseSetupPlan, options?: MdbaseApplicationRequestOptions): Promise<MdbaseSetupResult>; }",
+              "signature": "readonly setup: { /** Plan setup of the open collection. Changes no collection data (it may * settle the local journal of an earlier apply); call again after any decision. */ plan(options?: MdbaseSetupPlanOptions): Promise<MdbaseSetupPlan>; /** Apply a plan from `plan` unchanged, as one guarded mutation. */ apply(plan: MdbaseSetupPlan, options?: MdbaseApplicationRequestOptions): Promise<MdbaseSetupResult>; }",
               "description": ""
             },
             {
@@ -117,7 +121,7 @@
             {
               "name": "signOut",
               "signature": "signOut(options?: MdbaseSignOutOptions): Promise<MdbaseSnapshot>",
-              "description": "Sign out of mdbase on this device (see `MdbaseApplication.signOut`).\nRejects with `sign_out_pending_writes` while changes are still saving,\nunless `{discard: true}`."
+              "description": "Sign out of mdbase on this device: ends the server session and removes\nthis browser's sign-in data, keys and cached collections for the account.\nRejects with `sign_out_pending_writes` (a `conflict`) while changes have not\nreached mdbase, unless `{discard: true}`. Resolves signed out; Sign in works\nagain without a reload, and a reload stays signed out. A server sign-out\nthat could not complete (offline) still signs this device out; it shows\nin `signOutResult`."
             },
             {
               "name": "close",
@@ -128,11 +132,6 @@
               "name": "unsynced",
               "signature": "readonly unsynced: { /** Open the app's unsynced collection in this tab, creating it on first * use: for \"Continue without connecting\". Signed out with nothing * requested, `start()` already does this. */ open(options?: MdbaseApplicationRequestOptions): Promise<MdbaseSnapshot>; /** Compare the unsynced collection with the open (ready) collection: what * would be created, what an earlier transfer already brought, what `map` * leaves out, renamed paths and types the destination lacks. Writes nothing. */ planTransfer(options?: MdbaseTransferPlanOptions): Promise<MdbaseTransferPlan>; /** Create a plan's records in the open collection, keeping their IDs. * Interrupted? Plan and transfer again: only what is missing is created. */ transfer(plan: MdbaseTransferPlan, options?: MdbaseTransferOptions): Promise<MdbaseTransferResult>; /** Erase the unsynced collection from this browser. Ask the person to * confirm first: it cannot be undone. A tab showing it continues in a new, * empty one. */ discard(options?: MdbaseApplicationRequestOptions): Promise<MdbaseSnapshot>; }",
               "description": "Work before connecting (the `unsynced` option)."
-            },
-            {
-              "name": "application",
-              "signature": "readonly application: MdbaseApplication",
-              "description": "The underlying application, for code written against `MdbaseConnect`."
             }
           ]
         },
@@ -180,10 +179,10 @@
           ]
         },
         {
-          "name": "MdbaseConnectOptions",
+          "name": "MdbaseOptions",
           "kind": "interface",
           "description": "",
-          "signature": "interface MdbaseConnectOptions",
+          "signature": "interface MdbaseOptions",
           "members": [
             {
               "name": "signIn",
@@ -194,6 +193,11 @@
               "name": "followVisibility",
               "signature": "readonly followVisibility?: boolean",
               "description": "Drive `setForeground` from `document.visibilityState`, and sync at once\nwhen the page regains focus or the network comes back. A hidden page only\nfinishes sending pending writes (for at most two minutes). Default true;\nfalse leaves `setForeground` to the app."
+            },
+            {
+              "name": "messages",
+              "signature": "readonly messages?: DescribeErrorOptions[\"messages\"]",
+              "description": "Copy for `phase.problem` and the signed-out notice in the person's\nlanguage: replacement `title`, `message` and `actionLabel` by problem key,\nas `describeError` takes them. A key left out keeps the English copy."
             },
             {
               "name": "readiness",
@@ -209,6 +213,21 @@
               "name": "unsynced",
               "signature": "readonly unsynced?: boolean",
               "description": "Let people start working before they sign in or connect a collection.\nSigned out with no collection requested, the app opens its unsynced\ncollection (`phase.kind === \"unsynced\"`): saved only in this browser,\nnever listed in `collections`. Default false."
+            },
+            {
+              "name": "urlSelection",
+              "signature": "readonly urlSelection?: boolean",
+              "description": "Keep the requested collection in the page URL (`?collection=<id>`): a\nlink or reload opens it, and Back/forward switch collections. Default\ntrue; false for a page with no URL of its own, such as a `blob:` document\nembedded in another app. The URL is then never read or written, and the\napp chooses with `select`, `approve` and `chooseAnother`."
+            },
+            {
+              "name": "worker",
+              "signature": "readonly worker?: (url: string) => Worker",
+              "description": "Construct the SDK's module Worker yourself, where the page cannot load\nit by URL as a secure context (for example a `blob:` document inside a\nmobile WebView). Called with the URL the SDK would load; return a module\nWorker that runs that script's exact bytes, such as one from a `blob:`\nURL of them. The Worker still loads the native assets from beside that\nURL and checks them against the SDK's pins. A factory that throws or\nreturns no Worker fails with `application_worker_unavailable`. Default:\n`new Worker(url, {type: \"module\"})`."
+            },
+            {
+              "name": "session",
+              "signature": "readonly session?: { readonly build: string; readonly host?: boolean; }",
+              "description": "One session for contexts of this app that are built separately, such as\na browser extension's pages, offscreen document and service worker. By\ndefault only contexts loading the same SDK module file share a session.\n`build` names this build of the app instead: every context of the origin\nthat passes the same `build` and the same declaration uses one sign-in and\none Worker. `host: false` is for a context that cannot run that Worker (a\nservice worker) or should leave it to another: it joins the context that\nruns it and waits while there is none. Default: `host: true`."
             }
           ]
         },
@@ -225,8 +244,8 @@
             },
             {
               "name": "sync",
-              "signature": "readonly sync: StatusSummary | null",
-              "description": "Sync of the open collection (null until it is ready)."
+              "signature": "readonly sync: MdbaseSync | null",
+              "description": "The one status to show for the open collection (null until it is ready):\nwhether changes reach the cloud copy, what is waiting, including each\nunconfirmed and refused write (`sync.writes`, which survives a reload), and\nwhat needs the person."
             },
             {
               "name": "links",
@@ -239,7 +258,7 @@
           "name": "MdbasePhase",
           "kind": "type",
           "description": "",
-          "signature": "type MdbasePhase = \n/** The SDK is starting: show the app's wordmark or the cached list. */\n{\n    readonly kind: \"starting\";\n}\n/** Not signed in. `notice` explains why when sign-in just ended (window closed, signed out). */\n | {\n    readonly kind: \"signed_out\";\n    readonly notice: MdbaseProblem | null;\n}\n/** Waiting for the Connect window: sign in, add a collection or approve one. */\n | {\n    readonly kind: \"authorizing\";\n    readonly purpose: \"sign_in\" | \"add\" | \"approve\";\n    readonly collectionId: string | null;\n}\n/** Signed in, nothing open: choose from `snapshot.collections` or add one. */\n | {\n    readonly kind: \"choosing\";\n    readonly lastApproval: MdbaseApprovalOutcome | null;\n}\n/** SDK-9: `slow` turns on when opening takes longer than usual. */\n | {\n    readonly kind: \"opening\";\n    readonly collectionId: string;\n    readonly displayName: string | null;\n    readonly slow: boolean;\n    readonly progress?: import(\"../app-host/opening-progress.js\").AppOpeningProgress | null;\n}\n/** The requested collection is not approved for this app (yet). */\n | {\n    readonly kind: \"needs_approval\";\n    readonly collectionId: string;\n    readonly displayName: string | null;\n    readonly declined: boolean;\n}\n/** Open, but needs a one-time setup: `setup.plan()` then `setup.apply(plan)`. */\n | {\n    readonly kind: \"needs_setup\";\n    readonly collectionId: string;\n    readonly collection: MdbaseCollectionSummary;\n}\n/** Open and usable. `rechecking` and `problem` are informational only. */\n | {\n    readonly kind: \"ready\";\n    readonly collectionId: string;\n    readonly collection: MdbaseCollectionSummary;\n    readonly connection: MdbaseApplicationConnection;\n    readonly rechecking: boolean;\n    readonly problem: MdbaseProblem | null;\n    readonly unavailableTypes: readonly MdbaseUnavailableType[];\n}\n/** Working before connecting (`createMdbase(declaration, {unsynced: true})`):\n * the app's unsynced collection is open. Use `connection` as when ready.\n * Its work is saved only in this browser: say so, and offer \"Connect to sync\n * your work\". It is never in `snapshot.collections`. */\n | {\n    readonly kind: \"unsynced\";\n    readonly collectionId: string;\n    readonly connection: MdbaseApplicationConnection;\n    readonly rechecking: boolean;\n}\n/** Can't continue: show `problem` with its action. */\n | {\n    readonly kind: \"problem\";\n    readonly collectionId: string | null;\n    readonly problem: MdbaseProblem;\n}\n/** The SDK can't run here (SSR, Node, an unsupported browser). */\n | {\n    readonly kind: \"unavailable\";\n    readonly problem: MdbaseProblem;\n} | {\n    readonly kind: \"closed\";\n};"
+          "signature": "type MdbasePhase = \n/** The SDK is starting: show the app's wordmark or the cached list. */\n{\n    readonly kind: \"starting\";\n}\n/** Not signed in. `notice` explains why when sign-in just ended (window closed, signed out). */\n | {\n    readonly kind: \"signed_out\";\n    readonly notice: MdbaseProblem | null;\n}\n/** Waiting for the Connect window: sign in, add a collection or approve one. */\n | {\n    readonly kind: \"authorizing\";\n    readonly purpose: \"sign_in\" | \"add\" | \"approve\";\n    readonly collectionId: string | null;\n}\n/** Signed in, nothing open: choose from `snapshot.collections` or add one. */\n | {\n    readonly kind: \"choosing\";\n    readonly lastApproval: MdbaseApprovalOutcome | null;\n}\n/** SDK-9: `slow` turns on when opening takes longer than usual. */\n | {\n    readonly kind: \"opening\";\n    readonly collectionId: string;\n    readonly displayName: string | null;\n    readonly slow: boolean;\n    readonly progress?: import(\"../app-host/opening-progress.js\").AppOpeningProgress | null;\n}\n/** The requested collection is not approved for this app (yet). */\n | {\n    readonly kind: \"needs_approval\";\n    readonly collectionId: string;\n    readonly displayName: string | null;\n    readonly declined: boolean;\n}\n/** A Private collection this device has joined but cannot read yet: it has\n * no key. `mode` is the account's key mode. `password`: ask for the\n * encryption password (or the recovery key) and call\n * `unlock(collectionId, secret)`. `strict` and `none` cannot be unlocked\n * here: explain that it needs a computer running the mdbase app. `unlocking`\n * while an unlock runs; `problem` describes the last failed attempt. */\n | {\n    readonly kind: \"needs_unlock\";\n    readonly collectionId: string;\n    readonly displayName: string | null;\n    readonly mode: \"password\" | \"strict\" | \"none\";\n    readonly unlocking: boolean;\n    readonly problem: MdbaseProblem | null;\n}\n/** Open, but needs a one-time setup: `setup.plan()` then `setup.apply(plan)`. */\n | {\n    readonly kind: \"needs_setup\";\n    readonly collectionId: string;\n    readonly collection: MdbaseCollectionSummary;\n}\n/** Open and usable. `rechecking` and `problem` are informational only. */\n | {\n    readonly kind: \"ready\";\n    readonly collectionId: string;\n    readonly collection: MdbaseCollectionSummary;\n    readonly connection: MdbaseApplicationConnection;\n    readonly rechecking: boolean;\n    readonly problem: MdbaseProblem | null;\n    readonly unavailableTypes: readonly MdbaseUnavailableType[];\n}\n/** Working before connecting (`createMdbase(declaration, {unsynced: true})`):\n * the app's unsynced collection is open. Use `connection` as when ready.\n * Its work is saved only in this browser: say so, and offer \"Connect to sync\n * your work\". It is never in `snapshot.collections`. */\n | {\n    readonly kind: \"unsynced\";\n    readonly collectionId: string;\n    readonly connection: MdbaseApplicationConnection;\n    readonly rechecking: boolean;\n}\n/** Can't continue: show `problem` with its action. */\n | {\n    readonly kind: \"problem\";\n    readonly collectionId: string | null;\n    readonly problem: MdbaseProblem;\n}\n/** The SDK can't run here (SSR, Node, an unsupported browser). */\n | {\n    readonly kind: \"unavailable\";\n    readonly problem: MdbaseProblem;\n} | {\n    readonly kind: \"closed\";\n};"
         },
         {
           "name": "MdbaseApplicationConnection",
@@ -433,65 +452,6 @@
           ]
         },
         {
-          "name": "connect",
-          "kind": "function",
-          "description": "Connect to a replica.",
-          "signature": "function connect(opts: ClientOptions): Promise<MdbaseClient>;"
-        },
-        {
-          "name": "ClientOptions",
-          "kind": "interface",
-          "description": "",
-          "signature": "interface ClientOptions",
-          "members": [
-            {
-              "name": "connector",
-              "signature": "connector: Connector",
-              "description": ""
-            },
-            {
-              "name": "app",
-              "signature": "app: { name: string; version: string; }",
-              "description": "App ID and version, sent in `hello`."
-            },
-            {
-              "name": "timezone",
-              "signature": "timezone?: string",
-              "description": "IANA time zone for this session's writes and queries. Defaults to the host's."
-            },
-            {
-              "name": "features",
-              "signature": "features?: string[]",
-              "description": "Extra features to request (\"fence\", \"presence\", ...)."
-            },
-            {
-              "name": "reconnect",
-              "signature": "reconnect?: false | { minDelayMs?: number; maxDelayMs?: number; }",
-              "description": "Reconnect after the link drops (default on)."
-            },
-            {
-              "name": "waitForDevice",
-              "signature": "waitForDevice?: boolean",
-              "description": "Private collections: wait for a device replica to come online instead of failing."
-            },
-            {
-              "name": "onWaiting",
-              "signature": "onWaiting?: (why: MdbaseError) => void",
-              "description": "Called while waiting for a device or the original Native grant to become live."
-            },
-            {
-              "name": "ledger",
-              "signature": "ledger?: WriteLedgerStore",
-              "description": "Where the write ledger persists (default: memory). Web apps get the replica's store."
-            },
-            {
-              "name": "signal",
-              "signature": "signal?: AbortSignal",
-              "description": ""
-            }
-          ]
-        },
-        {
           "name": "MdbaseClient",
           "kind": "class",
           "description": "",
@@ -515,7 +475,7 @@
             {
               "name": "connect",
               "signature": "static connect(opts: ClientOptions): Promise<MdbaseClient>",
-              "description": "Connect to a replica and say hello. With `waitForDevice`, a private collection with\nno device online keeps retrying (calling `onWaiting`) instead of failing.\nA next-relay pre-live grant waits up to 30 seconds on this same connector.\nThis is initial hello only: no application request or unknown write is replayed."
+              "description": "Connect to a replica and say hello. With `waitForDevice`, a private collection whose\ncomputer is offline or not serving it right now keeps retrying (calling `onWaiting`)\ninstead of failing.\nA next-relay pre-live grant waits up to 30 seconds on this same connector.\nThis is initial hello only: no application request or unknown write is replayed."
             },
             {
               "name": "hello",
@@ -564,8 +524,13 @@
             },
             {
               "name": "call",
-              "signature": "call<T = CborValue>(method: string, p: CborValue, o?: { signal?: AbortSignal; codec?: import(\"./codec.js\").Codec<T>; retry?: boolean; }): Promise<T>",
-              "description": "Advanced: run a request on the current session; on a dropped link, wait for the\nreconnect and retry when `retry` (idempotent requests only)."
+              "signature": "call(method: string, p: CborValue, o?: { signal?: AbortSignal; retry?: boolean; }): Promise<CborValue>",
+              "description": "Advanced: run a request on the current session; on a dropped link, wait for the\nreconnect and retry when `retry` (idempotent requests only).\n\nWith a `codec` the answer is decoded and its values are plain JSON, as from\nevery other method. Without one it is the exact CBOR answer: decode that\nwith a `wire` codec to keep `Map` order, `Float64` and `bigint`."
+            },
+            {
+              "name": "call",
+              "signature": "call<T>(method: string, p: CborValue, o: { signal?: AbortSignal; codec: Codec<T>; retry?: boolean; }): Promise<Plain<T>>",
+              "description": "Advanced: run a request on the current session; on a dropped link, wait for the\nreconnect and retry when `retry` (idempotent requests only).\n\nWith a `codec` the answer is decoded and its values are plain JSON, as from\nevery other method. Without one it is the exact CBOR answer: decode that\nwith a `wire` codec to keep `Map` order, `Float64` and `bigint`."
             },
             {
               "name": "authenticatedDevice",
@@ -589,8 +554,8 @@
             },
             {
               "name": "appliedPrefix",
-              "signature": "appliedPrefix(seq: number, signal?: AbortSignal): Promise<AppliedPrefix>",
-              "description": "Read the retained historical chain at a captured hosted fence. READ/session\nauthorization is unchanged. No automatic retry/reconnect: a handover must\nrevalidate the authenticated session and all readiness gates after any await.\nMissing chain or any error means remain hosted; never substitute asOf or the\ncurrent head/generations. Decoding does not authenticate a witness or switch."
+              "signature": "appliedPrefix(seq: number, o?: ReadOptions): Promise<AppliedPrefix>",
+              "description": "Read the retained historical chain at a captured hosted fence. READ/session\nauthorization is unchanged. No automatic retry/reconnect: a handover must\nrevalidate the authenticated session and all readiness gates after any await.\nMissing chain or any error means remain hosted; never substitute asOf or the\ncurrent head/generations. Decoding does not authenticate a witness or switch.\n`o.signal` cancels the read."
             },
             {
               "name": "onStatus",
@@ -599,8 +564,8 @@
             },
             {
               "name": "describe",
-              "signature": "describe(options?: AbortSignal | DescribeOptions): Promise<DescribeResult>",
-              "description": "Catalog summary: types with their version, source revision and contract\nimplementations, contracts, settings (§4.4). `definitions` adds each type's\ndefinition and schema and each contract's schemas, bounded by the replica\n(`too_large` when over budget; read them with `resources.get` instead).\nA producer that cannot describe definitions fails `upgrade_required`."
+              "signature": "describe(o?: DescribeOptions): Promise<DescribeResult>",
+              "description": "Catalog summary: types with their version, source revision and contract\nimplementations, contracts, settings (§4.4). `definitions` adds each type's\ndefinition and schema and each contract's schemas, bounded by the replica\n(`too_large` when over budget; read them with `resources.get` instead).\nA producer that cannot describe definitions fails `upgrade_required`.\n`o.signal` cancels the read."
             },
             {
               "name": "createType",
@@ -609,33 +574,33 @@
             },
             {
               "name": "describeTyping",
-              "signature": "describeTyping(types: readonly string[], paths: readonly string[], signal?: AbortSignal): Promise<DescribeTypingResult>",
-              "description": "Core's temporal typing for top-level fields under a query's exact `types` OR list\n(`date` / `date_time` only when every type agrees; otherwise `none`). The answer is\nbound to a catalog generation; nested paths are `none`. The SDK never infers typing."
+              "signature": "describeTyping(types: readonly string[], paths: readonly string[], o?: ReadOptions): Promise<DescribeTypingResult>",
+              "description": "Core's temporal typing for top-level fields under a query's exact `types` OR list\n(`date` / `date_time` only when every type agrees; otherwise `none`). The answer is\nbound to a catalog generation; nested paths are `none`. The SDK never infers typing.\n`o.signal` cancels the read."
             },
             {
               "name": "get",
-              "signature": "get(ref: RecordRef, include?: Include, signal?: AbortSignal): Promise<RecordView>",
-              "description": "One record by ID or path. Throws `not_found`."
+              "signature": "get(ref: RecordRef, o?: RecordReadOptions): Promise<RecordView>",
+              "description": "One record by ID or path. Throws `not_found`. `o.include` adds the body\nand other parts to the record; `o.signal` cancels the read."
             },
             {
               "name": "getContract",
-              "signature": "getContract(ref: RecordRef, contract: ContractSelector, signal?: AbortSignal): Promise<ContractRecordView>",
-              "description": "One record's valid view through a record contract, mapped by the replica's\nCore. Refusals: `not_found` (no record, or `data_contract_not_implemented`\nwhen it does not implement the contract), `not_found`/`data_contract_not_found`,\n`invalid_request`/`data_contract_ambiguous` (select `type`; details: the types),\n`invalid_record`/`data_contract_record_invalid` (with issues), and\n`upgrade_required`/`contract_records_unsupported` from an older replica."
+              "signature": "getContract(ref: RecordRef, contract: ContractSelector, o?: ReadOptions): Promise<ContractRecordView>",
+              "description": "One record's valid view through a record contract, mapped by the replica's\nCore. Refusals: `not_found` (no record, or `data_contract_not_implemented`\nwhen it does not implement the contract), `not_found`/`data_contract_not_found`,\n`invalid_request`/`data_contract_ambiguous` (select `type`; details: the types),\n`invalid_record`/`data_contract_record_invalid` (with issues), and\n`upgrade_required`/`contract_records_unsupported` from an older replica.\n`o.signal` cancels the read."
             },
             {
               "name": "readMany",
-              "signature": "readMany(refs: readonly RecordRef[], include?: Include, signal?: AbortSignal, options?: ReadManyOptions): Promise<RecordView[]>",
-              "description": "Bounded ordered ordinary gets. Missing/refused reads fail the batch;\nduplicate slots and the original signal are retained, not a snapshot."
+              "signature": "readMany(refs: readonly RecordRef[], o?: RecordReadOptions & ReadManyOptions): Promise<RecordView[]>",
+              "description": "Bounded ordered ordinary gets. Missing/refused reads fail the batch;\nduplicate slots and the original signal are retained, not a snapshot.\n`o.include` and `o.signal` apply to every get; `o.concurrency` bounds the\ngets in flight."
             },
             {
               "name": "find",
-              "signature": "find(ref: RecordRef, include?: Include, signal?: AbortSignal): Promise<RecordView | null>",
-              "description": "One record, or `null` when there is none."
+              "signature": "find(ref: RecordRef, o?: RecordReadOptions): Promise<RecordView | null>",
+              "description": "One record, or `null` when there is none. `o` is as for `get`."
             },
             {
               "name": "query",
-              "signature": "query(query: Query, include?: Include, signal?: AbortSignal, opts?: { contract?: string; }): Promise<QueryResult>",
-              "description": "One page of a query, evaluated by the replica (body predicates and links\nincluded, §4). Pass `result.cursor` back as `query.cursor` for the next.\n`opts.contract` is not supported by the live replica dispatch. Supplying it\nreturns `invalid_request` with reason `unknown_param`; no contract filter\nis applied. The option remains encoded unchanged for API compatibility."
+              "signature": "query(query: Query, o?: RecordReadOptions & { contract?: string; }): Promise<QueryResult>",
+              "description": "One page of a query, evaluated by the replica (body predicates and links\nincluded, §4). Pass `result.cursor` back as `query.cursor` for the next.\n`o.include` adds the body and other parts to each record; `o.signal`\ncancels the read.\n`o.contract` is not supported by the live replica dispatch. Supplying it\nreturns `invalid_request` with reason `unknown_param`; no contract filter\nis applied. The option remains encoded unchanged for API compatibility."
             },
             {
               "name": "queryContract",
@@ -653,8 +618,13 @@
               "description": "Resolve link occurrences written in the note at `from`, exactly as the\nreplica resolves them for backlinks and rename: Core parsing and spec 08\nresolution over the local view, pending changes included. `from` need not\nexist yet (an unsaved draft). Each entry is one occurrence as written —\n`[[target]]`, `![[target#anchor|alias]]`, `[text](path)`, `![alt](path)` —\nand the result holds one resolution per entry, in order: a record or file\nwith its ID and path, `ambiguous` with sorted candidate paths, or\n`not_found` / `invalid`. Titles and aliases are not link keys. 1–512\nentries of at most 4096 bytes each. A replica without the method refuses\nwith `upgrade_required` / `resolve_links_unsupported` (§4.3)."
             },
             {
+              "name": "history",
+              "signature": "readonly history: { /** One page of a record's versions, newest first. Pass `next` as `before` * for older ones. `o.signal` cancels the read. */ list: (record: Uuid, o?: HistoryOptions) => Promise<RecordHistory>; /** The exact document of the version at log position `seq`, checked * against its revision. `o.signal` cancels the read. */ version: (record: Uuid, seq: number, o?: ReadOptions) => Promise<RecordVersion>; }",
+              "description": "Record history (§4.4, API 1.4): the versions of a record that the log still\nretains. Needs `collection.read` and `history.read` through a grant without\na folder scope. A replica without history,\nthe hosted replica and a local-only collection refuse with\n`upgrade_required` / `history_unsupported`."
+            },
+            {
               "name": "resources",
-              "signature": "readonly resources: { get: (path: string, signal?: AbortSignal) => Promise<ResourceView>; /** One bounded resource inventory page. Text defaults to false; limit defaults * to 64 (maximum 128). Preserve folder/text/limit on continuation. Collect all * pages before assessing a complete snapshot; stale/expired cursors require * explicit reassessment, never an automatic restart. */ list: (o?: { folder?: string; text?: boolean; cursor?: string; limit?: number; signal?: AbortSignal; }) => Promise<import(\"./wire.js\").ListResourcesResult>; /** * Write a resource. CAS: pass the revision you read as `baseRevision`, or * `mustNotExist` to create only (a taken path is `conflict` / `path_taken`). Not both. */ put: (path: string, doc: string, o?: WriteOptions & { baseRevision?: string; mustNotExist?: boolean; }) => Promise<Write>; delete: (path: string, o?: WriteOptions & { baseRevision?: string; }) => Promise<Write>; }",
+              "signature": "readonly resources: { /** One definition by path. `o.signal` cancels the read. */ get: (path: string, o?: ReadOptions) => Promise<ResourceView>; /** One bounded resource inventory page. Text defaults to false; limit defaults * to 64 (maximum 128). Preserve folder/text/limit on continuation. Collect all * pages before assessing a complete snapshot; stale/expired cursors require * explicit reassessment, never an automatic restart. */ list: (o?: { folder?: string; text?: boolean; cursor?: string; limit?: number; signal?: AbortSignal; }) => Promise<{ resources: { path: string; revision: import(\"./wire.js\").Hash; size: number; state: \"confirmed\" | \"pending\"; text?: string | undefined; }[]; complete: boolean; cursor?: string | undefined; }>; /** * Write a resource. CAS: pass the revision you read as `baseRevision`, or * `mustNotExist` to create only (a taken path is `conflict` / `path_taken`). Not both. */ put: (path: string, doc: string, o?: WriteOptions & { baseRevision?: string; mustNotExist?: boolean; }) => Promise<Write>; delete: (path: string, o?: WriteOptions & { baseRevision?: string; }) => Promise<Write>; }",
               "description": "Definitions: `mdbase.yaml`, type files, contract files (§4.1)."
             },
             {
@@ -669,13 +639,13 @@
             },
             {
               "name": "views",
-              "signature": "readonly views: { createSource: (input: ViewSourceCreateInput, options: ViewSourceWriteOptions) => Promise<Write>; updateSource: (seen: RecordView, document: string, options: ViewSourceWriteOptions) => Promise<Write>; getSourceRecord: (source: RecordRef, options?: ViewSourceReadOptions) => Promise<RecordView>; /** `mdbase.view` sources (spec 12 `list_views` shape), resolved over served * contract queries: the native runtime has no `list_views` RPC. */ list: (folder?: string, signal?: AbortSignal) => Promise<ListViewsResult>; /** Spec 11 named-view resolution, executed as one ordinary native query. */ execute: (source: RecordRef, view: string, o?: ExecuteViewOptions) => Promise<QueryResult>; readSource: (source: RecordRef, signal?: AbortSignal) => Promise<ViewSourceDocument>; }",
+              "signature": "readonly views: { createSource: (input: ViewSourceCreateInput, options: ViewSourceWriteOptions) => Promise<Write>; updateSource: (seen: RecordView, document: string, options: ViewSourceWriteOptions) => Promise<Write>; getSourceRecord: (source: RecordRef, options?: ViewSourceReadOptions) => Promise<RecordView>; /** `mdbase.view` sources (spec 12 `list_views` shape), resolved over served * contract queries: the native runtime has no `list_views` RPC. `o.folder` * keeps the sources under one folder; `o.signal` cancels the read. */ list: (o?: { folder?: string; signal?: AbortSignal; }) => Promise<ListViewsResult>; /** Spec 11 named-view resolution, executed as one ordinary native query. */ execute: (source: RecordRef, view: string, o?: ExecuteViewOptions) => Promise<QueryResult>; /** The current source document of one `mdbase.view` record. `o.signal` * cancels the read. */ readSource: (source: RecordRef, o?: ReadOptions) => Promise<ViewSourceDocument>; }",
               "description": "Saved views (§4.3). Source helpers use ordinary record ops/full CAS reads;\nweb app-host Bases reads use the separate native AppBases methods."
             },
             {
               "name": "pendingWrites",
-              "signature": "pendingWrites(signal?: AbortSignal): Promise<PendingMutation[]>",
-              "description": "Pending mutations of this session's owner (its grant, or the device), oldest\nfirst (§6): a new session after a reload sees writes made before it. Follow\neach with `awaitReceipt`, or keep the `mutationId` you chose and call\n`receipt(id)` / `awaitReceipt(id)`. Pages through everything."
+              "signature": "pendingWrites(o?: ReadOptions): Promise<PendingMutation[]>",
+              "description": "Pending mutations of this session's owner (its grant, or the device), oldest\nfirst (§6): a new session after a reload sees writes made before it. Follow\neach with `awaitReceipt`, or keep the `mutationId` you chose and call\n`receipt(id)` / `awaitReceipt(id)`. Pages through everything; `o.signal`\ncancels the read."
             },
             {
               "name": "preflightRename",
@@ -689,38 +659,43 @@
             },
             {
               "name": "pages",
-              "signature": "pages(query: Query, include?: Include, signal?: AbortSignal, options?: PagesOptions): AsyncGenerator<QueryResult>",
-              "description": "Every page of a query. Cursor resets require explicit caller clearing;\notherwise cursor_expired/cursor_stale is thrown unchanged."
+              "signature": "pages(query: Query, o?: RecordReadOptions & PagesOptions): AsyncGenerator<QueryResult>",
+              "description": "Every cursor page of a query. The page size defaults to 500 when `limit`\nis omitted. `o.include` and `o.signal` apply to every page.\nCursor resets require explicit caller clearing through `o.onReset`;\notherwise cursor_expired/cursor_stale is thrown unchanged. The query and\n`o` are captured when iteration starts."
             },
             {
               "name": "queryPages",
-              "signature": "queryPages(query: Query, include?: Include, signal?: AbortSignal, options?: PagesOptions): AsyncGenerator<QueryResult>",
-              "description": "Shared alias of pages(): whole native pages, no implicit cursor reset."
+              "signature": "queryPages(query: Query, o?: RecordReadOptions & PagesOptions): AsyncGenerator<QueryResult>",
+              "description": "Shared alias of pages(): whole native pages, no implicit cursor reset.\n`o.include` and `o.signal` apply to every page; `o.onReset` opts in to one\nfirst-page restart."
+            },
+            {
+              "name": "recordSet",
+              "signature": "recordSet(options?: RecordSetOptions): RecordSet",
+              "description": "Every record of the chosen types (default: all), read completely and then\nkept current: the set an app lists, searches and renders from. Close it\nwhen done."
             },
             {
               "name": "live",
-              "signature": "live(query: Query, include?: Include): LiveQuery",
-              "description": "A live query. Subscribe for pushes; keep lists cheap with a `limit` window and no\nbodies, and widen the window with `setQuery`."
+              "signature": "live(query: Query, o?: { include?: Include; }): LiveQuery",
+              "description": "A live query: one window of at most 1,000 records and 1 MiB, with the\nreplica's order and counts. Subscribe for pushes; keep lists cheap with a\n`limit` window and no bodies, and widen the window with `setQuery`. For a\nwhole collection use `recordSet`. `o.include` adds the body and other\nparts to each record."
             },
             {
               "name": "changes",
-              "signature": "changes(cursor?: string, limit?: number, signal?: AbortSignal): Promise<ChangesResult>",
-              "description": "One page of the change feed. A `reset: true` result means \"re-read what you cache\"."
+              "signature": "changes(o?: { cursor?: string; limit?: number; signal?: AbortSignal; }): Promise<ChangesResult>",
+              "description": "One page of the change feed, from `o.cursor` (default: the start) and of\nat most `o.limit` changes. A `reset: true` result means \"re-read what you\ncache\". `o.signal` cancels the read."
             },
             {
               "name": "watchChanges",
-              "signature": "watchChanges(cursor: string | undefined, onChanges: (batch: ChangesResult) => void): ChangesWatch",
-              "description": "Follow the change feed from `cursor`. `onChanges` gets every batch; `reset: true`\nmeans the app must re-read what it caches. Survives reconnects.\n`ready` confirms the first watch ACK, not a complete/current collection cache.\nAfter reconnect, observe `state`; an already-resolved promise is not freshness."
+              "signature": "watchChanges(onChanges: (batch: ChangesResult) => void, o?: { cursor?: string; }): ChangesWatch",
+              "description": "Follow the change feed from `o.cursor` (default: the start). `onChanges` gets\nevery batch; `reset: true` means the app must re-read what it caches. Survives\nreconnects.\n`ready` confirms the first watch ACK, not a complete/current collection cache.\nAfter reconnect, observe `state`; an already-resolved promise is not freshness."
             },
             {
               "name": "validate",
-              "signature": "validate(refs?: readonly RecordRef[], signal?: AbortSignal): Promise<RecordValidation[]>",
-              "description": "Validate these records, or every record. Every record is validated a\npage at a time when the replica grants `validate-page-v1`; each page is an\nindependent READ, so records changed meanwhile may be missed or repeated.\nOlder replicas validate every record in one bounded request."
+              "signature": "validate(o?: { refs?: readonly RecordRef[]; signal?: AbortSignal; }): Promise<RecordValidation[]>",
+              "description": "Validate `o.refs`, or every record without them. Every record is validated a\npage at a time when the replica grants `validate-page-v1`; each page is an\nindependent READ, so records changed meanwhile may be missed or repeated.\nOlder replicas validate every record in one bounded request. `o.signal`\ncancels the read."
             },
             {
               "name": "executeAppBases",
-              "signature": "executeAppBases(request: AppBasesRequest, signal?: AbortSignal): Promise<AppBasesResult>",
-              "description": "Independent native app-host Bases READ, exact original held session.\nUnsupported transports refuse: no generic execute_view/data fallback."
+              "signature": "executeAppBases(request: AppBasesRequest, o?: ReadOptions): Promise<AppBasesResult>",
+              "description": "Independent native app-host Bases READ, exact original held session.\nUnsupported transports refuse: no generic execute_view/data fallback.\n`o.signal` cancels the read."
             },
             {
               "name": "executeAppBasesPages",
@@ -729,18 +704,18 @@
             },
             {
               "name": "listAppBasesViews",
-              "signature": "listAppBasesViews(request: AppBasesDiscoveryRequest, signal?: AbortSignal): Promise<AppBasesDiscoveryResult>",
-              "description": "One bounded native discovery page. Empty views do not mean EOF when a\ncontinuation is present. Supplied handles never silently restart/retry."
+              "signature": "listAppBasesViews(request: AppBasesDiscoveryRequest, o?: ReadOptions): Promise<AppBasesDiscoveryResult>",
+              "description": "One bounded native discovery page. Empty views do not mean EOF when a\ncontinuation is present. Supplied handles never silently restart/retry.\nWith `reportUnreadable`, a replica that grants\n`bases-discovery-unreadable-v1` skips records it cannot classify and names\nthem in `unreadable`; an older replica refuses the discovery as before, so\nan empty `unreadable` on success always means none were skipped.\n`o.signal` cancels the read."
             },
             {
               "name": "readAppBasesViewSource",
-              "signature": "readAppBasesViewSource(request: AppBasesSourceRequest, signal?: AbortSignal): Promise<AppBasesSourceResult>",
-              "description": "Exact current source for one native UUID/SHA/original ordinal, never path\naliases, inferred catalog entries, generic RPC or cached document fallback."
+              "signature": "readAppBasesViewSource(request: AppBasesSourceRequest, o?: ReadOptions): Promise<AppBasesSourceResult>",
+              "description": "Exact current source for one native UUID/SHA/original ordinal, never path\naliases, inferred catalog entries, generic RPC or cached document fallback.\n`o.signal` cancels the read."
             },
             {
               "name": "submit",
-              "signature": "submit(ops: Op[], o?: WriteOptions & { allowPartial?: boolean; }): Promise<Write[]>",
-              "description": "Submit operations as one mutation (or one per op with `allowPartial`)."
+              "signature": "submit(ops: Op[], o?: WriteOptions): Promise<Write>",
+              "description": "Submit operations as one mutation: they apply together or not at all."
             },
             {
               "name": "create",
@@ -773,24 +748,24 @@
               "description": "Rename (move) a record; `updateRefs` rewrites links to it (default true).\nWith `contract`, the record must implement it, and moves from its current path."
             },
             {
-              "name": "save",
-              "signature": "save(write: Write | Promise<Write>, o?: { readBack?: boolean; timeoutMs?: number; signal?: AbortSignal; }): Promise<SaveResult>",
-              "description": "Settle a write for the UI: waits up to `timeoutMs` (default 3 s) for the log\nto confirm it. Still pending then is `saved_on_device`, not a failure: the\nwrite is kept on this device and the ledger settles it later. With\n`readBack`, `record` is the record as it now reads here."
+              "name": "settle",
+              "signature": "settle(write: Write | Promise<Write> | Uuid, options?: SettleOptions): Promise<Settlement>",
+              "description": "Settle a write: wait for the sync service to confirm it (3 s by default),\nand with `read`, read the record back as it now reads here.\n\nPass the write, the promise of one, or the mutation ID of an earlier write\nwhose result was `unknown`. The answer is a `Settlement`; the only\nrejections are cancellation and a call that cannot be settled as asked.\nNothing is ever submitted again.\n\n    const saved = await db.settle(db.update(record, { patch }), { read: true });\n    if (saved.outcome === \"rejected\") show(describeError(saved.problem));"
             },
             {
               "name": "receipt",
-              "signature": "receipt(mutation: Uuid, signal?: AbortSignal): Promise<Receipt>",
-              "description": "The current receipt of a mutation. Failures carry `mutationId`."
+              "signature": "receipt(mutation: Uuid, o?: ReadOptions): Promise<Receipt>",
+              "description": "The current receipt of a mutation. Failures carry `mutationId`. `o.signal` cancels the read."
             },
             {
               "name": "awaitReceipt",
-              "signature": "awaitReceipt(mutation: Uuid, timeoutMs?: number, signal?: AbortSignal): Promise<Receipt>",
-              "description": "Resolves when the receipt leaves `pending`, or at `timeoutMs` with the pending receipt."
+              "signature": "awaitReceipt(mutation: Uuid, o?: { timeoutMs?: number | undefined; signal?: AbortSignal | undefined; }): Promise<Receipt>",
+              "description": "Resolves when the receipt leaves `pending`, or at `o.timeoutMs` with the\npending receipt. `o.signal` cancels the wait."
             },
             {
               "name": "listHolds",
-              "signature": "listHolds(signal?: AbortSignal): Promise<Hold[]>",
-              "description": ""
+              "signature": "listHolds(o?: ReadOptions): Promise<Hold[]>",
+              "description": "The current holds. `o.signal` cancels the read."
             },
             {
               "name": "onHolds",
@@ -804,8 +779,8 @@
             },
             {
               "name": "listConflicts",
-              "signature": "listConflicts(record?: Uuid, signal?: AbortSignal): Promise<ConflictEntry[]>",
-              "description": ""
+              "signature": "listConflicts(o?: { record?: Uuid; signal?: AbortSignal; }): Promise<ConflictEntry[]>",
+              "description": "The current conflicts, of `o.record` only when given. `o.signal` cancels the read."
             },
             {
               "name": "onConflicts",
@@ -824,8 +799,8 @@
             },
             {
               "name": "pendingDevices",
-              "signature": "pendingDevices(signal?: AbortSignal): Promise<PendingDevice[]>",
-              "description": "Devices waiting for approval in a private collection. Offered only to the app\nhosting the replica (no grant). `exchangeReady` is challenge/reveal readiness,\nNOT approval/key delivery. Once ready, `sas` is the host-only comparison code\nto display beside Allow; the user must check it matches on the other computer."
+              "signature": "pendingDevices(o?: ReadOptions): Promise<PendingDevice[]>",
+              "description": "Devices waiting for approval in a private collection. Offered only to the app\nhosting the replica (no grant). `exchangeReady` is challenge/reveal readiness,\nNOT approval/key delivery. Once ready, `sas` is the host-only comparison code\nto display beside Allow; the user must check it matches on the other computer.\n`o.signal` cancels the read."
             },
             {
               "name": "approveDevice",
@@ -839,7 +814,7 @@
             },
             {
               "name": "accountKey",
-              "signature": "readonly accountKey: { /** Setup step 2: check the enrolment and key the recovery device (an ordinary mutation). */ setup: (secret: Uint8Array) => Promise<Write>; /** Unlock step 3: start the recovery-signed self-grant; poll `status` until `keyed` or `refused`. */ unlock: (secret: Uint8Array) => Promise<void>; status: (signal?: AbortSignal) => Promise<AccountKeyStatus>; }",
+              "signature": "readonly accountKey: { /** Setup step 2: check the enrolment and key the recovery device (an ordinary mutation). */ setup: (secret: Uint8Array) => Promise<Write>; /** Unlock step 3: start the recovery-signed self-grant; poll `status` until `keyed` or `refused`. */ unlock: (secret: Uint8Array) => Promise<void>; /** Where an account-key unlock stands on this replica. `o.signal` cancels * the read. */ status: (o?: ReadOptions) => Promise<AccountKeyStatus>; }",
               "description": "The account key (AK1 §6; hosting app only, never over a cloud-copy thin session).\n`secret` is the 32-byte account secret `R`; the replica derives the collection's\nrecovery device from it and drops it. The SDK keeps no copy."
             },
             {
@@ -914,6 +889,11 @@
           "description": "",
           "signature": "interface UpdateInput",
           "members": [
+            {
+              "name": "requireLive",
+              "signature": "requireLive?: boolean",
+              "description": "Refuse with not_found/deleted rather than restoring a tombstone at replay."
+            },
             {
               "name": "updateRefs",
               "signature": "updateRefs?: boolean",
@@ -1046,6 +1026,11 @@
               "description": "Final local file result, possibly BEFORE log confirmation. `not_published`\nis a final non-publication, not success. Without files, settles at confirmation.\nRejects rejected/unknown outcomes; not a native custody/durable ACK gate."
             },
             {
+              "name": "recordId",
+              "signature": "recordId?: Uuid",
+              "description": "The record a single-record write targets (create, update, replace, rename, delete)."
+            },
+            {
               "name": "constructor",
               "signature": "constructor(receipt: Receipt)",
               "description": ""
@@ -1078,35 +1063,15 @@
           ]
         },
         {
-          "name": "SaveResult",
+          "name": "RecordWrite",
           "kind": "interface",
-          "description": "What `MdbaseClient.save` settled to.",
-          "signature": "interface SaveResult",
+          "description": "A create, with the record ID the SDK minted: known even when the replica\nomits optimistic records from its response.",
+          "signature": "interface RecordWrite extends Write",
           "members": [
             {
-              "name": "outcome",
-              "signature": "readonly outcome: \"confirmed\" | \"saved_on_device\" | \"rejected\"",
-              "description": ""
-            },
-            {
-              "name": "mutationId",
-              "signature": "readonly mutationId: Uuid",
-              "description": ""
-            },
-            {
-              "name": "records",
-              "signature": "readonly records: readonly RecordView[]",
-              "description": ""
-            },
-            {
-              "name": "record",
-              "signature": "readonly record?: RecordView",
-              "description": "The first record, read back when asked."
-            },
-            {
-              "name": "problem",
-              "signature": "readonly problem?: Problem",
-              "description": ""
+              "name": "recordId",
+              "signature": "readonly recordId: Uuid",
+              "description": "The record a single-record write targets (create, update, replace, rename, delete)."
             }
           ]
         },
@@ -1168,8 +1133,8 @@
             },
             {
               "name": "setQuery",
-              "signature": "setQuery(query: Query, include?: Include | undefined): Promise<void>",
-              "description": "Change the query (for example a larger `limit` window). Re-subscribes."
+              "signature": "setQuery(query: Query, o?: { include?: Include; }): Promise<void>",
+              "description": "Change the query (for example a larger `limit` window). Re-subscribes.\n`o.include` replaces what each record carries; without it the current\ninclude is kept."
             },
             {
               "name": "close",
@@ -1182,111 +1147,15 @@
           "name": "RecordView",
           "kind": "interface",
           "description": "",
-          "signature": "interface RecordView",
-          "members": [
-            {
-              "name": "id",
-              "signature": "id: Uuid",
-              "description": ""
-            },
-            {
-              "name": "path",
-              "signature": "path: string",
-              "description": ""
-            },
-            {
-              "name": "revision",
-              "signature": "revision: Hash",
-              "description": ""
-            },
-            {
-              "name": "frontmatter",
-              "signature": "frontmatter: FmMap",
-              "description": ""
-            },
-            {
-              "name": "effective",
-              "signature": "effective?: FmMap",
-              "description": ""
-            },
-            {
-              "name": "body",
-              "signature": "body?: string",
-              "description": ""
-            },
-            {
-              "name": "document",
-              "signature": "document?: string",
-              "description": ""
-            },
-            {
-              "name": "types",
-              "signature": "types: string[]",
-              "description": ""
-            },
-            {
-              "name": "state",
-              "signature": "state: RecordState",
-              "description": ""
-            },
-            {
-              "name": "diagnostics",
-              "signature": "diagnostics?: Issue[]",
-              "description": ""
-            },
-            {
-              "name": "values",
-              "signature": "values?: FmMap",
-              "description": "`select` outputs by output name (queries with `select`)."
-            },
-            {
-              "name": "mtime",
-              "signature": "mtime?: number",
-              "description": "Capture time of the last change to the bytes (§3.1); not a device file mtime."
-            },
-            {
-              "name": "links",
-              "signature": "links?: LinkView[]",
-              "description": "Outgoing links and embeds (include `links`)."
-            },
-            {
-              "name": "createdBy",
-              "signature": "createdBy?: AuthorRef",
-              "description": "Who created the record (absent in local-only collections)."
-            },
-            {
-              "name": "modifiedBy",
-              "signature": "modifiedBy?: AuthorRef",
-              "description": "Who last changed it."
-            }
-          ]
+          "signature": "interface RecordView extends Plain<w.RecordView>",
+          "members": []
         },
         {
           "name": "Receipt",
           "kind": "interface",
           "description": "",
-          "signature": "interface Receipt",
+          "signature": "interface Receipt extends Omit<Plain<w.Receipt>, \"records\" | \"conflicts\">",
           "members": [
-            {
-              "name": "mutation",
-              "signature": "mutation: Uuid",
-              "description": ""
-            },
-            {
-              "name": "state",
-              "signature": "state: ReceiptState",
-              "description": ""
-            },
-            {
-              "name": "seq",
-              "signature": "seq?: number",
-              "description": ""
-            },
-            {
-              "name": "status",
-              "signature": "status?: EntryStatus",
-              "description": ""
-            },
             {
               "name": "conflicts",
               "signature": "conflicts?: Conflict[]",
@@ -1296,26 +1165,6 @@
               "name": "records",
               "signature": "records?: RecordView[]",
               "description": ""
-            },
-            {
-              "name": "problem",
-              "signature": "problem?: Problem",
-              "description": ""
-            },
-            {
-              "name": "published",
-              "signature": "published?: PublishState",
-              "description": "Present on file-backed replicas; not a confirmation/custody authority."
-            },
-            {
-              "name": "preflight",
-              "signature": "preflight?: Preflight",
-              "description": "Dry run only."
-            },
-            {
-              "name": "relocatedFrom",
-              "signature": "relocatedFrom?: number",
-              "description": "Earlier confirmed position after acknowledged-intent resurrection."
             }
           ]
         },
@@ -1342,8 +1191,8 @@
             },
             {
               "name": "details",
-              "signature": "readonly details?: unknown",
-              "description": ""
+              "signature": "readonly details?: JsonValue",
+              "description": "Plain JSON, whatever the problem carries. Read one field with a narrowing check."
             },
             {
               "name": "retryAfterMs",
@@ -1366,11 +1215,6 @@
               "description": "The original mutation of a failed or unsettled write. Its outcome may still be\nunknown: resolve it with `receipt` / `awaitReceipt` / `pendingWrites` under this\nsame ID. The SDK never resubmits it under a new identity. Absent for reads and\ndry runs, which capture nothing. Not part of `toProblem`."
             },
             {
-              "name": "mutationIds",
-              "signature": "readonly mutationIds?: readonly Uuid[]",
-              "description": "Every original mutation of a failed partial batch, in op order."
-            },
-            {
               "name": "constructor",
               "signature": "constructor(problem: Problem, context?: MdbaseErrorContext)",
               "description": ""
@@ -1389,10 +1233,10 @@
           "signature": "function isMdbaseError(e: unknown, code?: ErrorCode): e is MdbaseError;"
         },
         {
-          "name": "summarizeStatus",
+          "name": "syncStatusText",
           "kind": "function",
-          "description": "Pass the application snapshot's `problem` as `problem` so a live server\nrefusal (collection_migrating, update_required, account_suspended) shows as\nthat, not as offline or catching up.",
-          "signature": "function summarizeStatus(s: SyncStatus, problem?: string | null, transport?: TransportHealth | null, live?: boolean | null): StatusSummary;"
+          "description": "The sync status line every client shows: \"Confirmed through N, plus P pending, plus H\nheld\". Holds are never \"stuck\"; they are the user's pending choices.",
+          "signature": "function syncStatusText(s: SyncStatus): string;"
         }
       ],
       "index": [
@@ -1422,11 +1266,6 @@
           "description": ""
         },
         {
-          "name": "API_VERSIONS",
-          "kind": "constant",
-          "description": "API versions this SDK speaks, highest first."
-        },
-        {
           "name": "ApplicationJson",
           "kind": "type",
           "description": ""
@@ -1447,11 +1286,6 @@
           "description": "Historical chain at the echoed seq, NOT the local current chain/generations."
         },
         {
-          "name": "AppliedPrefixParams",
-          "kind": "interface",
-          "description": "Historical position to compare under the existing authenticated READ session."
-        },
-        {
           "name": "approvalReadiness",
           "kind": "constant",
           "description": ""
@@ -1467,53 +1301,28 @@
           "description": "A narrow original-app-consent port, supplied by the Connect client or owned native Worker."
         },
         {
-          "name": "AttachmentContentV1",
-          "kind": "interface",
-          "description": ""
-        },
-        {
           "name": "AttachmentHoldContent",
           "kind": "interface",
           "description": "Binary Hold content retains the COMPLETE typed manifest/content identity."
         },
         {
-          "name": "AttachmentRefV1",
+          "name": "AuthorRef",
+          "kind": "interface",
+          "description": "Who wrote a version."
+        },
+        {
+          "name": "Backlink",
           "kind": "interface",
           "description": ""
         },
         {
-          "name": "AuthenticatedRelayByteDuplex",
+          "name": "BacklinksResult",
           "kind": "interface",
-          "description": "The authenticated relay stream `openPipe` returns."
+          "description": ""
         },
         {
           "name": "BlobRef",
           "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "ByteChannel",
-          "kind": "interface",
-          "description": "A byte channel carrying the plaintext record stream (after Noise, if any)."
-        },
-        {
-          "name": "bytesEqual",
-          "kind": "function",
-          "description": "Byte-wise equality."
-        },
-        {
-          "name": "ByteStream",
-          "kind": "interface",
-          "description": "A duplex byte stream (a Node socket, a named pipe)."
-        },
-        {
-          "name": "CborError",
-          "kind": "class",
-          "description": "Bytes that are not valid `mdb-cbor/1`, or a value that cannot be encoded."
-        },
-        {
-          "name": "CborErrorKind",
-          "kind": "type",
           "description": ""
         },
         {
@@ -1534,7 +1343,7 @@
         {
           "name": "ChangesWatch",
           "kind": "interface",
-          "description": "Callable for compatibility with the former stop-only return value."
+          "description": ""
         },
         {
           "name": "ChangesWatchState",
@@ -1542,43 +1351,8 @@
           "description": "Local subscription state, not cache completeness or fresh authority."
         },
         {
-          "name": "ClientKey",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "clientPrologue",
-          "kind": "function",
-          "description": "The client session prologue."
-        },
-        {
-          "name": "Codec",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "COLLECTION_UNAVAILABLE_REASONS",
-          "kind": "constant",
-          "description": ""
-        },
-        {
-          "name": "CollectionAvailability",
-          "kind": "type",
-          "description": ""
-        },
-        {
           "name": "CollectionMemberProfile",
           "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "collectionUnavailableError",
-          "kind": "function",
-          "description": "The error that opening an unavailable collection fails with."
-        },
-        {
-          "name": "CollectionUnavailableReason",
-          "kind": "type",
           "description": ""
         },
         {
@@ -1607,19 +1381,19 @@
           "description": ""
         },
         {
-          "name": "Connector",
-          "kind": "interface",
-          "description": "Opens a port to a replica and performs the hello exchange."
-        },
-        {
           "name": "ContractIdentity",
           "kind": "interface",
           "description": "The exact contract and implementation a view or write went through."
         },
         {
-          "name": "ContractProjection",
+          "name": "ContractImplementation",
           "kind": "interface",
           "description": ""
+        },
+        {
+          "name": "ContractProjection",
+          "kind": "interface",
+          "description": "One implementing type's view of a record."
         },
         {
           "name": "ContractQueryOptions",
@@ -1652,22 +1426,7 @@
           "description": "An exact registered record contract."
         },
         {
-          "name": "ControlRouteOptions",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "controlRouteResolver",
-          "kind": "function",
-          "description": "A `resolveRoute` for `relayConnector`, backed by the control plane."
-        },
-        {
-          "name": "ControlRouteResponse",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "ControlRouteTarget",
+          "name": "ContractSummary",
           "kind": "interface",
           "description": ""
         },
@@ -1680,11 +1439,6 @@
           "name": "CurrentAccount",
           "kind": "interface",
           "description": ""
-        },
-        {
-          "name": "decode",
-          "kind": "function",
-          "description": "Decode exactly one canonical `mdb-cbor/1` item."
         },
         {
           "name": "DESCRIBE_TYPING_MAX_PATHS",
@@ -1727,6 +1481,11 @@
           "description": ""
         },
         {
+          "name": "DescribeResult",
+          "kind": "interface",
+          "description": ""
+        },
+        {
           "name": "DescribeTypingResult",
           "kind": "interface",
           "description": ""
@@ -1752,24 +1511,9 @@
           "description": "The smallest single edit turning `base` into `next`, in Unicode scalar offsets of `base` (the `body_edits` unit)."
         },
         {
-          "name": "duplexCarrier",
-          "kind": "function",
-          "description": "Whole Noise messages over an authenticated relay duplex."
-        },
-        {
           "name": "effectiveCapabilities",
           "kind": "function",
           "description": "Prod `effectiveCapabilities`."
-        },
-        {
-          "name": "encode",
-          "kind": "function",
-          "description": "Encode a value in canonical `mdb-cbor/1` form."
-        },
-        {
-          "name": "encodeSecret",
-          "kind": "function",
-          "description": "Encode key-bearing values, wiping all encoder-owned scratch buffers (including superseded growth buffers) on return or throw."
         },
         {
           "name": "ERROR_CODES",
@@ -1852,26 +1596,6 @@
           "description": "Format either computer's local comparison code, preserving leading zeroes."
         },
         {
-          "name": "framedPort",
-          "kind": "function",
-          "description": "Turn a byte channel of `u32be(length) ‖ frame` records into a frame port."
-        },
-        {
-          "name": "FramePort",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "fromHex",
-          "kind": "function",
-          "description": "Parse lowercase or uppercase hex."
-        },
-        {
-          "name": "generateKeyPair",
-          "kind": "function",
-          "description": ""
-        },
-        {
           "name": "GrantInfo",
           "kind": "interface",
           "description": ""
@@ -1903,6 +1627,16 @@
         },
         {
           "name": "HelloResult",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "HistoryOptions",
+          "kind": "interface",
+          "description": "Options for `client.history.list`."
+        },
+        {
+          "name": "HistoryVersion",
           "kind": "interface",
           "description": ""
         },
@@ -1957,16 +1691,6 @@
           "description": ""
         },
         {
-          "name": "IkInitiator",
-          "kind": "class",
-          "description": "The initiator (client) side of IK."
-        },
-        {
-          "name": "IkResponder",
-          "kind": "class",
-          "description": "The responder (replica) side of IK."
-        },
-        {
           "name": "Incident",
           "kind": "interface",
           "description": ""
@@ -1977,33 +1701,8 @@
           "description": ""
         },
         {
-          "name": "indexedDbKeyStorage",
-          "kind": "function",
-          "description": "Keys in IndexedDB (browsers, extensions, Obsidian)."
-        },
-        {
-          "name": "InProcessConnectOptions",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "inProcessConnector",
-          "kind": "function",
-          "description": "A connector to a runtime in this JS process."
-        },
-        {
-          "name": "InProcessRuntime",
-          "kind": "interface",
-          "description": "What a shared runtime offers in process."
-        },
-        {
           "name": "InvalidPersonRecord",
           "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "isCollectionUnavailableReason",
-          "kind": "function",
           "description": ""
         },
         {
@@ -2017,6 +1716,11 @@
           "description": ""
         },
         {
+          "name": "isProtected",
+          "kind": "function",
+          "description": "True when a record is held or has unresolved conflicts."
+        },
+        {
           "name": "isReadyPhase",
           "kind": "function",
           "description": "True when the phase is ready for this collection with a current connection."
@@ -2027,29 +1731,14 @@
           "description": ""
         },
         {
-          "name": "isValid",
-          "kind": "function",
-          "description": "True when `bytes` is valid `mdb-cbor/1`."
-        },
-        {
-          "name": "JsonLike",
+          "name": "JsonObject",
           "kind": "type",
-          "description": ""
+          "description": "A JSON object, such as a record's frontmatter."
         },
         {
-          "name": "KeyPair",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "keyPairFromSecret",
-          "kind": "function",
-          "description": ""
-        },
-        {
-          "name": "KeyStorage",
-          "kind": "interface",
-          "description": ""
+          "name": "JsonValue",
+          "kind": "type",
+          "description": "A JSON value."
         },
         {
           "name": "LinkState",
@@ -2067,36 +1756,6 @@
           "description": ""
         },
         {
-          "name": "LoadKeyOptions",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "loadOrCreateClientKey",
-          "kind": "function",
-          "description": "Load one committed identity."
-        },
-        {
-          "name": "LocalLink",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "localLinkConnector",
-          "kind": "function",
-          "description": "A connector to the desktop daemon over the authenticated localhost link."
-        },
-        {
-          "name": "LocalLinkConnectorOptions",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "localLinkFirstPayload",
-          "kind": "function",
-          "description": "`{0."
-        },
-        {
           "name": "Materialization",
           "kind": "interface",
           "description": ""
@@ -2105,11 +1764,6 @@
           "name": "MAX_CONVENIENCE_BYTES",
           "kind": "constant",
           "description": "Convenience reads that return whole bytes are capped, as today (§10.2)."
-        },
-        {
-          "name": "MAX_DEPTH",
-          "kind": "constant",
-          "description": "Maximum nesting depth, as in the Rust codec."
         },
         {
           "name": "MDBASE_NOTIFICATION_CLICK",
@@ -2127,11 +1781,6 @@
           "description": ""
         },
         {
-          "name": "MdbaseApplication",
-          "kind": "interface",
-          "description": ""
-        },
-        {
           "name": "MdbaseApplicationAssessment",
           "kind": "interface",
           "description": ""
@@ -2145,11 +1794,6 @@
           "name": "MdbaseApplicationCapability",
           "kind": "interface",
           "description": ""
-        },
-        {
-          "name": "MdbaseApplicationEntry",
-          "kind": "interface",
-          "description": "Structural public consumer port."
         },
         {
           "name": "MdbaseApplicationFacet",
@@ -2187,21 +1831,6 @@
           "description": "- none."
         },
         {
-          "name": "MdbaseApplicationSetup",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "MdbaseApplicationSnapshot",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "MdbaseApplicationUnavailableError",
-          "kind": "class",
-          "description": ""
-        },
-        {
           "name": "MdbaseApprovalOutcome",
           "kind": "type",
           "description": "SDK-6."
@@ -2215,11 +1844,6 @@
           "name": "MdbaseCollectionSummary",
           "kind": "type",
           "description": "One collection this app may open, as listed in `snapshot.collections`."
-        },
-        {
-          "name": "MdbaseConnect",
-          "kind": "class",
-          "description": "The application entry."
         },
         {
           "name": "mdbaseError",
@@ -2332,6 +1956,11 @@
           "description": ""
         },
         {
+          "name": "MdbaseSync",
+          "kind": "interface",
+          "description": ""
+        },
+        {
           "name": "MdbaseTransferItem",
           "kind": "interface",
           "description": ""
@@ -2367,6 +1996,11 @@
           "description": "A declared type the app cannot use."
         },
         {
+          "name": "MdbaseUnlockSecret",
+          "kind": "type",
+          "description": "What the person typed to unlock a Private collection."
+        },
+        {
           "name": "MdbaseVersion",
           "kind": "interface",
           "description": "The SDK's one semantic-version implementation (SemVer 2.0.0)."
@@ -2377,94 +2011,14 @@
           "description": "How an installed version relates to the version an app ships."
         },
         {
-          "name": "memoryKeyStorage",
-          "kind": "function",
-          "description": "Keys in memory only (tests, short-lived scripts)."
-        },
-        {
           "name": "memoryWriteLedgerStore",
           "kind": "function",
           "description": ""
         },
         {
-          "name": "MessageCarrier",
-          "kind": "interface",
-          "description": "A message-oriented channel carrying whole Noise messages."
-        },
-        {
-          "name": "NextBridge",
-          "kind": "interface",
-          "description": "What `mdbaseNext(connection)` from `@mdbase-dev/connect/next` provides."
-        },
-        {
-          "name": "nextRelayConnector",
-          "kind": "function",
-          "description": "A connector for web apps reaching a device replica through the relay."
-        },
-        {
-          "name": "NextRelayConnectorOptions",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "NextRouteResponse",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "NextRouteTarget",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "noiseChannel",
-          "kind": "function",
-          "description": "A byte channel over an established Noise transport."
-        },
-        {
-          "name": "noiseConnector",
-          "kind": "function",
-          "description": "A `Connector` that opens Noise IK sessions to a replica."
-        },
-        {
-          "name": "NoiseConnectorOptions",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "NoiseError",
-          "kind": "class",
-          "description": ""
-        },
-        {
-          "name": "NoiseTarget",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "NoiseTransport",
-          "kind": "interface",
-          "description": "The two transport ciphers after the handshake, and the handshake hash."
-        },
-        {
           "name": "Op",
           "kind": "type",
           "description": ""
-        },
-        {
-          "name": "OpenConfig",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "OpenedPort",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "orderTargets",
-          "kind": "function",
-          "description": "Valid relay targets, sticky device first, then those hinted online, in route order."
         },
         {
           "name": "PagesOptions",
@@ -2475,11 +2029,6 @@
           "name": "PagesReset",
           "kind": "interface",
           "description": ""
-        },
-        {
-          "name": "parseCollectionAvailability",
-          "kind": "function",
-          "description": "Parse a server `availability` object."
         },
         {
           "name": "parseHoldCompareLink",
@@ -2508,6 +2057,11 @@
         },
         {
           "name": "PendingDevice",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "PendingMutation",
           "kind": "interface",
           "description": ""
         },
@@ -2547,24 +2101,14 @@
           "description": ""
         },
         {
-          "name": "PipeAuth",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "pipeCloseError",
-          "kind": "function",
-          "description": ""
+          "name": "Plain",
+          "kind": "type",
+          "description": "`T` as the client hands it to an app."
         },
         {
           "name": "PlainValue",
           "kind": "type",
           "description": "Plain JSON-ish data an app may pass where a `value` is expected."
-        },
-        {
-          "name": "portPair",
-          "kind": "function",
-          "description": "Two connected in-memory ports (tests, and same-process hosts)."
         },
         {
           "name": "PresenceApi",
@@ -2597,19 +2141,14 @@
           "description": "Local file publication, independent of log confirmation."
         },
         {
-          "name": "QueryExecutionProfile",
-          "kind": "type",
-          "description": "Trusted host initialization policy, not a grant/session/query override."
-        },
-        {
           "name": "QueryGroup",
           "kind": "interface",
-          "description": "Complete pre-window grouping tuple and native summary results."
+          "description": ""
         },
         {
           "name": "QueryMetadata",
           "kind": "interface",
-          "description": "Full metadata replacement bound to the enclosing live update's asOf."
+          "description": ""
         },
         {
           "name": "queryPages",
@@ -2652,6 +2191,11 @@
           "description": "Read the envelope kept on a shown notification, or on a native tap."
         },
         {
+          "name": "ReadOptions",
+          "kind": "interface",
+          "description": "What every read takes."
+        },
+        {
           "name": "readViewSourceRecord",
           "kind": "function",
           "description": "Read a complete current local record, not a projection or a source-text DTO."
@@ -2667,6 +2211,11 @@
           "description": ""
         },
         {
+          "name": "RecordHistory",
+          "kind": "interface",
+          "description": ""
+        },
+        {
           "name": "RecordLease",
           "kind": "interface",
           "description": ""
@@ -2677,9 +2226,9 @@
           "description": ""
         },
         {
-          "name": "RecordReader",
-          "kind": "class",
-          "description": "Splits a byte stream into `u32be(length) ‖ frame` records."
+          "name": "RecordReadOptions",
+          "kind": "interface",
+          "description": "A read that returns records."
         },
         {
           "name": "RecordRecovery",
@@ -2722,14 +2271,44 @@
           "description": ""
         },
         {
+          "name": "RecordSet",
+          "kind": "class",
+          "description": ""
+        },
+        {
+          "name": "RecordSetChange",
+          "kind": "type",
+          "description": "One record's change."
+        },
+        {
+          "name": "RecordSetListener",
+          "kind": "type",
+          "description": "`changes` is empty when only `state` or `problem` changed."
+        },
+        {
+          "name": "RecordSetOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordSetSnapshot",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordSetState",
+          "kind": "type",
+          "description": "- `loading`."
+        },
+        {
           "name": "RecordValidation",
           "kind": "interface",
           "description": ""
         },
         {
-          "name": "RecordWrite",
+          "name": "RecordVersion",
           "kind": "interface",
-          "description": "A create receipt with the record identity minted by the SDK, even when the replica omits optimistic records from its response."
+          "description": ""
         },
         {
           "name": "Recovery",
@@ -2743,26 +2322,6 @@
         },
         {
           "name": "RecoveryKeyStatus",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "relayConnector",
-          "kind": "function",
-          "description": "A connector for web apps and other remote clients."
-        },
-        {
-          "name": "RelayConnectorOptions",
-          "kind": "interface",
-          "description": ""
-        },
-        {
-          "name": "relayPipeCarrier",
-          "kind": "function",
-          "description": "Open a relay pipe and return a carrier of whole Noise messages."
-        },
-        {
-          "name": "RelayRoute",
           "kind": "interface",
           "description": ""
         },
@@ -2787,16 +2346,6 @@
           "description": "`sha256:<hex>` of a string's UTF-8 bytes."
         },
         {
-          "name": "routeFromControl",
-          "kind": "function",
-          "description": "The first usable target, or `null` when there is none (the SDK then reports `unavailable` / `no_device_online`."
-        },
-        {
-          "name": "RuntimeInfo",
-          "kind": "interface",
-          "description": ""
-        },
-        {
           "name": "sameIdentity",
           "kind": "function",
           "description": ""
@@ -2807,19 +2356,19 @@
           "description": "- `saved`."
         },
         {
-          "name": "SchemaError",
-          "kind": "class",
+          "name": "Settlement",
+          "kind": "type",
+          "description": "How a write ended."
+        },
+        {
+          "name": "SettleOptions",
+          "kind": "interface",
           "description": ""
         },
         {
-          "name": "Session",
-          "kind": "class",
-          "description": ""
-        },
-        {
-          "name": "SESSION_LIFETIME_MS",
-          "kind": "constant",
-          "description": "Session lifetime (§12.3)."
+          "name": "SettleRead",
+          "kind": "interface",
+          "description": "Which record to read back once the write is kept, and how."
         },
         {
           "name": "showMdbaseNotification",
@@ -2832,54 +2381,29 @@
           "description": "Opening longer than this reads `slow` (SDK-9)."
         },
         {
-          "name": "StaticKey",
-          "kind": "interface",
-          "description": "A static key the SDK can use without seeing the secret."
-        },
-        {
-          "name": "staticKeyOf",
+          "name": "summarizeSync",
           "kind": "function",
           "description": ""
         },
         {
-          "name": "StatusKind",
+          "name": "SyncAttention",
           "kind": "type",
-          "description": ""
+          "description": "One thing that needs the person, most pressing first in `MdbaseSync.attention`."
         },
         {
-          "name": "StatusSummary",
+          "name": "SyncInput",
           "kind": "interface",
           "description": ""
         },
         {
-          "name": "StoredKey",
+          "name": "SyncState",
           "kind": "type",
-          "description": "What a key store persists for one key."
-        },
-        {
-          "name": "streamCarrier",
-          "kind": "function",
-          "description": "Carry Noise messages on a byte stream as `u16be(length) ‖ message`."
-        },
-        {
-          "name": "structMap",
-          "kind": "function",
-          "description": "A struct map from `[key, value]` pairs, dropping `undefined` values."
-        },
-        {
-          "name": "SubmitParams",
-          "kind": "interface",
-          "description": ""
+          "description": "What an indicator shows."
         },
         {
           "name": "SyncStatus",
           "kind": "interface",
           "description": "\"Confirmed through N, plus pending\" (§7)."
-        },
-        {
-          "name": "syncStatusText",
-          "kind": "function",
-          "description": "The sync status line every client shows."
         },
         {
           "name": "TEMPORAL_HINTS",
@@ -2957,14 +2481,9 @@
           "description": "Opaque timer HTTP API."
         },
         {
-          "name": "toHex",
-          "kind": "function",
-          "description": "Lowercase hex."
-        },
-        {
           "name": "toPlain",
           "kind": "function",
-          "description": "A plain-object view of a value, for display and for code written against JSON."
+          "description": "A plain-object view of an exact value."
         },
         {
           "name": "toValue",
@@ -3047,6 +2566,11 @@
           "description": ""
         },
         {
+          "name": "TypeSummary",
+          "kind": "interface",
+          "description": ""
+        },
+        {
           "name": "TypingEntry",
           "kind": "interface",
           "description": ""
@@ -3097,8 +2621,23 @@
           "description": "Spec 12A-style equality of two values (exact."
         },
         {
+          "name": "VersionKind",
+          "kind": "type",
+          "description": "How an entry changed the record."
+        },
+        {
           "name": "versionRelation",
           "kind": "function",
+          "description": ""
+        },
+        {
+          "name": "ViewDescriptor",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ViewSource",
+          "kind": "interface",
           "description": ""
         },
         {
@@ -3117,29 +2656,9 @@
           "description": ""
         },
         {
-          "name": "WasmRuntime",
-          "kind": "class",
-          "description": "A `runtime.wasm` instance hosting one collection."
-        },
-        {
           "name": "WebPushChannelOptions",
           "kind": "interface",
           "description": ""
-        },
-        {
-          "name": "webSocketCarrier",
-          "kind": "function",
-          "description": "Open a WebSocket carrying one Noise message per binary message."
-        },
-        {
-          "name": "WebSocketFactory",
-          "kind": "type",
-          "description": ""
-        },
-        {
-          "name": "WebSocketLike",
-          "kind": "interface",
-          "description": "The subset of the WebSocket API the SDK uses (browser `WebSocket`, Node 22's, `ws`)."
         },
         {
           "name": "wire",
@@ -3323,6 +2842,11 @@
               "description": "A connector for `MdbaseClient.connect`. Each `open` is a new session."
             },
             {
+              "name": "client",
+              "signature": "client(o?: Partial<Omit<ClientOptions, \"connector\">>): Promise<MdbaseClient>",
+              "description": "A client connected to this replica. It does not reconnect by itself\nunless `reconnect` says so."
+            },
+            {
               "name": "dropConnections",
               "signature": "dropConnections(): void",
               "description": "Drop every session (simulates a broken link; clients reconnect)."
@@ -3334,8 +2858,8 @@
             },
             {
               "name": "seed",
-              "signature": "seed(r: { id?: w.Uuid; path: string; types?: string[]; frontmatter?: Record<string, CborValue>; body?: string; }): MemoryRecord",
-              "description": "Seed a confirmed record directly."
+              "signature": "seed(r: { id?: w.Uuid; path: string; types?: string[]; frontmatter?: Record<string, PlainValue>; body?: string; }): MemoryRecord",
+              "description": "Seed a confirmed record directly. Frontmatter is plain data, or the\nexact forms where a test wants them (`Float64`, `bigint`, a `Map`)."
             },
             {
               "name": "confirmAll",
@@ -3344,7 +2868,7 @@
             },
             {
               "name": "editElsewhere",
-              "signature": "editElsewhere(ref: string, change: { body?: string; frontmatter?: Record<string, CborValue | null>; }): void",
+              "signature": "editElsewhere(ref: string, change: { body?: string; frontmatter?: Record<string, PlainValue>; }): void",
               "description": "Another device edits a record; the change arrives confirmed. A `null`\nfrontmatter value removes the field."
             },
             {
@@ -3366,6 +2890,16 @@
               "name": "failNextWrite",
               "signature": "failNextWrite(p?: w.Problem): void",
               "description": "The next submit fails with `p` and captures nothing."
+            },
+            {
+              "name": "failNextRead",
+              "signature": "failNextRead(method: MemoryReplicaRead, p?: w.Problem): void",
+              "description": "The next `method` request fails with `p` and the one after it is answered."
+            },
+            {
+              "name": "pauseReads",
+              "signature": "pauseReads(method: MemoryReplicaRead): () => void",
+              "description": "Hold every `method` request until the returned function is called, as a\nslow replica would. Requests already answered are not affected."
             },
             {
               "name": "stallConfirmations",
@@ -3453,6 +2987,11 @@
           "description": ""
         },
         {
+          "name": "ApplicationFixtureSnapshot",
+          "kind": "type",
+          "description": "The snapshot a fixture is given."
+        },
+        {
           "name": "createTestApp",
           "kind": "function",
           "description": ""
@@ -3476,6 +3015,11 @@
           "name": "MemoryReplicaOptions",
           "kind": "interface",
           "description": ""
+        },
+        {
+          "name": "MemoryReplicaRead",
+          "kind": "type",
+          "description": "A request `failNextRead` and `pauseReads` can target, by the client methods that send it."
         },
         {
           "name": "serveNoise",
@@ -3516,6 +3060,1488 @@
           "name": "TestMdbase",
           "kind": "interface",
           "description": "`createTestApp`, returning the `Mdbase` front door (as `createMdbase` does)."
+        }
+      ]
+    },
+    {
+      "specifier": "@mdbase-dev/sdk/thin-client",
+      "title": "Thin client",
+      "featured": [
+        {
+          "name": "connect",
+          "kind": "function",
+          "description": "Connect to a replica.",
+          "signature": "function connect(opts: ClientOptions): Promise<MdbaseClient>;"
+        },
+        {
+          "name": "ClientOptions",
+          "kind": "interface",
+          "description": "",
+          "signature": "interface ClientOptions",
+          "members": [
+            {
+              "name": "connector",
+              "signature": "connector: Connector",
+              "description": ""
+            },
+            {
+              "name": "app",
+              "signature": "app: { name: string; version: string; }",
+              "description": "App ID and version, sent in `hello`."
+            },
+            {
+              "name": "timezone",
+              "signature": "timezone?: string",
+              "description": "IANA time zone for this session's writes and queries. Defaults to the host's."
+            },
+            {
+              "name": "features",
+              "signature": "features?: string[]",
+              "description": "Extra features to request (\"fence\", \"presence\", ...)."
+            },
+            {
+              "name": "reconnect",
+              "signature": "reconnect?: false | { minDelayMs?: number; maxDelayMs?: number; }",
+              "description": "Reconnect after the link drops (default on)."
+            },
+            {
+              "name": "waitForDevice",
+              "signature": "waitForDevice?: boolean",
+              "description": "Private collections: wait for a device replica to come online and serve the collection instead of failing."
+            },
+            {
+              "name": "onWaiting",
+              "signature": "onWaiting?: (why: MdbaseError) => void",
+              "description": "Called while waiting for a device or the original Native grant to become live."
+            },
+            {
+              "name": "ledger",
+              "signature": "ledger?: WriteLedgerStore",
+              "description": "Where the write ledger persists (default: memory). Web apps get the replica's store."
+            },
+            {
+              "name": "signal",
+              "signature": "signal?: AbortSignal",
+              "description": ""
+            }
+          ]
+        }
+      ],
+      "index": [
+        {
+          "name": "ACCOUNT_KEY_STATES",
+          "kind": "constant",
+          "description": "Where an account-key unlock stands on this replica."
+        },
+        {
+          "name": "AccountKeyState",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "AccountKeyStatus",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "API_VERSIONS",
+          "kind": "constant",
+          "description": "API versions this SDK speaks, highest first."
+        },
+        {
+          "name": "AppliedPrefix",
+          "kind": "interface",
+          "description": "Historical chain at the echoed seq, NOT the local current chain/generations."
+        },
+        {
+          "name": "AppliedPrefixParams",
+          "kind": "interface",
+          "description": "Historical position to compare under the existing authenticated READ session."
+        },
+        {
+          "name": "approvalReadiness",
+          "kind": "constant",
+          "description": ""
+        },
+        {
+          "name": "ApprovalReadiness",
+          "kind": "interface",
+          "description": "Host-only `approval` push, not a joiner code or an approval result."
+        },
+        {
+          "name": "AttachmentContentV1",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "AttachmentHoldContent",
+          "kind": "interface",
+          "description": "Binary Hold content retains the COMPLETE typed manifest/content identity."
+        },
+        {
+          "name": "AttachmentRefV1",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "AuthenticatedRelayByteDuplex",
+          "kind": "interface",
+          "description": "The authenticated relay stream `openPipe` returns."
+        },
+        {
+          "name": "AuthorRef",
+          "kind": "interface",
+          "description": "Who wrote a version."
+        },
+        {
+          "name": "Backlink",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "BacklinksResult",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "BlobRef",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ByteChannel",
+          "kind": "interface",
+          "description": "A byte channel carrying the plaintext record stream (after Noise, if any)."
+        },
+        {
+          "name": "bytesEqual",
+          "kind": "function",
+          "description": "Byte-wise equality."
+        },
+        {
+          "name": "ByteStream",
+          "kind": "interface",
+          "description": "A duplex byte stream (a Node socket, a named pipe)."
+        },
+        {
+          "name": "CborError",
+          "kind": "class",
+          "description": "Bytes that are not valid `mdb-cbor/1`, or a value that cannot be encoded."
+        },
+        {
+          "name": "CborErrorKind",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "CborMap",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "CborValue",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "Change",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ChangesWatch",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ChangesWatchState",
+          "kind": "type",
+          "description": "Local subscription state, not cache completeness or fresh authority."
+        },
+        {
+          "name": "ClientKey",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "clientPrologue",
+          "kind": "function",
+          "description": "The client session prologue."
+        },
+        {
+          "name": "Codec",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "COLLECTION_UNAVAILABLE_REASONS",
+          "kind": "constant",
+          "description": ""
+        },
+        {
+          "name": "CollectionAvailability",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "collectionUnavailableError",
+          "kind": "function",
+          "description": "The error that opening an unavailable collection fails with."
+        },
+        {
+          "name": "CollectionUnavailableReason",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "ConfirmedHead",
+          "kind": "interface",
+          "description": "Confirmed-only prefix facts."
+        },
+        {
+          "name": "Conflict",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ConflictEntry",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ConflictValue",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "Connector",
+          "kind": "interface",
+          "description": "Opens a port to a replica and performs the hello exchange."
+        },
+        {
+          "name": "ContractIdentity",
+          "kind": "interface",
+          "description": "The exact contract and implementation a view or write went through."
+        },
+        {
+          "name": "ContractImplementation",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ContractProjection",
+          "kind": "interface",
+          "description": "One implementing type's view of a record."
+        },
+        {
+          "name": "ContractQueryOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ContractQueryRecord",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ContractQueryResult",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ContractRecordView",
+          "kind": "interface",
+          "description": "One record's valid contract view."
+        },
+        {
+          "name": "ContractRef",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ContractSelector",
+          "kind": "interface",
+          "description": "An exact registered record contract."
+        },
+        {
+          "name": "ContractSummary",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ControlRouteOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "controlRouteResolver",
+          "kind": "function",
+          "description": "A `resolveRoute` for `relayConnector`, backed by the control plane."
+        },
+        {
+          "name": "ControlRouteResponse",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ControlRouteTarget",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "CreateInput",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "createViewSource",
+          "kind": "function",
+          "description": "Submit exactly the caller-captured document/UUID/MID through ordinary create."
+        },
+        {
+          "name": "decode",
+          "kind": "function",
+          "description": "Decode exactly one canonical `mdb-cbor/1` item."
+        },
+        {
+          "name": "DESCRIBE_TYPING_MAX_PATHS",
+          "kind": "constant",
+          "description": ""
+        },
+        {
+          "name": "DESCRIBE_TYPING_MAX_TYPES",
+          "kind": "constant",
+          "description": "Request bounds (`too_large` beyond them on the replica."
+        },
+        {
+          "name": "DescribeOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "DescribeResult",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "DescribeTypingResult",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "DEVICE_KINDS",
+          "kind": "constant",
+          "description": "`device-kind` (policy.md)."
+        },
+        {
+          "name": "DeviceKind",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "diffEdits",
+          "kind": "function",
+          "description": "The smallest single edit turning `base` into `next`, in Unicode scalar offsets of `base` (the `body_edits` unit)."
+        },
+        {
+          "name": "duplexCarrier",
+          "kind": "function",
+          "description": "Whole Noise messages over an authenticated relay duplex."
+        },
+        {
+          "name": "encode",
+          "kind": "function",
+          "description": "Encode a value in canonical `mdb-cbor/1` form."
+        },
+        {
+          "name": "encodeSecret",
+          "kind": "function",
+          "description": "Encode key-bearing values, wiping all encoder-owned scratch buffers (including superseded growth buffers) on return or throw."
+        },
+        {
+          "name": "ERROR_CODES",
+          "kind": "constant",
+          "description": ""
+        },
+        {
+          "name": "ErrorCode",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "ExecuteViewOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "FenceHandler",
+          "kind": "type",
+          "description": "Fence handler offered by an editor host (§14)."
+        },
+        {
+          "name": "FileAction",
+          "kind": "type",
+          "description": "What a session may do with files."
+        },
+        {
+          "name": "FileContentProfile",
+          "kind": "type",
+          "description": "Actual persisted file kind and content representation (§10.1), never inferred from the path."
+        },
+        {
+          "name": "fileGrant",
+          "kind": "function",
+          "description": "The file actions and folder scope of a session, mapped from its native grant."
+        },
+        {
+          "name": "FileGrant",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "FileRef",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "FilesApi",
+          "kind": "class",
+          "description": ""
+        },
+        {
+          "name": "FileScope",
+          "kind": "type",
+          "description": "Where file actions apply."
+        },
+        {
+          "name": "FileView",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "FileWrite",
+          "kind": "interface",
+          "description": "A tracked upload receipt with its original, replica-owned file identity."
+        },
+        {
+          "name": "Float64",
+          "kind": "class",
+          "description": "A float whose value is integral (or −0), kept distinct from an integer."
+        },
+        {
+          "name": "formatSas",
+          "kind": "function",
+          "description": "Format either computer's local comparison code, preserving leading zeroes."
+        },
+        {
+          "name": "framedPort",
+          "kind": "function",
+          "description": "Turn a byte channel of `u32be(length) ‖ frame` records into a frame port."
+        },
+        {
+          "name": "FramePort",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "fromHex",
+          "kind": "function",
+          "description": "Parse lowercase or uppercase hex."
+        },
+        {
+          "name": "generateKeyPair",
+          "kind": "function",
+          "description": ""
+        },
+        {
+          "name": "GrantInfo",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "Hash",
+          "kind": "type",
+          "description": "`sha256:<64 lowercase hex>`."
+        },
+        {
+          "name": "HelloResult",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "HistoryOptions",
+          "kind": "interface",
+          "description": "Options for `client.history.list`."
+        },
+        {
+          "name": "HistoryVersion",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "Hold",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "HoldReason",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "HoldResolution",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "IkInitiator",
+          "kind": "class",
+          "description": "The initiator (client) side of IK."
+        },
+        {
+          "name": "IkResponder",
+          "kind": "class",
+          "description": "The responder (replica) side of IK."
+        },
+        {
+          "name": "Incident",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "Include",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "indexedDbKeyStorage",
+          "kind": "function",
+          "description": "Keys in IndexedDB (browsers, extensions, Obsidian)."
+        },
+        {
+          "name": "InProcessConnectOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "inProcessConnector",
+          "kind": "function",
+          "description": "A connector to a runtime in this JS process."
+        },
+        {
+          "name": "InProcessRuntime",
+          "kind": "interface",
+          "description": "What a shared runtime offers in process."
+        },
+        {
+          "name": "isCollectionUnavailableReason",
+          "kind": "function",
+          "description": ""
+        },
+        {
+          "name": "isConfirmed",
+          "kind": "function",
+          "description": "True once a write is durable."
+        },
+        {
+          "name": "isErrorCode",
+          "kind": "function",
+          "description": ""
+        },
+        {
+          "name": "isMdbaseError",
+          "kind": "function",
+          "description": ""
+        },
+        {
+          "name": "isProtected",
+          "kind": "function",
+          "description": "True when a record is held or has unresolved conflicts."
+        },
+        {
+          "name": "Issue",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "isValid",
+          "kind": "function",
+          "description": "True when `bytes` is valid `mdb-cbor/1`."
+        },
+        {
+          "name": "JsonObject",
+          "kind": "type",
+          "description": "A JSON object, such as a record's frontmatter."
+        },
+        {
+          "name": "JsonValue",
+          "kind": "type",
+          "description": "A JSON value."
+        },
+        {
+          "name": "KeyPair",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "keyPairFromSecret",
+          "kind": "function",
+          "description": ""
+        },
+        {
+          "name": "KeyStorage",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "LinkState",
+          "kind": "type",
+          "description": "The link between this client and its replica (not the replica's sync state)."
+        },
+        {
+          "name": "ListViewsResult",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "LiveQuery",
+          "kind": "class",
+          "description": "A live query handle."
+        },
+        {
+          "name": "LiveQueryState",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "LoadKeyOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "loadOrCreateClientKey",
+          "kind": "function",
+          "description": "Load one committed identity."
+        },
+        {
+          "name": "LocalLink",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "localLinkConnector",
+          "kind": "function",
+          "description": "A connector to the desktop daemon over the authenticated localhost link."
+        },
+        {
+          "name": "LocalLinkConnectorOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "localLinkFirstPayload",
+          "kind": "function",
+          "description": "`{0."
+        },
+        {
+          "name": "Materialization",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "MAX_CONVENIENCE_BYTES",
+          "kind": "constant",
+          "description": "Convenience reads that return whole bytes are capped, as today (§10.2)."
+        },
+        {
+          "name": "MAX_DEPTH",
+          "kind": "constant",
+          "description": "Maximum nesting depth, as in the Rust codec."
+        },
+        {
+          "name": "MdbaseClient",
+          "kind": "class",
+          "description": ""
+        },
+        {
+          "name": "mdbaseError",
+          "kind": "function",
+          "description": "Build an error locally (transport failures, cancellation, schema mismatches)."
+        },
+        {
+          "name": "MdbaseError",
+          "kind": "class",
+          "description": "An error from a replica or from the SDK itself."
+        },
+        {
+          "name": "MdbaseErrorContext",
+          "kind": "interface",
+          "description": "Local facts about a failure that are not part of the wire problem."
+        },
+        {
+          "name": "MdbaseSync",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "memoryKeyStorage",
+          "kind": "function",
+          "description": "Keys in memory only (tests, short-lived scripts)."
+        },
+        {
+          "name": "memoryWriteLedgerStore",
+          "kind": "function",
+          "description": ""
+        },
+        {
+          "name": "MessageCarrier",
+          "kind": "interface",
+          "description": "A message-oriented channel carrying whole Noise messages."
+        },
+        {
+          "name": "NextBridge",
+          "kind": "interface",
+          "description": "What `mdbaseNext(connection)` from `@mdbase-dev/connect/next` provides."
+        },
+        {
+          "name": "nextRelayConnector",
+          "kind": "function",
+          "description": "A connector for web apps reaching a device replica through the relay."
+        },
+        {
+          "name": "NextRelayConnectorOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "NextRouteResponse",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "NextRouteTarget",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "noiseChannel",
+          "kind": "function",
+          "description": "A byte channel over an established Noise transport."
+        },
+        {
+          "name": "noiseConnector",
+          "kind": "function",
+          "description": "A `Connector` that opens Noise IK sessions to a replica."
+        },
+        {
+          "name": "NoiseConnectorOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "NoiseError",
+          "kind": "class",
+          "description": ""
+        },
+        {
+          "name": "NoiseTarget",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "NoiseTransport",
+          "kind": "interface",
+          "description": "The two transport ciphers after the handshake, and the handshake hash."
+        },
+        {
+          "name": "Op",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "OpenConfig",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "OpenedPort",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "orderTargets",
+          "kind": "function",
+          "description": "Valid relay targets in connection order."
+        },
+        {
+          "name": "PagesOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "PagesReset",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "parseCollectionAvailability",
+          "kind": "function",
+          "description": "Parse a server `availability` object."
+        },
+        {
+          "name": "Peer",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "PendingDevice",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "PendingMutation",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "PipeAuth",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "pipeCloseError",
+          "kind": "function",
+          "description": ""
+        },
+        {
+          "name": "Plain",
+          "kind": "type",
+          "description": "`T` as the client hands it to an app."
+        },
+        {
+          "name": "PlainValue",
+          "kind": "type",
+          "description": "Plain JSON-ish data an app may pass where a `value` is expected."
+        },
+        {
+          "name": "portPair",
+          "kind": "function",
+          "description": "Two connected in-memory ports (tests, and same-process hosts)."
+        },
+        {
+          "name": "PresenceApi",
+          "kind": "class",
+          "description": ""
+        },
+        {
+          "name": "Problem",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "PublishState",
+          "kind": "type",
+          "description": "Local file publication, independent of log confirmation."
+        },
+        {
+          "name": "Query",
+          "kind": "type",
+          "description": "A spec 11 query object."
+        },
+        {
+          "name": "QueryExecutionProfile",
+          "kind": "type",
+          "description": "Trusted host initialization policy, not a grant/session/query override."
+        },
+        {
+          "name": "QueryGroup",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "QueryMetadata",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "queryPages",
+          "kind": "function",
+          "description": "Alias the canonical paginator."
+        },
+        {
+          "name": "QueryResult",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "QueryUpdate",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "READ_MANY_MAX_CONCURRENCY",
+          "kind": "constant",
+          "description": ""
+        },
+        {
+          "name": "READ_MANY_MAX_REFS",
+          "kind": "constant",
+          "description": ""
+        },
+        {
+          "name": "readMany",
+          "kind": "function",
+          "description": "Ordered ordinary reads, not a transaction or a consistent native snapshot."
+        },
+        {
+          "name": "ReadManyOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ReadOptions",
+          "kind": "interface",
+          "description": "What every read takes."
+        },
+        {
+          "name": "readViewSourceRecord",
+          "kind": "function",
+          "description": "Read a complete current local record, not a projection or a source-text DTO."
+        },
+        {
+          "name": "Receipt",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordFlushOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordFlushResult",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "RecordHistory",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordLease",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordOpenOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordReader",
+          "kind": "class",
+          "description": "Splits a byte stream into `u32be(length) ‖ frame` records."
+        },
+        {
+          "name": "RecordReadOptions",
+          "kind": "interface",
+          "description": "A read that returns records."
+        },
+        {
+          "name": "RecordRecovery",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordRecoveryRef",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordRef",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "RecordResolution",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "Records",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordSession",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordSessionSnapshot",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordSessionState",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "RecordSet",
+          "kind": "class",
+          "description": ""
+        },
+        {
+          "name": "RecordSetChange",
+          "kind": "type",
+          "description": "One record's change."
+        },
+        {
+          "name": "RecordSetListener",
+          "kind": "type",
+          "description": "`changes` is empty when only `state` or `problem` changed."
+        },
+        {
+          "name": "RecordSetOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordSetSnapshot",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordSetState",
+          "kind": "type",
+          "description": "- `loading`."
+        },
+        {
+          "name": "RecordValidation",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordVersion",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordView",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "RecordWrite",
+          "kind": "interface",
+          "description": "A create, with the record ID the SDK minted."
+        },
+        {
+          "name": "Recovery",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "recoveryFor",
+          "kind": "function",
+          "description": "The recovery action for a code, or `contact_support` for a code this SDK doesn't know."
+        },
+        {
+          "name": "RecoveryKeyStatus",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "relayConnector",
+          "kind": "function",
+          "description": "A connector for web apps and other remote clients."
+        },
+        {
+          "name": "RelayConnectorOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "relayPipeCarrier",
+          "kind": "function",
+          "description": "Open a relay pipe and return a carrier of whole Noise messages."
+        },
+        {
+          "name": "RelayRoute",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "resolveRecordLinks",
+          "kind": "function",
+          "description": "Resolve a persisted flat frontmatter key through ONE ordinary native query."
+        },
+        {
+          "name": "Resyncing",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ResyncPhase",
+          "kind": "type",
+          "description": "Allocated lost-tail repair phases."
+        },
+        {
+          "name": "revisionOf",
+          "kind": "function",
+          "description": "`sha256:<hex>` of a string's UTF-8 bytes."
+        },
+        {
+          "name": "routeFromControl",
+          "kind": "function",
+          "description": "The first usable target, or `null` when there is none (the SDK then reports `unavailable` / `no_device_online`."
+        },
+        {
+          "name": "RuntimeInfo",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "SaveState",
+          "kind": "type",
+          "description": "- `saved`."
+        },
+        {
+          "name": "SchemaError",
+          "kind": "class",
+          "description": ""
+        },
+        {
+          "name": "Session",
+          "kind": "class",
+          "description": ""
+        },
+        {
+          "name": "SESSION_LIFETIME_MS",
+          "kind": "constant",
+          "description": "Session lifetime (§12.3)."
+        },
+        {
+          "name": "Settlement",
+          "kind": "type",
+          "description": "How a write ended."
+        },
+        {
+          "name": "SettleOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "SettleRead",
+          "kind": "interface",
+          "description": "Which record to read back once the write is kept, and how."
+        },
+        {
+          "name": "StaticKey",
+          "kind": "interface",
+          "description": "A static key the SDK can use without seeing the secret."
+        },
+        {
+          "name": "staticKeyOf",
+          "kind": "function",
+          "description": ""
+        },
+        {
+          "name": "StoredKey",
+          "kind": "type",
+          "description": "What a key store persists for one key."
+        },
+        {
+          "name": "streamCarrier",
+          "kind": "function",
+          "description": "Carry Noise messages on a byte stream as `u16be(length) ‖ message`."
+        },
+        {
+          "name": "structMap",
+          "kind": "function",
+          "description": "A struct map from `[key, value]` pairs, dropping `undefined` values."
+        },
+        {
+          "name": "SubmitParams",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "summarizeSync",
+          "kind": "function",
+          "description": ""
+        },
+        {
+          "name": "SyncAttention",
+          "kind": "type",
+          "description": "One thing that needs the person, most pressing first in `MdbaseSync.attention`."
+        },
+        {
+          "name": "SyncInput",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "SyncState",
+          "kind": "type",
+          "description": "What an indicator shows."
+        },
+        {
+          "name": "SyncStatus",
+          "kind": "interface",
+          "description": "\"Confirmed through N, plus pending\" (§7)."
+        },
+        {
+          "name": "TEMPORAL_HINTS",
+          "kind": "constant",
+          "description": "Core's `temporal_hint`."
+        },
+        {
+          "name": "TemporalHint",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "TextOrBlob",
+          "kind": "type",
+          "description": "Text/legacy BlobRef bytes are unchanged."
+        },
+        {
+          "name": "toHex",
+          "kind": "function",
+          "description": "Lowercase hex."
+        },
+        {
+          "name": "toPlain",
+          "kind": "function",
+          "description": "A plain-object view of an exact value."
+        },
+        {
+          "name": "toValue",
+          "kind": "function",
+          "description": "Convert plain data into a `value`."
+        },
+        {
+          "name": "TransferProgress",
+          "kind": "interface",
+          "description": "Upload transfers are identified by UUID, download streams by number."
+        },
+        {
+          "name": "TransportHealth",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "TransportHealthKind",
+          "kind": "type",
+          "description": "Why the log cannot be reached right now, from the last failed request."
+        },
+        {
+          "name": "TypeCreation",
+          "kind": "interface",
+          "description": "A type created by `MdbaseClient.createType`."
+        },
+        {
+          "name": "TypePackAction",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "TypePackApplyResult",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "TypePackConflict",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "TypePackOptions",
+          "kind": "interface",
+          "description": "The caller's decisions."
+        },
+        {
+          "name": "TypePackPlan",
+          "kind": "interface",
+          "description": "One reviewable plan."
+        },
+        {
+          "name": "TypePackProvision",
+          "kind": "interface",
+          "description": "A pack."
+        },
+        {
+          "name": "TypePackReceipt",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "TypePackRefusalCode",
+          "kind": "type",
+          "description": "Stable refusal codes."
+        },
+        {
+          "name": "TypePackResource",
+          "kind": "interface",
+          "description": "One resource of the plan."
+        },
+        {
+          "name": "TypePackResourceKind",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "TypePackStatus",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "TypeSummary",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "TypingEntry",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "UpdateInput",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "updateViewSource",
+          "kind": "function",
+          "description": "Replace a full source at its actual captured UUID/path/revision, including a pending local revision."
+        },
+        {
+          "name": "UploadOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "UploadSource",
+          "kind": "type",
+          "description": "Anything the SDK can upload from."
+        },
+        {
+          "name": "Uuid",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "uuidv7",
+          "kind": "function",
+          "description": "A new UUIDv7 (RFC 9562)."
+        },
+        {
+          "name": "ValidationIssue",
+          "kind": "interface",
+          "description": "A real Core diagnostic of a current persisted/local-native record."
+        },
+        {
+          "name": "ValidationLevel",
+          "kind": "type",
+          "description": "Validation level (spec 04)."
+        },
+        {
+          "name": "Value",
+          "kind": "type",
+          "description": "A frontmatter or app value."
+        },
+        {
+          "name": "valueEquals",
+          "kind": "function",
+          "description": "Spec 12A-style equality of two values (exact."
+        },
+        {
+          "name": "VersionKind",
+          "kind": "type",
+          "description": "How an entry changed the record."
+        },
+        {
+          "name": "ViewDescriptor",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ViewSource",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ViewSourceCreateInput",
+          "kind": "interface",
+          "description": "Capture identities once, before the first submission."
+        },
+        {
+          "name": "ViewSourceReadOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "ViewSourceWriteOptions",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "WasmRuntime",
+          "kind": "class",
+          "description": "A `runtime.wasm` instance hosting one collection."
+        },
+        {
+          "name": "webSocketCarrier",
+          "kind": "function",
+          "description": "Open a WebSocket carrying one Noise message per binary message."
+        },
+        {
+          "name": "WebSocketFactory",
+          "kind": "type",
+          "description": ""
+        },
+        {
+          "name": "WebSocketLike",
+          "kind": "interface",
+          "description": "The subset of the WebSocket API the SDK uses (browser `WebSocket`, Node 22's, `ws`)."
+        },
+        {
+          "name": "wire",
+          "kind": "value",
+          "description": ""
+        },
+        {
+          "name": "Write",
+          "kind": "class",
+          "description": "A submitted write."
+        },
+        {
+          "name": "WriteLedgerEntry",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "WriteLedgerSnapshot",
+          "kind": "interface",
+          "description": ""
+        },
+        {
+          "name": "WriteLedgerStore",
+          "kind": "interface",
+          "description": "Where entries persist."
+        },
+        {
+          "name": "WriteLedgerView",
+          "kind": "interface",
+          "description": "`client.ledger`."
+        },
+        {
+          "name": "WriteOptions",
+          "kind": "interface",
+          "description": ""
         }
       ]
     },
