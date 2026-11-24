@@ -19,7 +19,8 @@ export const docsSections: Record<DocsSectionId, DocsSection> = {
     sourcePath: "content/guides",
     groups: [{ label: "How-to guides", docs: [
       { href: "/guides/", label: "All guides", key: "guides" },
-      { href: "/guides/claude-obsidian/", label: "Claude and Obsidian", key: "claude-obsidian" }
+      { href: "/guides/claude-obsidian/", label: "Claude and Obsidian", key: "claude-obsidian" },
+      { href: "/guides/readwise-markdown/", label: "Readwise highlights", key: "readwise-markdown" }
     ] }]
   },
   sdk: {

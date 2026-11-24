@@ -46,3 +46,5 @@ Imported files are stored under `files/reader/imports`. When the import finishes
 Choose **Stop safely** to pause an active import. Everything already written is kept, and **Resume import** continues the confirmed job. The job stays bound to its destination; switching collections cannot redirect it.
 
 After reloading, reselect the same export folder or reconnect Readwise, choose the same collection and scan again. Check the destination before resuming. Records already imported are kept; review the completion warnings for missing or unavailable content.
+
+For a worked example with a book, a highlight and the resulting file, see [Export Readwise highlights to Markdown](/guides/readwise-markdown/).

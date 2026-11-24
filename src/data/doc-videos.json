@@ -78,5 +78,18 @@
       "The file scope covers the visible folders in this collection.",
       "Allow access confirms the selection. Connect shows the approved collection."
     ]
+  },
+  "readwise": {
+    "title": "Confirm the Readwise import",
+    "duration": "0:08",
+    "width": 1120,
+    "height": 700,
+    "description": "Check the record counts before importing into Marsh library.",
+    "steps": [
+      "Reader shows a preview of the sample library.",
+      "Check destination counts new and previously imported records.",
+      "The import button names Marsh library. Selecting it confirms the job.",
+      "Reader verifies the created records and offers to open the imported collection."
+    ]
   }
 }

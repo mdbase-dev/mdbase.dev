@@ -11,3 +11,9 @@ section: guides
   Give Claude read access to a vault and check its answer against a note on disk.
 
   [Connect Claude to a vault](/guides/claude-obsidian/)
+
+- **Export Readwise highlights to Markdown**
+
+  Import saved highlights and find the quotation, comment and source link on disk.
+
+  [Import Readwise highlights](/guides/readwise-markdown/)
