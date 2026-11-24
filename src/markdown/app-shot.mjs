@@ -3,6 +3,7 @@ export const escapeHtml = (value) =>
 
 // The window bar shows a web app's address, or the desktop app's name.
 export const hosts = {
+  "local-mcp": "Filesystem MCP",
   "zotero-result": "reader.mdbase.dev",
   "zotero-preview": "reader.mdbase.dev",
   "zotero-input": "reader.mdbase.dev",
@@ -31,6 +32,7 @@ export const hosts = {
 // worth showing there: its left and top edges, width and height, as fractions of
 // the capture. Opening the screenshot shows all of it.
 const crops = {
+  "local-mcp": [0, 0, 0.82, 0.64],
   "zotero-result": [0.09, 0.35, 0.78, 0.64],
   "zotero-preview": [0.09, 0, 0.77, 0.65],
   "zotero-input": [0.08, 0.35, 0.79, 0.62],

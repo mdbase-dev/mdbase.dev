@@ -60,3 +60,4 @@ The client should call `list_connections` and then `describe_collection`. `list_
 - [Tool reference](/apps/mcp/tools/) lists every tool and its inputs.
 - [Data handling](/apps/mcp/data-handling/) describes what the MCP server stores and what it can see.
 - [Connect Claude to your Obsidian vault](/guides/claude-obsidian/) walks through read-only access and checks the result against a note on disk.
+- [Compare local and hosted MCP servers for an Obsidian vault](/guides/obsidian-mcp-servers/) to choose where requests run.

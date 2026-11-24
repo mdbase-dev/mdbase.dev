@@ -35,3 +35,9 @@ section: guides
   Bring a marked-up passage, your comment and the original attachment into the same collection.
 
   [Import Zotero annotations](/guides/zotero-annotations/)
+
+- **Obsidian MCP servers compared**
+
+  Choose where the server reads your notes and see which computer must stay online.
+
+  [Compare local and hosted MCP](/guides/obsidian-mcp-servers/)

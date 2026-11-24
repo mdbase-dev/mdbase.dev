@@ -23,7 +23,8 @@ export const docsSections: Record<DocsSectionId, DocsSection> = {
       { href: "/guides/readwise-markdown/", label: "Readwise highlights", key: "readwise-markdown" },
       { href: "/guides/obsidian-browser/", label: "Obsidian in a browser", key: "obsidian-browser" },
       { href: "/guides/chatgpt-markdown/", label: "ChatGPT and Markdown", key: "chatgpt-markdown" },
-      { href: "/guides/zotero-annotations/", label: "Zotero annotations", key: "zotero-annotations" }
+      { href: "/guides/zotero-annotations/", label: "Zotero annotations", key: "zotero-annotations" },
+      { href: "/guides/obsidian-mcp-servers/", label: "Local or hosted MCP", key: "obsidian-mcp-servers" }
     ] }]
   },
   sdk: {
