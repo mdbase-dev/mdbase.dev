@@ -40,3 +40,5 @@ Open the collection switcher from the rail. It lists collections you opened befo
 ## The Connect workspace {#connect}
 
 [editor.mdbase.dev/connect](https://editor.mdbase.dev/connect) is where you manage your mdbase Connect account: collections, storage and sync, sharing, connected applications, devices, sign-in methods and browser sessions. It uses your account session, not a collection grant, so it can list your collections but cannot read their contents.
+
+For the folder setup and a worked edit, see [Edit an Obsidian vault in your browser](/guides/obsidian-browser/).

@@ -17,3 +17,9 @@ section: guides
   Import saved highlights and find the quotation, comment and source link on disk.
 
   [Import Readwise highlights](/guides/readwise-markdown/)
+
+- **Edit an Obsidian vault in your browser**
+
+  Edit the body and properties of a note, then check the file in your vault.
+
+  [Open a vault in Editor](/guides/obsidian-browser/)

@@ -91,5 +91,18 @@
       "The import button names Marsh library. Selecting it confirms the job.",
       "Reader verifies the created records and offers to open the imported collection."
     ]
+  },
+  "editor-note": {
+    "title": "Inspect the complete Markdown source",
+    "duration": "0:08",
+    "width": 1120,
+    "height": 700,
+    "description": "Open the properties of a survey note and check its saved status field.",
+    "steps": [
+      "Editor shows East bank survey after the count is added.",
+      "Note properties opens the properties panel.",
+      "Property options opens the menu with Edit as source.",
+      "The source contains the status property, heading, field instruction and count."
+    ]
   }
 }
