@@ -1,0 +1,93 @@
+.app-shot {
+  --app-shot-shadow:
+    0 1px 2px oklch(25% 0.02 250 / 0.06),
+    0 8px 18px -10px oklch(25% 0.02 250 / 0.18),
+    0 28px 56px -28px oklch(25% 0.03 250 / 0.32);
+  margin: 0;
+}
+
+.app-shot__window {
+  overflow: hidden;
+  background: var(--color-surface, var(--color-canvas));
+  border: 1px solid var(--color-border-strong, var(--color-border));
+  border-radius: var(--radius-lg, 10px);
+  box-shadow: var(--app-shot-shadow);
+}
+
+.app-shot__window[data-view-image] { cursor: zoom-in; }
+.app-shot__window[data-view-image]:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+
+.app-shot__bar {
+  position: relative;
+  display: flex;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  background: var(--color-surface-subtle, var(--color-canvas));
+  border-bottom: 1px solid var(--color-border);
+  font: 400 0.68rem/1 var(--mono, monospace);
+  letter-spacing: 0.01em;
+}
+
+/* The corner mark says the screenshot opens; it brightens with the window. */
+.app-shot__enlarge {
+  position: absolute;
+  top: 7px;
+  right: 9px;
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.55;
+}
+.app-shot__window:is(:hover, :focus-visible) .app-shot__enlarge { color: var(--color-text); opacity: 1; }
+
+.app-shot__image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* On a phone, the named part of the capture fills the frame. */
+@media (max-width: 40rem) {
+  .app-shot__crop { position: relative; overflow: hidden; aspect-ratio: var(--crop-ratio); }
+  .app-shot__crop .app-shot__image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(100% / var(--crop-w));
+    max-width: none;
+    transform: translate(calc(var(--crop-x) * -100%), calc(var(--crop-y) * -100%));
+  }
+}
+
+.app-shot__image--dark { display: none; }
+
+:root[data-theme="dark"] .app-shot__image--light { display: none; }
+:root[data-theme="dark"] .app-shot__image--dark { display: block; }
+
+:root[data-theme="dark"] .app-shot {
+  --app-shot-shadow:
+    0 1px 2px oklch(0% 0 0 / 0.3),
+    0 28px 56px -24px oklch(0% 0 0 / 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .app-shot__image--light { display: none; }
+  :root:not([data-theme]) .app-shot__image--dark { display: block; }
+  :root:not([data-theme]) .app-shot {
+    --app-shot-shadow:
+      0 1px 2px oklch(0% 0 0 / 0.3),
+      0 28px 56px -24px oklch(0% 0 0 / 0.6);
+  }
+}
+
+.app-shot figcaption {
+  margin-top: 0.75rem;
+  color: var(--color-text-soft);
+  font-size: 0.85em;
+}

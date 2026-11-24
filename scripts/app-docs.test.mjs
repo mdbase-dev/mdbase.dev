@@ -6,6 +6,7 @@ const root = new URL("../", import.meta.url);
 const read = (path) => readFileSync(new URL(path, root), "utf8");
 const videos = JSON.parse(read("src/data/doc-videos.json"));
 const placements = {
+  "mcp-read": "content/guides/claude-obsidian.md",
   "reader-markdown": "content/apps/reader/index.md",
   "extension-capture": "content/apps/reader/extension.md",
   "reader-library": "content/apps/reader/library.md",
@@ -51,7 +52,7 @@ test("Every documentation navigation entry resolves to a site page", () => {
   assert.match(sections, /meta: { label: "@mdbase-dev\/sdk"/);
 });
 
-test("Five sample recordings have local playable files, posters and text equivalents", () => {
+test("Sample recordings have local playable files, posters and text equivalents", () => {
   assert.deepEqual(Object.keys(videos).sort(), Object.keys(placements).sort());
   for (const [name, metadata] of Object.entries(videos)) {
     const mp4 = readFileSync(new URL(`public/videos/${name}.mp4`, root));

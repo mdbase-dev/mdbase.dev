@@ -20,7 +20,7 @@ schema:
         type: string
         minLength: 1
       section:
-        enum: [sdk, mcp, editor, reader, writer]
+        enum: [sdk, mcp, editor, reader, writer, guides]
 collection:
   display:
     name_field: title
@@ -36,13 +36,14 @@ address, so `apps/reader/index.md` is `/apps/reader/`.
 `section` is the documentation set the page belongs to, which picks its
 sidebar.
 
-The body is ordinary Markdown with four additions the site understands:
+The body is ordinary Markdown with the additions the site understands:
 
 - A heading can keep a fixed anchor: `## Saved views {#views}`.
 - A code block can name its file: ` ```ts title="src/mdbase.ts" `. With
   `file="examples/worklog/src/mdbase.ts"` it shows that file from the site's
   repository instead of its own contents; `pick="scripts"` keeps one key of a
   JSON file.
+- A standalone screenshot pointing to a registered light capture in `/images/apps/` uses the same themed frame and phone crop as the app pages.
 - An image whose address is a recording in `/videos/` is shown as that
   recording, with its captions and text description.
 - A heading marked `{.cards}` shows the list under it as cards, two to a row.

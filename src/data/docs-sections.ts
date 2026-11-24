@@ -1,18 +1,27 @@
 import mcpTools from "./mcp-tools.json";
 
-export type DocsSectionId = "sdk" | "mcp" | "editor" | "reader" | "writer";
+export type DocsSectionId = "sdk" | "mcp" | "editor" | "reader" | "writer" | "guides";
 
 type DocLink = { href: string; label: string; key: string };
 type DocsSection = {
   label: string;
   navLabel: string;
-  headerCurrent: "sdk" | "apps";
+  headerCurrent?: "sdk" | "apps";
   sourcePath: string;
-  meta: { label: string; value: string };
+  meta?: { label: string; value: string };
   groups: Array<{ label: string; docs: DocLink[] }>;
 };
 
 export const docsSections: Record<DocsSectionId, DocsSection> = {
+  guides: {
+    label: "Guides",
+    navLabel: "Guides",
+    sourcePath: "content/guides",
+    groups: [{ label: "How-to guides", docs: [
+      { href: "/guides/", label: "All guides", key: "guides" },
+      { href: "/guides/claude-obsidian/", label: "Claude and Obsidian", key: "claude-obsidian" }
+    ] }]
+  },
   sdk: {
     label: "SDK",
     navLabel: "SDK documentation",

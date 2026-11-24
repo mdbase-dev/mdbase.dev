@@ -22,7 +22,7 @@ const editHref = record
   : `https://github.com/mdbase-dev/mdbase.dev/tree/main/${sourcePath}`;
 ---
 
-<BaseLayout title={`${title} · ${label}`} description={description} current={headerCurrent} wide>
+<BaseLayout title={section === "guides" ? title : `${title} · ${label}`} description={description} current={headerCurrent} wide>
   <div class="docs-shell" data-docs-shell>
     <aside class="docs-nav" data-markdown-ignore>
       <details open data-docs-nav>
@@ -44,10 +44,10 @@ const editHref = record
           }
         </nav>
       </details>
-      <div class="docs-nav__meta">
+      {meta && <div class="docs-nav__meta">
         <span>{meta.label}</span>
         <strong>{meta.value}</strong>
-      </div>
+      </div>}
     </aside>
     <article class="docs-article">
       <header class="docs-title">

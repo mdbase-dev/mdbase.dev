@@ -11,7 +11,7 @@ const docs = defineCollection({
     .object({
       title: z.string().min(1),
       description: z.string().min(1),
-      section: z.enum(["sdk", "mcp", "editor", "reader", "writer"])
+      section: z.enum(["sdk", "mcp", "editor", "reader", "writer", "guides"])
     })
     .strict()
 });
