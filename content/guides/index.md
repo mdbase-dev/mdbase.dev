@@ -29,3 +29,9 @@ section: guides
   Ask for notes that match a property and check the quoted text against the file.
 
   [Connect ChatGPT](/guides/chatgpt-markdown/)
+
+- **Save Zotero annotations as Markdown notes**
+
+  Bring a marked-up passage, your comment and the original attachment into the same collection.
+
+  [Import Zotero annotations](/guides/zotero-annotations/)

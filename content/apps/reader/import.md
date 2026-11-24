@@ -25,6 +25,8 @@ The experimental exporter includes all of **My Library**, not a selected collect
 
 Reader checks every payload file against its checksum before collection writes. Selecting a folder needs a supporting browser such as Chrome. Export bundles contain private notes and attachment content; keep them private.
 
+See the [Zotero annotations guide](/guides/zotero-annotations/) for a complete example with a PDF highlight.
+
 ## From Readwise Reader {#readwise}
 
 Readwise imports bring Reader documents and files, plus highlights from classic Readwise sources such as Kindle, Apple Books and Instapaper. Classic sources import as metadata and highlights, without the book text.
