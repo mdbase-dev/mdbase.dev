@@ -43,3 +43,5 @@ Preview and Word export use the same citation metadata and style, with separate 
 ## Missing or unknown sources {#missing}
 
 An unknown citekey appears in Problems and may offer a similar known key. Check its spelling, the selected collection and the source's citation data. Editing a source citekey can leave older manuscript citations unresolved; update those references as well.
+
+[Write a thesis in Markdown with citations](/guides/markdown-thesis/) follows one source from the library into a downloadable manuscript and bibliography.

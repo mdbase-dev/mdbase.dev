@@ -117,5 +117,18 @@
       "The import button names Marsh library. Selecting it confirms the job.",
       "Reader verifies the created records and offers to open the imported collection."
     ]
+  },
+  "thesis-cite": {
+    "title": "Cite a source in a thesis",
+    "duration": "0:08",
+    "width": 1120,
+    "height": 700,
+    "description": "Writer inserts a Reader citekey into an original thesis passage and formats it in the preview.",
+    "steps": [
+      "Find Darwin’s coral reef study in Sources.",
+      "Insert its citekey after the claim.",
+      "Check the formatted citation in the thesis preview.",
+      "Open the export formats and select the Pandoc bundle."
+    ]
   }
 }

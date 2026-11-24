@@ -6,6 +6,7 @@ const root = new URL("../", import.meta.url);
 const read = (path) => readFileSync(new URL(path, root), "utf8");
 const videos = JSON.parse(read("src/data/doc-videos.json"));
 const placements = {
+  "thesis-cite": "content/guides/markdown-thesis.md",
   "zotero": "content/guides/zotero-annotations.md",
   "editor-note": "content/guides/obsidian-browser.md",
   "readwise": "content/guides/readwise-markdown.md",

@@ -3,6 +3,9 @@ export const escapeHtml = (value) =>
 
 // The window bar shows a web app's address, or the desktop app's name.
 export const hosts = {
+  "thesis-export": "Writer demo",
+  "thesis-source": "Writer demo",
+  "thesis-layout": "Writer demo",
   "local-mcp": "Filesystem MCP",
   "zotero-result": "reader.mdbase.dev",
   "zotero-preview": "reader.mdbase.dev",
@@ -32,6 +35,9 @@ export const hosts = {
 // worth showing there: its left and top edges, width and height, as fractions of
 // the capture. Opening the screenshot shows all of it.
 const crops = {
+  "thesis-export": [0.48, 0, 0.52, 0.65],
+  "thesis-source": [0, 0, 0.49, 0.7],
+  "thesis-layout": [0.27, 0.24, 0.46, 0.55],
   "local-mcp": [0, 0, 0.82, 0.64],
   "zotero-result": [0.09, 0.35, 0.78, 0.64],
   "zotero-preview": [0.09, 0, 0.77, 0.65],

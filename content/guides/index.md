@@ -41,3 +41,9 @@ section: guides
   Choose where the server reads your notes and see which computer must stay online.
 
   [Compare local and hosted MCP](/guides/obsidian-mcp-servers/)
+
+- **Write a thesis in Markdown with citations**
+
+  Insert a source from Reader, check the bibliography and download the manuscript with its references.
+
+  [Write and cite a thesis](/guides/markdown-thesis/)
