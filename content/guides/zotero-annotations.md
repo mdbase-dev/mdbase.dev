@@ -88,6 +88,7 @@ target:
   zotero:
     position: "{\"pageIndex\":0,\"rects\":[[72,648,312,662]]}"
     profile: zotero-annotation-position-v1
+type: reader-annotation
 ---
 > Reeds collect fine sediment along the bank.
 

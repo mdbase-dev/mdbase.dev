@@ -56,6 +56,16 @@ On the mdbase approval screen, select the test collection. Keep read access and 
 
 ## 3. Check which file the client reads
 
+<svg class="guide-route" viewBox="0 0 540 118" role="img" aria-label="On your computer, a desktop client calls a local process that reads the vault folder. A web client calls the hosted gateway to read a synced collection.">
+<rect x="1" y="6" width="135" height="44" rx="6"/><text x="68" y="34">Desktop client</text>
+<rect x="195" y="6" width="150" height="44" rx="6"/><text x="270" y="34">Local process</text>
+<rect x="404" y="6" width="135" height="44" rx="6"/><text x="471" y="34">Vault folder</text>
+<rect x="1" y="68" width="135" height="44" rx="6"/><text x="68" y="96">Web client</text>
+<rect x="195" y="68" width="150" height="44" rx="6"/><text x="270" y="96">MCP gateway</text>
+<rect x="404" y="68" width="135" height="44" rx="6"/><text x="471" y="96">Collection</text>
+<path class="request" d="M137 28h55m154 0h55M137 90h55m154 0h55"/><path d="m184 23 8 5-8 5m209-10 8 5-8 5m-209 52 8 5-8 5m209-10 8 5-8 5"/>
+</svg>
+
 For the local server, ask the client to list its allowed directories, then read `surveys/east-bank.md` under the returned path. The terminal capture shows the responses from those two MCP calls against the example folder.
 
 ![The local filesystem server reports its allowed directory and returns the survey note with its YAML and instruction.](/images/apps/local-mcp-light.webp)

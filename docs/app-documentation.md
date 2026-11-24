@@ -65,7 +65,7 @@ renderer in a browser). Each script's header gives the steps. Retake them when t
 change.
 
 On a phone each screenshot shows only the part of the window named for it in
-`AppShot.astro` (`crops`), and opening it shows the whole capture; set a crop when you add
+`src/markdown/app-shot.mjs` (`crops`), and opening it shows the whole capture; set a crop when you add
 a screenshot.
 
 The social share image, `public/og-card.jpg`, is drawn from the homepage's sky by

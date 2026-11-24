@@ -3,6 +3,7 @@ export const escapeHtml = (value) =>
 
 // The window bar shows a web app's address, or the desktop app's name.
 export const hosts = {
+  "obsidian-survey": "Obsidian",
   "worklog-reload": "localhost:5173",
   "worklog-form": "localhost:5173",
   "worklog-setup": "Terminal",
@@ -41,6 +42,7 @@ export const hosts = {
 // worth showing there: its left and top edges, width and height, as fractions of
 // the capture. Opening the screenshot shows all of it.
 const crops = {
+  "obsidian-survey": [0.305, 0.08, 0.67, 0.64],
   "worklog-reload": [0.2, 0.01, 0.61, 0.43],
   "worklog-form": [0.2, 0.01, 0.61, 0.43],
   "worklog-setup": [0, 0, 0.83, 0.48],

@@ -640,5 +640,5 @@ main[tabindex="-1"]:focus { outline: none; }
 .guide-route path { fill: none; stroke: currentColor; }
 @media (prefers-reduced-motion: no-preference) {
   .guide-route .request { stroke-dasharray: 4 5; animation: guide-request 2s linear 2; }
-  @keyframes guide-request { to { stroke-dashoffset: 36; } }
+  @keyframes guide-request { to { stroke-dashoffset: -36; } }
 }

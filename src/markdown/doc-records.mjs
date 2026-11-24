@@ -1,14 +1,7 @@
 // Markdown pipeline for the documentation records in content/.
 //
-// The records stay ordinary Markdown. These plugins give three conventions
-// their meaning on the site (content/_types/doc-page.md describes them, and a
-// fourth, card lists, that needs only a stylesheet rule):
-//   - a code block's `title="…"` becomes its caption;
-//   - `file="examples/…"` shows that file from this repository, so a listing
-//     cannot drift from the example app CI builds, and `pick="key"` keeps one
-//     key of a JSON file;
-//   - an image of a recording in /videos/ becomes the recording, with its
-//     captions and text description.
+// content/_types/doc-page.md documents the authoring conventions. Here we
+// caption code, include example files and render media with their controls.
 import { escapeHtml, shotWindow } from "./app-shot.mjs";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";

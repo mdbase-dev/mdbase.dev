@@ -54,4 +54,6 @@ Return at low tide to count the nesting pairs.
 Counted six pairs on the east bank.
 ```
 
+![Obsidian opens the East bank survey file with the counted status in Properties and both paragraphs in the note.](/images/apps/obsidian-survey-light.webp)
+
 The browser runs mdbase Editor with its own commands and views. Your Obsidian plugins and workspace layout live in Obsidian. If both apps edit the same note, review Editor’s **This note changed elsewhere** prompt before choosing which version to keep. See [editing and conflicts](/apps/editor/notes/#conflicts) or [give Claude read access to the vault](/guides/claude-obsidian/).
