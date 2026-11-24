@@ -51,3 +51,5 @@ Your approval travels with the collection, so every copy checks it before it ans
 For a **Cloud copy** collection, requests go to the readable copy mdbase keeps, so tools work while your devices are off.
 
 For a **Private** collection, requests travel from the MCP server through the mdbase relay to one of your devices. They are encrypted end to end between the MCP server and that device, and the relay cannot read them. One of your devices must be online. If none is, tools return `connector_offline`. A new approval for a Private collection takes effect once one of your signed-in devices has recorded it. See [Troubleshooting](/apps/mcp/troubleshooting/).
+
+For a read-only setup in ChatGPT, see [Connect ChatGPT to your Markdown notes](/guides/chatgpt-markdown/).

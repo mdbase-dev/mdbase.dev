@@ -21,7 +21,8 @@ export const docsSections: Record<DocsSectionId, DocsSection> = {
       { href: "/guides/", label: "All guides", key: "guides" },
       { href: "/guides/claude-obsidian/", label: "Claude and Obsidian", key: "claude-obsidian" },
       { href: "/guides/readwise-markdown/", label: "Readwise highlights", key: "readwise-markdown" },
-      { href: "/guides/obsidian-browser/", label: "Obsidian in a browser", key: "obsidian-browser" }
+      { href: "/guides/obsidian-browser/", label: "Obsidian in a browser", key: "obsidian-browser" },
+      { href: "/guides/chatgpt-markdown/", label: "ChatGPT and Markdown", key: "chatgpt-markdown" }
     ] }]
   },
   sdk: {

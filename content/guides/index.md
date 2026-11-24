@@ -23,3 +23,9 @@ section: guides
   Edit the body and properties of a note, then check the file in your vault.
 
   [Open a vault in Editor](/guides/obsidian-browser/)
+
+- **Connect ChatGPT to your Markdown notes**
+
+  Ask for notes that match a property and check the quoted text against the file.
+
+  [Connect ChatGPT](/guides/chatgpt-markdown/)
