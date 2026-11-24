@@ -399,13 +399,7 @@
   mask-composite: intersect;
 }
 
-/* Status line, record file, app list and closing facts. */
-#intro .chapter__inner > p.home-status {
-  margin-top: 1.4rem;
-  color: var(--color-text-muted);
-  font-size: 0.88rem;
-}
-
+/* Record file, app list and closing facts. */
 .home-body .chapter code {
   font-family: var(--mono);
   font-size: 0.86em;
@@ -459,27 +453,48 @@
    The backgrounds are the film's own canvas in each cut. */
 .home-film video { display: block; width: 100%; height: auto; background: light-dark(#fff, oklch(18.7% 0.002 286)); }
 
-/* The film's opening still, with the apps' primary button to start it. */
+/* The film's opening still, with a centered play button covering the frame. */
 .home-film__frame { position: relative; }
 .home-film__play {
   position: absolute;
-  bottom: 14px;
-  left: 14px;
-  display: inline-flex;
-  padding: 0.5rem 0.9rem 0.5rem 0.7rem;
-  align-items: center;
-  gap: 0.45rem;
-  color: var(--color-on-accent);
-  background: var(--color-accent);
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: transparent;
   border: 0;
-  border-radius: var(--radius-sm);
-  box-shadow: var(--elevation-low);
-  font: 500 0.88rem/1 var(--sans);
   cursor: pointer;
 }
-.home-film__play:hover { background: var(--color-accent-strong); }
-.home-film__play:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-.home-film__play svg { width: 14px; height: 14px; fill: currentColor; }
+.home-film__play-icon {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border-radius: 999px;
+  box-shadow: var(--elevation-raised);
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+.home-film__play:hover .home-film__play-icon {
+  background: var(--color-accent-strong);
+  transform: scale(1.05);
+}
+.home-film__play:focus-visible { outline: none; }
+.home-film__play:focus-visible .home-film__play-icon {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+.home-film__play svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+  transform: translateX(1px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-film__play-icon { transition: none; }
+  .home-film__play:hover .home-film__play-icon { transform: none; }
+}
 
 /* The opening chapter starts under the header so the film is in view without scrolling. */
 @media (width > 820px) {
