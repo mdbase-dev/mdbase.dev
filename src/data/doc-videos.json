@@ -130,5 +130,18 @@
       "Check the formatted citation in the thesis preview.",
       "Open the export formats and select the Pandoc bundle."
     ]
+  },
+  "query-notes": {
+    "title": "Query two survey notes by status",
+    "duration": "0:05",
+    "width": 1120,
+    "height": 700,
+    "description": "The CLI prints a different relative path for each status in the sample folder.",
+    "steps": [
+      "Run a query for awaiting-count.",
+      "Read the returned path to the east bank note.",
+      "Change the status to counted and run the query.",
+      "Read the returned path to the west bank note."
+    ]
   }
 }

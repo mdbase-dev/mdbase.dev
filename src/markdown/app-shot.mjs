@@ -3,6 +3,9 @@ export const escapeHtml = (value) =>
 
 // The window bar shows a web app's address, or the desktop app's name.
 export const hosts = {
+  "query-read": "mdbase CLI",
+  "query-status": "mdbase CLI",
+  "query-folder": "mdbase CLI",
   "thesis-export": "Writer demo",
   "thesis-source": "Writer demo",
   "thesis-layout": "Writer demo",
@@ -35,6 +38,9 @@ export const hosts = {
 // worth showing there: its left and top edges, width and height, as fractions of
 // the capture. Opening the screenshot shows all of it.
 const crops = {
+  "query-read": [0, 0, 0.68, 0.48],
+  "query-status": [0, 0, 0.66, 0.32],
+  "query-folder": [0, 0, 0.65, 0.42],
   "thesis-export": [0.48, 0, 0.52, 0.65],
   "thesis-source": [0, 0, 0.49, 0.7],
   "thesis-layout": [0.27, 0.24, 0.46, 0.55],

@@ -47,3 +47,9 @@ section: guides
   Insert a source from Reader, check the bibliography and download the manuscript with its references.
 
   [Write and cite a thesis](/guides/markdown-thesis/)
+
+- **Query YAML frontmatter from the command line**
+
+  Filter a folder of Markdown notes by status and read a matching file.
+
+  [Run a frontmatter query](/guides/query-frontmatter/)
