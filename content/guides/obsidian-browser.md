@@ -8,6 +8,8 @@ Use the [Connect desktop app](/downloads/) on the computer that holds your vault
 
 ## 1. Make the vault available
 
+Use one sync service for a given folder. If you already sync this vault, decide which service will own that job before you turn on mdbase sync. The [mdbase plugin for Obsidian](https://github.com/mdbase-dev/mdbase-obsidian#sync) can sync the vault in place of the desktop app.
+
 In the desktop app, sign in and open **Collections → Add existing**. Select the vault folder. Open its actions menu and choose **Turn on sync**. If your vault already syncs with mdbase, use that collection.
 
 Choose **Cloud copy** (the default) if you need access while your computers are off. mdbase can read this copy. For **Private**, open **Advanced**, select end-to-end encryption and confirm. To use Editor with a Private collection, keep a computer that serves it online.

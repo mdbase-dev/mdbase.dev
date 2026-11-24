@@ -13,14 +13,14 @@
   "dependencies": {
     "@lingui/core": "6.9.0",
     "@lingui/react": "6.9.0",
-    "@mdbase-dev/i18n": "0.1.0-beta.166",
-    "@mdbase-dev/sdk": "0.1.0-beta.168",
-    "@mdbase-dev/ui": "0.1.0-beta.166",
+    "@mdbase-dev/i18n": "0.2.2",
+    "@mdbase-dev/sdk": "0.2.2",
+    "@mdbase-dev/ui": "0.2.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@mdbase-dev/connect-dev": "0.1.0-beta.166",
+    "@mdbase-dev/connect-dev": "0.1.37",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.3.0",

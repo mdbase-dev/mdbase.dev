@@ -8,13 +8,12 @@ You can build a personal work log as a static web app. The mdbase SDK stores ent
 
 ## 1. Run the working example
 
-You need Git, npm, Node.js 22.12 or later and a browser. Clone the example and install its locked dependencies. Then install the SDK version below. The example’s original SDK pin rejects the development app’s localhost address.
+You need Git, npm, Node.js 24 or later and a browser. Clone the example and install its locked dependencies.
 
 ```sh title="Terminal"
 git clone --depth 1 https://github.com/mdbase-dev/mdbase.dev.git
 cd mdbase.dev/examples/worklog
 npm ci
-npm install --save-exact @mdbase-dev/sdk@0.1.0-beta.173
 npm run dev
 ```
 
@@ -38,9 +37,9 @@ Reload the page at the same address. Your entry is still there, with **Saved onl
 
 Open `src/Worklog.tsx`. The form calls `db.create()` with three things: the type `worklog-entry`, a file path and the frontmatter fields. The path includes the date and eight characters from a random UUID, so two entries on one day get different filenames. A live query for that type updates the list.
 
-The generated path in this run was `worklog/2026-11-24-f02856fd.md`. Here is the same record written to a collection folder. The browser-only app keeps the record in site storage. You won’t find a new file in the project folder when you press **Add**.
+The generated path in this run was `worklog/2026-11-24-c8633a7f.md`. Here is the same record written to a collection folder. The browser-only app keeps the record in site storage. You won’t find a new file in the project folder when you press **Add**.
 
-```markdown title="worklog/2026-11-24-f02856fd.md"
+```markdown title="worklog/2026-11-24-c8633a7f.md"
 ---
 date: "2026-11-24"
 minutes: 45

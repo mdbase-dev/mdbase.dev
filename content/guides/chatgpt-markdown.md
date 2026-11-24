@@ -8,7 +8,9 @@ You need a ChatGPT workspace that allows custom MCP servers, an mdbase account a
 
 ## 1. Sync the folder that holds your notes
 
-In the [mdbase Connect desktop app](/downloads/), open **Collections → Add existing** and select the folder. In the folder’s actions menu, choose **Turn on sync**. If it already syncs, use the existing collection. Write down its name. You’ll select it again during approval.
+Use one sync service for a given folder. If you already sync this vault, decide which service will own that job before you turn on mdbase sync. The [mdbase plugin for Obsidian](https://github.com/mdbase-dev/mdbase-obsidian#sync) can sync the vault in place of the desktop app.
+
+In the [mdbase Connect desktop app](/downloads/), open **Collections → Add existing** and select the folder. In the folder’s actions menu, choose **Turn on sync**. If the folder already syncs with mdbase, use that collection. Write down its name. You’ll select it again during approval.
 
 **Cloud copy** makes a readable copy available while your computer is off. For **Private**, select end-to-end encryption under **Advanced**. A computer serving the Private collection must be online when ChatGPT requests a note.
 

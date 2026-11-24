@@ -8,6 +8,8 @@ You need an [Obsidian vault folder](https://obsidian.md/help/vault), the [mdbase
 
 ## 1. Connect the vault folder
 
+Use one sync service for a given folder. If you already sync this vault, decide which service will own that job before you turn on mdbase sync. The [mdbase plugin for Obsidian](https://github.com/mdbase-dev/mdbase-obsidian#sync) can sync the vault in place of the desktop app.
+
 Sign in to the desktop app. Under **Collections**, choose **Add existing** and select the folder that contains your notes. Open the actions menu beside that folder and choose **Turn on sync**. If the vault already syncs with mdbase, use its existing collection.
 
 The default, **Cloud copy**, keeps a copy readable by mdbase. Claude can use it while your computer is off. For **Private**, open **Advanced** and select **Encrypt end to end so mdbase cannot read it**. Keep a computer with Connect and that collection online when you use Claude. Confirm with **Turn on sync**.

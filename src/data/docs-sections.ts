@@ -35,7 +35,7 @@ export const docsSections: Record<DocsSectionId, DocsSection> = {
     navLabel: "SDK documentation",
     headerCurrent: "sdk",
     sourcePath: "src/pages/sdk",
-    meta: { label: "@mdbase-dev/sdk", value: "Beta on npm" },
+    meta: { label: "@mdbase-dev/sdk", value: "Published on npm" },
     groups: [
       {
         label: "Start",

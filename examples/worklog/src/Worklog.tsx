@@ -79,8 +79,8 @@ export function Worklog({ db }: { db: MdbaseClient }) {
       <ul>
         {entries.map((entry) => (
           <li key={entry.id}>
-            <time>{String(entry.frontmatter.get("date"))}</time>
-            <span>{String(entry.frontmatter.get("summary"))}</span>
+            <time>{String(entry.frontmatter.date)}</time>
+            <span>{String(entry.frontmatter.summary)}</span>
             <button type="button" onClick={() => remove(entry)} aria-label="Delete entry">
               Delete
             </button>

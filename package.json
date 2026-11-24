@@ -13,7 +13,7 @@
     "sync:mcp-tools": "node scripts/sync-mcp-tools.mjs",
     "sync:contracts": "node scripts/sync-contracts.mjs",
     "import:spec": "node scripts/import-spec.mjs",
-    "index:site": "node scripts/build-llms.mjs && pagefind --site dist --root-selector 'main[data-markdown-body]' --exclude-selectors '[data-markdown-ignore]'",
+    "index:site": "node scripts/build-llms.mjs",
     "check:links": "node scripts/check-links.mjs",
     "build:sdk-api": "node scripts/build-sdk-api.mjs",
     "check:sdk-api": "node scripts/build-sdk-api.mjs --check",
@@ -36,7 +36,6 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
-    "pagefind": "1.5.2",
     "turndown": "7.2.4",
     "typescript": "^6.0.3"
   }

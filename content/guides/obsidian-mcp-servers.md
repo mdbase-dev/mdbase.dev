@@ -46,6 +46,8 @@ Save and fully restart Claude Desktop. It starts the server as a local process a
 
 ### Hosted collection in a web client
 
+Use one sync service for a given folder. If you already sync this vault, decide which service will own that job before you turn on mdbase sync. The [mdbase plugin for Obsidian](https://github.com/mdbase-dev/mdbase-obsidian#sync) can sync the vault in place of the desktop app.
+
 You need an mdbase account and the [Connect desktop app](/downloads/). Add the folder under **Collections → Add existing**, then **Turn on sync** in its actions menu. Choose **Cloud copy** for access while this computer is off, or **Private** for an encrypted copy. Follow the setup for [Claude](/guides/claude-obsidian/) or [ChatGPT](/guides/chatgpt-markdown/) using `https://mcp.mdbase.dev/mcp`.
 
 On the mdbase approval screen, select the test collection. Keep read access and clear the optional permissions.
