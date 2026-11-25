@@ -57,7 +57,8 @@ import AppIcon from "../components/AppIcon.astro";
     const play = document.createElement("button");
     play.type = "button";
     play.className = "home-film__play";
-    play.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><span>Watch the two-minute film</span>';
+    play.setAttribute("aria-label", "Play video");
+    play.innerHTML = '<span class="home-film__play-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></span>';
     video.controls = false;
     frame.append(play);
     play.addEventListener("click", () => {
@@ -68,7 +69,6 @@ import AppIcon from "../components/AppIcon.astro";
     });
   })();
 </script>
-<p class="home-status">mdbase is in beta. Keep independent backups of important collections.</p>
 </div></section>
 
 <section id="files" class="chapter" data-scene="collection" aria-label="Files"><div class="chapter__inner">
@@ -135,7 +135,6 @@ the field visit.</code></pre>
 <p>Create an account to open your first collection in the Editor. To sync a folder on your computer, install the desktop app. Apps receive no access until you approve them.</p>
 <div class="chapter__actions home-actions"><a class="home-action home-action--primary" href="https://connect.mdbase.dev/signup">Create an account</a><a class="home-action" href="/downloads/">Download the desktop app</a></div>
 <dl class="home-facts">
-<div><dt>Status</dt><dd>Connect is in beta and has no availability guarantee. Service incidents are summarised on the <a href="/incidents/">incidents page</a>.</dd></div>
 <div><dt>Source</dt><dd>The specification, Connect, Reader and Writer are open source under the MIT licence, <a href="https://github.com/mdbase-dev">on GitHub</a>.</dd></div>
 <div><dt>Developers</dt><dd>Any app can work with a collection. Read the <a href="/sdk/">SDK documentation</a> and the <a href="/spec/">specification</a>.</dd></div>
 </dl>
