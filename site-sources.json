@@ -9,7 +9,7 @@
   },
   "contracts": {
     "repository": "mdbase-dev/mdbase-contracts",
-    "ref": "960c79ddcf16785bbcc4a522bb9258f4c3af1251"
+    "ref": "b5d580edda2d3b90e2746cd003bfd3f835c2f317"
   },
   "implementations": [
     {
